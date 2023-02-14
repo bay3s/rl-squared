@@ -9,7 +9,7 @@ References:
 Original Author:
   - iosband@stanford.edu
 """
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Tuple, Any, Union
 from numpy import ndarray
 
@@ -22,6 +22,7 @@ class EnvironmentABC(ABC):
     """
     pass
 
+  @abstractmethod
   def reset(self) -> None:
     """
     Resets the environment to its starting state.
@@ -31,6 +32,7 @@ class EnvironmentABC(ABC):
     """
     raise NotImplementedError
 
+  @abstractmethod
   def advance(self, action: int) -> Tuple[Any, Union[int, ndarray, float, complex], bool]:
     """
     Advances the agent given the action and returns a 3-tuple containing the reward, new state, and whether the episode
