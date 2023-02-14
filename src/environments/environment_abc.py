@@ -9,16 +9,12 @@ References:
 Original Author:
   - iosband@stanford.edu
 """
-
-
-import random
 from abc import ABC
-from typing import Tuple
+from typing import Tuple, Any, Union
+from numpy import ndarray
 
-import numpy as np
 
-
-class Environment(ABC):
+class EnvironmentABC(ABC):
 
   def __init__(self):
     """
@@ -35,7 +31,7 @@ class Environment(ABC):
     """
     raise NotImplementedError
 
-  def advance(self, action: int) -> Tuple[float, int, bool]:
+  def advance(self, action: int) -> Tuple[Any, Union[int, ndarray, float, complex], bool]:
     """
     Advances the agent given the action and returns a 3-tuple containing the reward, new state, and whether the episode
     is done.
