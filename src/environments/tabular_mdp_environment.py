@@ -1,7 +1,7 @@
 """
 Implementation of a Tabular MDP Environment.
 
-R - dict by (s,a) - each R[s,a] = (mean_rewards, sd_reward)
+R - dict by (s,a) - each R[s,a] = (mean_reward, sd_reward)
 P - dict by (s,a) - each P[s,a] = transition vector size S
 
 References:
@@ -17,7 +17,7 @@ from .environment_abc import EnvironmentABC
 from typing import Tuple, Any, Union
 
 
-class TabularMDP(EnvironmentABC):
+class TabularMDPEnvironment(EnvironmentABC):
 
   def __init__(self, num_states: int, num_actions: int, episode_length: int):
     """
