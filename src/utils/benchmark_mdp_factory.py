@@ -61,8 +61,8 @@ def make_river_swim_environment(episode_length: int = 20, num_states: int = 6) -
     TabularMDPEnvironment
   """
   num_actions = 2
-  R_true = {}
-  P_true = {}
+  R_true = dict()
+  P_true = dict()
 
   for s in range(num_states):
     for a in range(num_actions):
