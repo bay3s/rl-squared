@@ -1,3 +1,4 @@
-from .river_swim.gru_policy import GRUPolicy
+from src.policies.gru_policy import GRUPolicy
 
 
+__all__ = ['GRUPolicy']
