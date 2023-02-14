@@ -28,7 +28,7 @@ class TabularMDPEnvironment(EnvironmentABC):
       num_actions (int): Number of actions.
       episode_length (int): Length of an episode.
     """
-    super().__init__()
+    super(TabularMDPEnvironment, self).__init__()
 
     self.num_states = num_states
     self.num_actions = num_actions
