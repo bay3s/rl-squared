@@ -13,3 +13,4 @@ Pillow~=9.4.0
 scikit-learn
 mujoco-py~=1.50.1.68
 gym
+dataclasses-json
