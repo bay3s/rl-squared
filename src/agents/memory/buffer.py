@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from src.memory.transition import Transition
+from src.agents.memory.transition import Transition
 
 
 class Buffer:

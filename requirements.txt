@@ -1,6 +1,11 @@
 torch
 numpy
-pip==23.0.1
-setuptools==67.4.0
+pip
+setuptools
 wheel
 dataclasses-json
+tqdm
+matplotlib
+jupyter
+scipy~=1.8.0
+gym[all]

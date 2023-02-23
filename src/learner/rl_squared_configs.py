@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from .constants import *
 
 
 @dataclass_json
@@ -8,9 +7,11 @@ from .constants import *
 class RLSquaredConfigs:
 
   trials: int
+
   epochs_per_trial: int
   episodes_per_epoch: int
-  num_value_updares: int
+
+  num_value_updates: int
   num_policy_updates: int
 
   value_lr: float

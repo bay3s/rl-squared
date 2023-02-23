@@ -12,8 +12,8 @@ from src.agents.ppo.actor_critic import ActorCritic
 
 class PPO:
 
-  def __init__(self, state_dims: int, action_dims: int, actor: nn.Module, critic: nn.Module, actor_lr: float,
-               critic_lr: float, epsilon_clipping: float, optimization_steps: int, discount_rate: float):
+  def __init__(self, actor: nn.Module, is_recurrent: bool, critic: nn.Module, actor_lr: float, critic_lr: float,
+               epsilon_clipping: float, optimization_steps: int, discount_rate: float):
     """
     Initialize PPO.
 
@@ -21,9 +21,8 @@ class PPO:
       - Proximal Policy Approximation https://arxiv.org/abs/1707.06347
 
     Args:
-      state_dims (int): Number of dimensions in the state space.
-      action_dims (int): Number of dimensions in the action space.
       actor (nn.Module): Actor network for PPO.
+      is_recurrent (bool): Whether the actor is a recurrent policy.
       critic (nn.Module): Critic network for PPO.
       actor_lr (float): Learning rate to be used for the actor network.
       critic_lr (float): Learning rate to be used for the critic network.
@@ -31,12 +30,10 @@ class PPO:
       optimization_steps (int): Number of optimization steps for any given policy update.
       discount_rate (float): Rate to be used for discounting the rewards.
     """
-    self.state_dims = state_dims
-    self.action_dims = action_dims
-
-    self.policy = ActorCritic(state_dims, action_dims, actor, critic)
-    self.policy_old = ActorCritic(state_dims, action_dims, actor, critic)
+    self.policy = ActorCritic(actor, critic)
+    self.policy_old = ActorCritic(actor, critic)
     self.policy_old.load_state_dict(self.policy.state_dict())
+    self.is_recurrent = is_recurrent
 
     self.optimizer = torch.optim.Adam([
       {'params': self.policy.actor.parameters(), 'lr': actor_lr},

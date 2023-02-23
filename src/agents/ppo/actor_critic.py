@@ -7,20 +7,15 @@ from torch.distributions import Categorical
 
 class ActorCritic(nn.Module):
 
-  def __init__(self, state_dims: int, action_dims: int, actor: nn.Module, critic: nn.Module):
+  def __init__(self, actor: nn.Module, critic: nn.Module):
     """
     Actor-Critic for a discrete action space.
 
     Args:
-      state_dims (int): State dimensions for the environment.
-      action_dims (int): Action dimensions for the environment.
       actor (nn.Module): Neural net to be used as the actor.
       critic (nn.Module): Neural net to be used as the critic.
     """
     super(ActorCritic, self).__init__()
-
-    self.state_dims = state_dims
-    self.action_dims = action_dims
 
     self.actor = actor
     self.critic = critic
