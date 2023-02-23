@@ -1,5 +1,6 @@
 torch
 numpy
-pip
-setuptools
+pip==23.0.1
+setuptools==67.4.0
 wheel
+dataclasses-json
