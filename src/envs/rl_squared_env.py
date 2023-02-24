@@ -47,6 +47,7 @@ class RLSquaredEnv(Serializable):
 
   def __getstate__(self):
     d = Serializable.__getstate__(self)
+
     return d
 
   def __setstate__(self, d):

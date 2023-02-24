@@ -1,8 +1,8 @@
+from typing import List, Any
 from abc import ABC
 
 import numpy as np
 from gym.core import Env
-from gym.envs.mujoco import MujocoEnv
 
 
 class MetaEnv(Env, ABC):
@@ -17,7 +17,7 @@ class MetaEnv(Env, ABC):
     self._np_random = np.random
     pass
 
-  def sample_tasks(self, n_tasks):
+  def sample_tasks(self, n_tasks) -> List:
     """
     Samples task of the meta-environment
 
@@ -29,7 +29,7 @@ class MetaEnv(Env, ABC):
     """
     raise NotImplementedError
 
-  def set_task(self, task):
+  def set_task(self, task) -> None:
     """
     Sets the specified task to the current environment
 
@@ -38,7 +38,7 @@ class MetaEnv(Env, ABC):
     """
     raise NotImplementedError
 
-  def get_task(self):
+  def get_task(self) -> Any:
     """
     Gets the task that the agent is performing in the current environment
 
@@ -47,7 +47,7 @@ class MetaEnv(Env, ABC):
     """
     raise NotImplementedError
 
-  def log_diagnostics(self, paths, prefix):
+  def log_diagnostics(self, paths, prefix) -> None:
     """
     Logs env-specific diagnostic information
 
