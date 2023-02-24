@@ -1,19 +1,32 @@
-import gym
 import numpy as np
-from gym.envs.mujoco.mujoco_env import MujocoEnv
+
+from src.utils import logger
+from gym.envs.mujoco import AntEnv
+from gym.utils.ezpickle import EzPickle
 
 from src.envs.base import MetaEnv
-from src.utils import logger
 
-class AntRandGoalEnv(MetaEnv, gym.utils.EzPickle, MujocoEnv):
-  def __init__(self):
-    self.set_task(self.sample_tasks(1)[0])
-    MujocoEnv.__init__(self, 'ant.xml', 5)
-    gym.utils.EzPickle.__init__(self)
+
+class AntRandGoalEnv(MetaEnv, AntEnv, EzPickle):
+
+  def __init__(self, goal_pos: float = None):
+    """
+    Initialize the environment.
+
+    Args:
+      goal_pos (float): The goal position.
+    """
+    MetaEnv.__init__(self)
+    AntEnv.__init__(self)
+    EzPickle.__init__(self)
+
+    self.goal_pos = goal_pos if goal_pos is not None else self.sample_tasks(1)[0]
+    pass
 
   def sample_tasks(self, n_tasks):
     a = np.random.random(n_tasks) * 2 * np.pi
     r = 3 * np.random.random(n_tasks) ** 0.5
+
     return np.stack((r * np.cos(a), r * np.sin(a)), axis = -1)
 
   def set_task(self, task):
@@ -76,11 +89,3 @@ class AntRandGoalEnv(MetaEnv, gym.utils.EzPickle, MujocoEnv):
     logger.logkv(prefix + 'StdForwardReturn', np.std(progs))
 
     logger.logkv(prefix + 'AverageCtrlCost', np.mean(ctrl_cost))
-
-if __name__ == "__main__":
-  env = AntRandGoalEnv()
-  while True:
-    env.reset()
-    for _ in range(100):
-      env.render()
-      _, reward, _, _ = env.step(env.action_space.sample())  # take a random action

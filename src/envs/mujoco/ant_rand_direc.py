@@ -98,18 +98,3 @@ class AntRandDirecEnv(MetaEnv, AntEnv, EzPickle):
 
   def viewer_setup(self):
     self.viewer.cam.distance = self.model.stat.extent * 0.5
-
-
-if __name__ == '__main__':
-  env = AntRandDirecEnv()
-  env.render_mode = 'human'
-
-  while True:
-    task = env.sample_tasks(1)[0]
-    env.set_task(task)
-    env.reset()
-
-    for _ in range(100):
-      env.render()
-      _, reward, _, _ = env.step(env.action_space.sample())
-      pass

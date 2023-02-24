@@ -1,15 +1,24 @@
 import gym
 import numpy as np
-from gym.envs.mujoco.mujoco_env import MujocoEnv
 
+from gym.envs.mujoco import HalfCheetahEnv
+from gym.utils.ezpickle import EzPickle
 from src.envs.base import MetaEnv
 from src.utils import logger
 
-class HalfCheetahRandVelEnv(MetaEnv, MujocoEnv, gym.utils.EzPickle):
+
+class HalfCheetahRandVelEnv(MetaEnv, HalfCheetahEnv, EzPickle):
+
   def __init__(self):
+    """
+    Initialize the half cheetah meta environment such that velocity is randomized.
+    """
+    MetaEnv.__init__(self)
+    HalfCheetahEnv.__init__(self)
+    EzPickle.__init__(self)
+
     self.set_task(self.sample_tasks(1)[0])
-    MujocoEnv.__init__(self, 'half_cheetah.xml', 5)
-    gym.utils.EzPickle.__init__(self)
+    pass
 
   def sample_tasks(self, n_tasks):
     return np.random.uniform(0.0, 3.0, (n_tasks,))
