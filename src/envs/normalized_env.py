@@ -1,22 +1,9 @@
 import numpy as np
 from gym.spaces import Box
-from meta_policy_search.utils.serializable import Serializable
-from rand_param_envs.gym.spaces import Box as OldBox
+from src.utils.serializable import Serializable
+
 
 class NormalizedEnv(Serializable):
-  """
-  Normalizes the environment class.
-
-  Args:
-      Env (gym.Env): class of the unnormalized gym environment
-      scale_reward (float): scale of the reward
-      normalize_obs (bool): whether normalize the observations or not
-      normalize_reward (bool): whether normalize the reward or not
-      obs_alpha (float): step size of the running mean and variance for the observations
-      reward_alpha (float): step size of the running mean and variance for the observations
-      normalization_scale (float): rescaled action magnitude
-
-  """
 
   def __init__(self,
                env,
@@ -27,9 +14,11 @@ class NormalizedEnv(Serializable):
                reward_alpha = 0.001,
                normalization_scale = 10.,
                ):
+
+    Serializable.__init__(self)
     Serializable.quick_init(self, locals())
 
-    self._scale_reward = 1
+    self._scale_reward = scale_reward
     self._wrapped_env = env
 
     self._normalize_obs = normalize_obs
@@ -107,19 +96,21 @@ class NormalizedEnv(Serializable):
     self._obs_var = d["_obs_var"]
 
   def step(self, action):
-    if isinstance(self._wrapped_env.action_space, Box) or isinstance(self._wrapped_env.action_space, OldBox):
+    if isinstance(self._wrapped_env.action_space, Box):
       # rescale the action
       lb, ub = self._wrapped_env.action_space.low, self._wrapped_env.action_space.high
       scaled_action = lb + (action + self._normalization_scale) * (ub - lb) / (2 * self._normalization_scale)
       scaled_action = np.clip(scaled_action, lb, ub)
     else:
       scaled_action = action
+
     wrapped_step = self._wrapped_env.step(scaled_action)
     next_obs, reward, done, info = wrapped_step
+
     if getattr(self, "_normalize_obs", False):
       next_obs = self._apply_normalize_obs(next_obs)
+
     if getattr(self, "_normalize_reward", False):
       reward = self._apply_normalize_reward(reward)
-    return next_obs, reward * self._scale_reward, done, info
 
-normalize = NormalizedEnv
+    return next_obs, reward * self._scale_reward, done, info

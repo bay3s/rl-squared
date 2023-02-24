@@ -2,21 +2,14 @@ import numpy as np
 
 from src.utils.serializable import Serializable
 
+
 class RLSquaredEnv(Serializable):
 
-  def __init__(self, env, scale_reward = 1., normalize_obs = False, normalize_reward = False, obs_alpha = 0.001,
-               reward_alpha = 0.001, normalization_scale = 10., ):
+  def __init__(self, env):
     """
-    Normalizes the environment class.
-
-    Args:
-      env (gym.Env): class of the unnormalized gym environment
-      scale_reward (float): scale of the reward
-      normalize_obs (bool): whether normalize the observations or not
-      normalize_reward (bool): whether normalize the reward or not
-      obs_alpha (float): step size of the running mean and variance for the observations
-      reward_alpha (float): step size of the running mean and variance for the observations
+    Initializes an environment for RL-Squared.
     """
+    Serializable.__init__(self)
     Serializable.quick_init(self, locals())
     self._wrapped_env = env
     pass
