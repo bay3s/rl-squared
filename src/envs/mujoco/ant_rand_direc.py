@@ -16,12 +16,11 @@ class AntRandDirecEnv(MetaEnv, AntEnv, EzPickle):
     Args:
       goal_direction (float): Direction of the goal.
     """
+    self.goal_direction = goal_direction if goal_direction else 1.0
+
     MetaEnv.__init__(self)
     AntEnv.__init__(self)
     EzPickle.__init__(self)
-
-    self.goal_direction = goal_direction if goal_direction else 1.0
-    self.render_mode = 'rgb_array'
     pass
 
   def sample_tasks(self, num_tasks: int) -> np.array:

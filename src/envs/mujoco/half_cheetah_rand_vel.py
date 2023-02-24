@@ -13,11 +13,11 @@ class HalfCheetahRandVelEnv(MetaEnv, HalfCheetahEnv, EzPickle):
     """
     Initialize the half cheetah meta environment such that velocity is randomized.
     """
+    self.set_task(self.sample_tasks(1)[0])
+
     MetaEnv.__init__(self)
     HalfCheetahEnv.__init__(self)
     EzPickle.__init__(self)
-
-    self.set_task(self.sample_tasks(1)[0])
     pass
 
   def sample_tasks(self, n_tasks):

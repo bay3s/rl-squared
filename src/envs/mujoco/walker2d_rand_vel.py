@@ -1,14 +1,20 @@
-import gym
 import numpy as np
-from gym.envs.mujoco.mujoco_env import MujocoEnv
+
+from gym.envs.mujoco import Walker2dEnv
+from gym.utils.ezpickle import EzPickle
 
 from src.envs.base import MetaEnv
 
-class Walker2DRandVelEnv(MetaEnv, gym.utils.EzPickle, MujocoEnv):
+
+class Walker2DRandVelEnv(MetaEnv, Walker2dEnv, EzPickle):
+
   def __init__(self):
     self.set_task(self.sample_tasks(1)[0])
-    MujocoEnv.__init__(self, 'walker2d.xml', 8)
-    gym.utils.EzPickle.__init__(self)
+
+    MetaEnv.__init__(self)
+    Walker2dEnv.__init__(self)
+    EzPickle.__init__(self)
+    pass
 
   def sample_tasks(self, n_tasks):
     return np.random.uniform(0.0, 10.0, (n_tasks,))

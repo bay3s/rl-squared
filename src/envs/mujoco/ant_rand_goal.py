@@ -9,18 +9,15 @@ from src.envs.base import MetaEnv
 
 class AntRandGoalEnv(MetaEnv, AntEnv, EzPickle):
 
-  def __init__(self, goal_pos: float = None):
+  def __init__(self):
     """
     Initialize the environment.
-
-    Args:
-      goal_pos (float): The goal position.
     """
+    self.set_task(self.sample_tasks(1)[0])
+
     MetaEnv.__init__(self)
     AntEnv.__init__(self)
     EzPickle.__init__(self)
-
-    self.goal_pos = goal_pos if goal_pos is not None else self.sample_tasks(1)[0]
     pass
 
   def sample_tasks(self, n_tasks):
