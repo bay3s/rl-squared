@@ -63,7 +63,7 @@ class StatefulActor(BaseActor):
         return self._hidden_size
 
     def forward(
-        self, x: torch.Tensor, recurrent_states: torch.Tensor, masks: torch.Tensor
+        self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor
     ) -> Tuple[Union[Categorical, DiagonalGaussian], torch.Tensor]:
         """
         Conduct the forward pass through the network.
@@ -71,11 +71,12 @@ class StatefulActor(BaseActor):
         Args:
           x (torch.Tensor): Input for the forward pass.
           recurrent_states (torch.Tensor): Recurrent states for the actor.
+          recurrent_state_masks (torch.Tensor): Recurrent states for the actor.
 
         Returns:
           Tuple[Categorical, torch.Tensor]
         """
-        x, recurrent_states = self._forward_gru(x, recurrent_states, masks)
+        x, recurrent_states = self._forward_gru(x, recurrent_states, recurrent_state_masks)
         x = self._mlp(x)
 
         return self._dist(x), recurrent_states
@@ -117,7 +118,7 @@ class StatefulActor(BaseActor):
         # We will always assume t=0 has a zero in it as that makes the logic cleaner
         has_zeros = (recurrent_state_masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
 
-        # +1 to correct the done_masks[1:]
+        # +1 to correct the recurrent_masks[1:] where zeros are present.
         if has_zeros.dim() == 0:
             # Deal with scalar
             has_zeros = [has_zeros.item() + 1]

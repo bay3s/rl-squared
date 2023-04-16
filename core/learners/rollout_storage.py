@@ -78,9 +78,13 @@ class RolloutStorage:
 
         # initial state
         self.obs = torch.zeros(self.rollout_steps + 1, self.num_processes, *self.obs_shape)
+
+        # @todo check if this is the right initialization to use.
         self.recurrent_hidden_states = torch.zeros(
             self.rollout_steps + 1, self.num_processes, self.recurrent_state_size
         )
+        self.recurrent_hidden_states[0] = torch.ones(self.recurrent_hidden_states[0].shape)
+
         self.rewards = torch.zeros(self.rollout_steps, self.num_processes, 1)
         self.value_preds = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
         self.returns = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
@@ -101,7 +105,7 @@ class RolloutStorage:
         self.recurrent_state_masks = torch.ones(self.rollout_steps + 1, self.num_processes, 1)
 
         # reset state
-        self.recurrent_state_masks[0] = torch.zeros(self.recurrent_state_masks[0].shape)
+        # self.recurrent_state_masks[0] = torch.zeros(self.recurrent_state_masks[0].shape)
         pass
 
     def to(self, device: torch.device) -> None:
@@ -263,36 +267,39 @@ class RolloutStorage:
             actions_batch = []
             value_preds_batch = []
             return_batch = []
-            masks_batch = []
+            done_masks_batch = []
+            recurrent_masks_batch = []
             old_action_log_probs_batch = []
             adv_targ = []
 
             for offset in range(num_envs_per_batch):
                 ind = perm[start_ind + offset]
                 obs_batch.append(self.obs[:-1, ind])
-                recurrent_hidden_states_batch.append(
-                    self.recurrent_hidden_states[0:1, ind]
-                )
                 actions_batch.append(self.actions[:, ind])
                 value_preds_batch.append(self.value_preds[:-1, ind])
                 return_batch.append(self.returns[:-1, ind])
-                masks_batch.append(self.done_masks[:-1, ind])
+                done_masks_batch.append(self.done_masks[:-1, ind])
+                recurrent_masks_batch.append(self.recurrent_state_masks[:-1, ind])
                 old_action_log_probs_batch.append(self.action_log_probs[:, ind])
                 adv_targ.append(advantages[:, ind])
+
+                # @todo invstigate, this always selects the initial state.
+                recurrent_hidden_states_batch.append(self.recurrent_hidden_states[0:1, ind])
                 pass
 
             T, N = self.rollout_steps, num_envs_per_batch
 
-            # These are all tensors of size (T, N, -1)
+            # these are all tensors of size (T, N, -1)
             obs_batch = torch.stack(obs_batch, 1)
             actions_batch = torch.stack(actions_batch, 1)
             value_preds_batch = torch.stack(value_preds_batch, 1)
             return_batch = torch.stack(return_batch, 1)
-            masks_batch = torch.stack(masks_batch, 1)
+            done_masks_batch = torch.stack(done_masks_batch, 1)
+            recurrent_masks_batch = torch.stack(recurrent_masks_batch, 1)
             old_action_log_probs_batch = torch.stack(old_action_log_probs_batch, 1)
             adv_targ = torch.stack(adv_targ, 1)
 
-            # States is just a (N, -1) tensor
+            # states is just a (N, -1) tensor
             recurrent_hidden_states_batch = torch.stack(
                 recurrent_hidden_states_batch, 1
             ).view(N, -1)
@@ -302,7 +309,8 @@ class RolloutStorage:
             actions_batch = _flatten_helper(T, N, actions_batch)
             value_preds_batch = _flatten_helper(T, N, value_preds_batch)
             return_batch = _flatten_helper(T, N, return_batch)
-            masks_batch = _flatten_helper(T, N, masks_batch)
+            done_masks_batch = _flatten_helper(T, N, done_masks_batch)
+            recurrent_masks_batch = _flatten_helper(T, N, recurrent_masks_batch)
             old_action_log_probs_batch = _flatten_helper(
                 T, N, old_action_log_probs_batch
             )
@@ -310,4 +318,4 @@ class RolloutStorage:
             adv_targ = _flatten_helper(T, N, adv_targ)
 
             yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, \
-                masks_batch, old_action_log_probs_batch, adv_targ
+                done_masks_batch, recurrent_masks_batch, old_action_log_probs_batch, adv_targ

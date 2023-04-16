@@ -113,7 +113,6 @@ class Trainer:
                 ppo.update_linear_schedule(j, total_updates)
                 pass
 
-            # sample
             envs.sample_tasks_async()
 
             # rollouts
