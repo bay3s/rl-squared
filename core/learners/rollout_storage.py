@@ -51,7 +51,7 @@ class RolloutStorage:
 
         # general
         self.obs = None
-        self.recurrent_hidden_states = None
+        self.recurrent_states = None
         self.rewards = None
         self.returns = None
         self.value_preds = None
@@ -80,10 +80,11 @@ class RolloutStorage:
         self.obs = torch.zeros(self.rollout_steps + 1, self.num_processes, *self.obs_shape)
 
         # @todo check if this is the right initialization to use.
-        self.recurrent_hidden_states = torch.zeros(
+        self.recurrent_states = torch.zeros(
             self.rollout_steps + 1, self.num_processes, self.recurrent_state_size
         )
-        self.recurrent_hidden_states[0] = torch.ones(self.recurrent_hidden_states[0].shape)
+
+        # @todo self.recurrent_states[0] = torch.ones(self.recurrent_states[0].shape)
 
         self.rewards = torch.zeros(self.rollout_steps, self.num_processes, 1)
         self.value_preds = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
@@ -119,7 +120,7 @@ class RolloutStorage:
             None
         """
         self.obs = self.obs.to(device)
-        self.recurrent_hidden_states = self.recurrent_hidden_states.to(device)
+        self.recurrent_states = self.recurrent_states.to(device)
         self.rewards = self.rewards.to(device)
         self.value_preds = self.value_preds.to(device)
         self.returns = self.returns.to(device)
@@ -162,7 +163,7 @@ class RolloutStorage:
             None
         """
         self.obs[self.step + 1].copy_(obs)
-        self.recurrent_hidden_states[self.step + 1].copy_(recurrent_hidden_states)
+        self.recurrent_states[self.step + 1].copy_(recurrent_hidden_states)
         self.actions[self.step].copy_(actions)
         self.action_log_probs[self.step].copy_(action_log_probs)
         self.value_preds[self.step].copy_(value_preds)
@@ -284,7 +285,7 @@ class RolloutStorage:
                 adv_targ.append(advantages[:, ind])
 
                 # @todo invstigate, this always selects the initial state.
-                recurrent_hidden_states_batch.append(self.recurrent_hidden_states[0:1, ind])
+                recurrent_hidden_states_batch.append(self.recurrent_states[0:1, ind])
                 pass
 
             T, N = self.rollout_steps, num_envs_per_batch

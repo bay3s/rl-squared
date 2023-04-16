@@ -113,6 +113,7 @@ class Trainer:
                 ppo.update_linear_schedule(j, total_updates)
                 pass
 
+            # sample
             envs.sample_tasks_async()
 
             # rollouts
@@ -125,7 +126,7 @@ class Trainer:
                         recurrent_hidden_states,
                     ) = actor_critic.act(
                         rollouts.obs[step],
-                        rollouts.recurrent_hidden_states[step],
+                        rollouts.recurrent_states[step],
                         rollouts.recurrent_state_masks[step],
                     )
 
@@ -172,7 +173,7 @@ class Trainer:
             with torch.no_grad():
                 next_value = actor_critic.get_value(
                     rollouts.obs[-1],
-                    rollouts.recurrent_hidden_states[-1],
+                    rollouts.recurrent_states[-1],
                     rollouts.recurrent_state_masks[-1],
                 ).detach()
 
