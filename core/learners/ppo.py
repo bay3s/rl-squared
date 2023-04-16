@@ -113,11 +113,11 @@ class PPO:
         dist_entropy_epoch = 0
 
         for e in range(self.num_epochs):
-            data_generator = rollouts.minibatch_generator(
+            minibatch_samples = rollouts.minibatches(
                 advantages, self.num_minibatches
             )
 
-            for sample in data_generator:
+            for sample in minibatch_samples:
                 (
                     obs_batch,
                     recurrent_hidden_states_batch,

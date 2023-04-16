@@ -11,6 +11,7 @@ class TrainingArgs:
     Params:
       algo (str): Algo to train.
       env_name (str): Environment to use for training.
+      env_configs (dict): Additional configs for each of the meta-environments.
       num_env_steps (int): Number of total steps to train over.
       actor_lr (float): Learning rate of the actor.
       critic_lr (float): Learning rate of the critic / value function.
@@ -41,6 +42,7 @@ class TrainingArgs:
     # high-level
     algo: str
     env_name: str
+    env_configs: dict
     num_env_steps: int
 
     # opt / grad clipping

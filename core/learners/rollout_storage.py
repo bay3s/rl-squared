@@ -1,6 +1,8 @@
 from typing import Tuple
 
 import torch
+from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
+
 import gym
 
 
@@ -20,7 +22,6 @@ def _flatten_helper(T: int, N: int, _tensor: torch.Tensor) -> torch.Tensor:
 
 
 class RolloutStorage:
-
     def __init__(
         self,
         rollout_steps: int,
@@ -50,7 +51,9 @@ class RolloutStorage:
 
         if action_space.__class__.__name__ == "Discrete":
             action_shape = 1
-            self.actions = torch.zeros(rollout_steps, num_processes, action_shape).long()
+            self.actions = torch.zeros(
+                rollout_steps, num_processes, action_shape
+            ).long()
         elif action_space.__class__.__name__ == "Box":
             action_shape = action_space.shape[0]
             self.actions = torch.zeros(rollout_steps, num_processes, action_shape)
@@ -142,7 +145,7 @@ class RolloutStorage:
         use_gae: bool,
         gamma: float,
         gae_lambda: float,
-        use_proper_time_limits: bool = True
+        use_proper_time_limits: bool = True,
     ) -> None:
         """
         Compute returns for each of the rollouts.
@@ -201,9 +204,9 @@ class RolloutStorage:
                         + self.rewards[step]
                     )
 
-    def minibatch_generator(self, advantages: torch.Tensor, num_minibatches: int):
+    def minibatches(self, advantages: torch.Tensor, num_minibatches: int):
         """
-        Mini-batch generator for training the policy of an agent.
+        Multiprocessing compatible mini-batch generator for training the policy of an agent.
 
         Args:
             advantages (torch.Tensor): Computed advatages.
@@ -274,5 +277,4 @@ class RolloutStorage:
 
             adv_targ = _flatten_helper(T, N, adv_targ)
 
-            yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, \
-                masks_batch, old_action_log_probs_batch, adv_targ
+            yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, adv_targ

@@ -1,6 +1,7 @@
 {
   "algo": "PPO",
   "env_name": "LunarLanderContinuous-v2",
+  "env_configs": {},
   "num_env_steps": 500000,
   "actor_lr": 0.001,
   "critic_lr": 0.001,

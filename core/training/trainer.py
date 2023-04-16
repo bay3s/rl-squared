@@ -57,6 +57,7 @@ class Trainer:
 
         envs = make_vec_envs(
             self.params.env_name,
+            self.params.env_configs,
             self.params.random_seed,
             self.params.num_processes,
             self.params.discount_gamma,
@@ -129,6 +130,7 @@ class Trainer:
 
                 for info in infos:
                     if "episode" in info.keys():
+                        # @todo make sure this is compatible
                         episode_rewards.append(info["episode"]["r"])
 
                 # if done then clean the history of observations
@@ -243,6 +245,7 @@ class Trainer:
         """
         eval_envs = make_vec_envs(
             self.params.env_name,
+            self.params.env_configs,
             self.params.random_seed + self.params.num_processes,
             self.params.num_processes,
             None,
@@ -266,7 +269,8 @@ class Trainer:
         )
         eval_masks = torch.zeros(self.params.num_processes, 1, device=self.device)
 
-        while len(eval_episode_rewards) < 10:
+        # @todo add `num_eval_episodes` or `num_eval_steps` to `TrainingArgs`
+        while len(eval_episode_rewards) < 1_000:
             with torch.no_grad():
                 _, action, _, eval_recurrent_hidden_states = actor_critic.act(
                     obs, eval_recurrent_hidden_states, eval_masks, deterministic = deterministic

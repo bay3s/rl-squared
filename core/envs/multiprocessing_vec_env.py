@@ -91,7 +91,7 @@ def _worker(
             elif cmd == "reset":
                 observation = env.reset()
                 remote.send(observation)
-            elif cmd == "remder":
+            elif cmd == "render":
                 remote.send(env.render(data))
             elif cmd == "close":
                 env.close()
