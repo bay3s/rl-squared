@@ -8,6 +8,10 @@ import gym.spaces as spaces
 
 class MultiArmedBanditEnv(gym.Env, EzPickle):
 
+  PAYOUT_ODDS = np.array(
+    [0.6738756, 0.86932993, 0.45309433, 0.25862459, 0.83665882, 0.99294215, 0.79695253, 0.29031321, 0.83765234,
+     0.16940177])
+
   def __init__(self, num_actions: int, seed: int = None):
     """
     Initialize a multi-armed bandit.
@@ -21,7 +25,9 @@ class MultiArmedBanditEnv(gym.Env, EzPickle):
 
     self._num_actions = num_actions
     self._state = np.array([0.])
-    self._payout_odds = np.random.uniform(low = 0.0, high = 1.0, size = self._num_actions)
+    self._payout_odds = self.PAYOUT_ODDS
+
+    # @todo self.sample_task()
 
     # same as the number of actions
     self._action_space = spaces.Discrete(num_actions)
@@ -29,9 +35,6 @@ class MultiArmedBanditEnv(gym.Env, EzPickle):
     # observation space
     high = np.array([1.], dtype = np.float32)
     self._observation_space = spaces.box.Box(-high, high)
-
-    # @todo sample a new task when meta-learning
-    # self.sample_task()
     pass
 
   def sample_task(self) -> None:

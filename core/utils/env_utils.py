@@ -9,7 +9,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from core.envs.normalized_vec_env import NormalizedVecEnv as NormalizedVecEnv
 from core.envs.time_limit_env_wrapper import TimeLimitEnvWrapper
 from core.envs.multiprocessing_vec_env import MultiprocessingVecEnv
-from core.envs.pytorch_vec_env import PyTorchVecEnv
+from core.envs.pytorch_vec_env_wrapper import PyTorchVecEnvWrapper
+from core.envs.rl_squared_env_wrapper import RLSquaredEnvWrapper
 
 
 def get_render_func(venv: gym.Env):
@@ -71,6 +72,9 @@ def make_env(env_name: str, env_configs: dict, seed: int, rank: int, log_dir: st
         env = gym.make(env_name, **env_configs)
         env.seed(seed + rank)
 
+        # wrap
+        env = RLSquaredEnvWrapper(env)
+
         if str(env.__class__.__name__).find("TimeLimit") >= 0:
             env = TimeLimitEnvWrapper(env)
 
@@ -89,7 +93,7 @@ def make_env(env_name: str, env_configs: dict, seed: int, rank: int, log_dir: st
 def make_vec_envs(
     env_name: str, env_kwargs: dict, seed: int, num_processes: int, gamma: float, log_dir: str, device: torch.device,
     allow_early_resets: bool
-) -> PyTorchVecEnv:
+) -> PyTorchVecEnvWrapper:
     """
     Returns PyTorch compatible vectorized environments.
 
@@ -104,7 +108,7 @@ def make_vec_envs(
         allow_early_resets (bool): Allows resetting the environment before it is done.
 
     Returns:
-        PyTorchVecEnv
+        PyTorchVecEnvWrapper
     """
     envs = [
         make_env(env_name, env_kwargs, seed, i, log_dir, allow_early_resets)
@@ -125,6 +129,6 @@ def make_vec_envs(
     else:
         raise NotImplementedError
 
-    envs = PyTorchVecEnv(envs, device)
+    envs = PyTorchVecEnvWrapper(envs, device)
 
     return envs

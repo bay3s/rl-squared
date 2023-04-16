@@ -6,7 +6,7 @@ import torch
 from stable_baselines3.common.vec_env import VecEnvWrapper, VecEnv
 
 
-class PyTorchVecEnv(VecEnvWrapper):
+class PyTorchVecEnvWrapper(VecEnvWrapper):
 
     def __init__(self, venv: VecEnv, device: torch.device):
         """
@@ -16,7 +16,7 @@ class PyTorchVecEnv(VecEnvWrapper):
             venv (VecEnv): Vectorized environment to provide a PyTorch wrapper for.
             device (str): Device for PyTorch tensors.
         """
-        super(PyTorchVecEnv, self).__init__(venv)
+        super(PyTorchVecEnvWrapper, self).__init__(venv)
         self.device = device
         pass
 

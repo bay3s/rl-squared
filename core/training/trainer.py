@@ -217,14 +217,14 @@ class Trainer:
                 )
 
             # evaluate
-            if (
-                self.params.eval_interval is not None
-                and len(episode_rewards) > 1
-                and j % self.params.eval_interval == 0
-            ):
-                obs_rms = env_utils.get_vec_normalize(envs).obs_rms
-                self.evaluate(actor_critic, obs_rms)
-                pass
+            # if (
+            #     self.params.eval_interval is not None
+            #     and len(episode_rewards) > 1
+            #     and j % self.params.eval_interval == 0
+            # ):
+            #     obs_rms = env_utils.get_vec_normalize(envs).obs_rms
+            #     self.evaluate(actor_critic, obs_rms)
+            #     pass
 
     def evaluate(
         self,

@@ -129,7 +129,7 @@ class PPO:
                     adv_targ,
                 ) = sample
 
-                # reshape to do in a single forward pass for all steps
+                # reshape
                 (
                     values,
                     action_log_probs,
