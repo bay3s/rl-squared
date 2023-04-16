@@ -77,7 +77,10 @@ def _worker(
     while True:
         try:
             cmd, data = remote.recv()
-            if cmd == "step":
+
+            if cmd == "sample_task":
+                env.sample_task()
+            elif cmd == "step":
                 observation, reward, done, info = env.step(data)
 
                 if done:
@@ -147,6 +150,18 @@ class MultiprocessingVecEnv(VecEnv):
         observation_space, action_space = self.remotes[0].recv()
         VecEnv.__init__(self, len(env_fns), observation_space, action_space)
         pass
+
+    def sample_tasks_async(self) -> None:
+        """
+        Sample a task from the environment.
+
+        Returns:
+            None
+        """
+        for remote in self.remotes:
+            remote.send(("sample_task", {}))
+
+        self.waiting = True
 
     def step_async(self, actions: np.ndarray) -> None:
         """

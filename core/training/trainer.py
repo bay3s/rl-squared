@@ -113,8 +113,8 @@ class Trainer:
                 ppo.update_linear_schedule(j, total_updates)
                 pass
 
-            # @todo sample meta-tasks
-            print('Sample new task.')
+            # sample
+            envs.sample_tasks_async()
 
             # rollouts
             for step in range(num_steps_per_rollout):
@@ -152,7 +152,7 @@ class Trainer:
 
                 recurrent_state_masks = torch.FloatTensor(
                     [
-                        [1.0] for _ in reward
+                        [1.0] for _ in action
                     ]
                 )
 

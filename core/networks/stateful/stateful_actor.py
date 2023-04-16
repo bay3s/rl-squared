@@ -110,7 +110,7 @@ class StatefulActor(BaseActor):
         # unflatten
         x = x.view(T, N, x.size(1))
 
-        # Same deal with done_masks
+        # same deal with masks
         recurrent_state_masks = recurrent_state_masks.view(T, N)
 
         # Let's figure out which steps in the sequence have a zero for any agent
