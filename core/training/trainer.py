@@ -111,7 +111,9 @@ class Trainer:
                 ppo.update_linear_schedule(j, total_updates)
                 pass
 
-            # sample
+            # @todo sample tasks
+
+            # rollouts
             for step in range(self.params.steps_per_rollout):
                 with torch.no_grad():
                     (

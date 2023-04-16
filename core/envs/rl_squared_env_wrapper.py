@@ -27,12 +27,24 @@ class RLSquaredEnvWrapper(gym.Wrapper):
     obs, rew, done, info = self.env.step(action)
 
     if self.action_space.__class__.__name__ == "Discrete":
-      obs = np.concatenate([obs, [action], [rew], [done]])
+      obs = np.concatenate([obs, self._one_hot_action(action), [rew], [done]])
     else:
       # @todo handle continuous spaces.
       raise NotImplementedError
 
     return obs, rew, done, info
+
+  def _one_hot_action(self, action: int) -> np.array:
+    """
+    In the case of discrete action spaces, this returns a one-hot encoded action.
+
+    Returns:
+      np.array
+    """
+    encoded_action = np.zeros(self.env.action_space.n)
+    encoded_action[action] = 1.
+
+    return encoded_action
 
   def reset(self, **kwargs) -> Tuple:
     """
