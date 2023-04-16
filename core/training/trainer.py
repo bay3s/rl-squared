@@ -130,7 +130,7 @@ class Trainer:
 
                 for info in infos:
                     if "episode" in info.keys():
-                        # @todo make sure this is compatible
+                        # @todo check compatibility, this comes from `Monitor`.
                         episode_rewards.append(info["episode"]["r"])
 
                 # if done then clean the history of observations

@@ -74,10 +74,9 @@ def make_env(env_name: str, env_configs: dict, seed: int, rank: int, log_dir: st
         if str(env.__class__.__name__).find("TimeLimit") >= 0:
             env = TimeLimitEnvWrapper(env)
 
-        if log_dir is not None:
-            env = Monitor(env, os.path.join(log_dir, str(rank)), allow_early_resets=allow_early_resets)
+        env = Monitor(env, os.path.join(log_dir, str(rank)), allow_early_resets=allow_early_resets)
 
-        # if the input has shape (W,H,3), need to implement convolutions
+        # @todo convolutions should be implemented for when the input has shape (W,H,3)
         obs_shape = env.observation_space.shape
         if len(obs_shape) == 3 and obs_shape[2] in [1, 3]:
             raise NotImplementedError
