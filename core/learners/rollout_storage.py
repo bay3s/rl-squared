@@ -1,7 +1,6 @@
 from typing import Tuple
 
 import torch
-from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 
 import gym
 
@@ -22,6 +21,7 @@ def _flatten_helper(T: int, N: int, _tensor: torch.Tensor) -> torch.Tensor:
 
 
 class RolloutStorage:
+
     def __init__(
         self,
         rollout_steps: int,
@@ -40,33 +40,69 @@ class RolloutStorage:
             action_space (gym.Space): Action space for the environment.
             recurrent_state_size (int): Recurrent state size for a memory-augmented agent.
         """
-        self.obs = torch.zeros(rollout_steps + 1, num_processes, *obs_shape)
-        self.recurrent_hidden_states = torch.zeros(
-            rollout_steps + 1, num_processes, recurrent_state_size
-        )
-        self.rewards = torch.zeros(rollout_steps, num_processes, 1)
-        self.value_preds = torch.zeros(rollout_steps + 1, num_processes, 1)
-        self.returns = torch.zeros(rollout_steps + 1, num_processes, 1)
-        self.action_log_probs = torch.zeros(rollout_steps, num_processes, 1)
+        self.rollout_steps = rollout_steps
+        self.num_processes = num_processes
+        self.recurrent_state_size = recurrent_state_size
+        self.obs_shape = obs_shape
+        self.action_space = action_space
 
-        if action_space.__class__.__name__ == "Discrete":
+        # init
+        self.step = 0
+
+        # general
+        self.obs = None
+        self.recurrent_hidden_states = None
+        self.rewards = None
+        self.returns = None
+        self.value_preds = None
+        self.action_log_probs = None
+        self.actions = None
+
+        # masks
+        self.done_masks = None
+        self.time_limit_masks = None
+        self.recurrent_state_masks = None
+
+        # reset
+        self.reset()
+        pass
+
+    def reset(self) -> None:
+        """
+        Resets the storage.
+
+        Returns:
+            None
+        """
+        self.step = 0
+
+        # initial state
+        self.obs = torch.zeros(self.rollout_steps + 1, self.num_processes, *self.obs_shape)
+        self.recurrent_hidden_states = torch.zeros(
+            self.rollout_steps + 1, self.num_processes, self.recurrent_state_size
+        )
+        self.rewards = torch.zeros(self.rollout_steps, self.num_processes, 1)
+        self.value_preds = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
+        self.returns = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
+        self.action_log_probs = torch.zeros(self.rollout_steps, self.num_processes, 1)
+
+        if self.action_space.__class__.__name__ == "Discrete":
             action_shape = 1
-            self.actions = torch.zeros(
-                rollout_steps, num_processes, action_shape
-            ).long()
-        elif action_space.__class__.__name__ == "Box":
-            action_shape = action_space.shape[0]
-            self.actions = torch.zeros(rollout_steps, num_processes, action_shape)
+            self.actions = torch.zeros(self.rollout_steps, self.num_processes, action_shape).long()
+        elif self.action_space.__class__.__name__ == "Box":
+            action_shape = self.action_space.shape[0]
+            self.actions = torch.zeros(self.rollout_steps, self.num_processes, action_shape)
         else:
             raise NotImplementedError
 
-        self.done_masks = torch.ones(rollout_steps + 1, num_processes, 1)
+        # masks
+        self.done_masks = torch.ones(self.rollout_steps + 1, self.num_processes, 1)
+        self.time_limit_masks = torch.ones(self.rollout_steps + 1, self.num_processes, 1)
+        self.recurrent_state_masks = torch.ones(self.rollout_steps + 1, self.num_processes, 1)
 
-        # Masks that indicate whether it's a true terminal state or time limit end state
-        self.time_limit_masks = torch.ones(rollout_steps + 1, num_processes, 1)
-
-        self.rollout_steps = rollout_steps
-        self.step = 0
+        # reset state
+        self.recurrent_state_masks[0] = torch.zeros(self.recurrent_state_masks[0].shape)
+        pass
 
     def to(self, device: torch.device) -> None:
         """
@@ -85,8 +121,10 @@ class RolloutStorage:
         self.returns = self.returns.to(device)
         self.action_log_probs = self.action_log_probs.to(device)
         self.actions = self.actions.to(device)
+
         self.done_masks = self.done_masks.to(device)
         self.time_limit_masks = self.time_limit_masks.to(device)
+        self.recurrent_state_masks = self.recurrent_state_masks.to(device)
         pass
 
     def insert(
@@ -99,9 +137,10 @@ class RolloutStorage:
         rewards: torch.Tensor,
         done_masks: torch.Tensor,
         time_limit_masks: torch.Tensor,
+        recurrent_state_masks: torch.Tensor,
     ):
         """
-        Insert a transtions details into the rollout storage.
+        Insert transition details into storage.
 
         Args:
             obs (torch.Tensor): Observations to be inserted.
@@ -111,7 +150,9 @@ class RolloutStorage:
             value_preds (torch.Tensor): Value predictions to be inserted.
             rewards (torch.Tensor): Rewards to be inserted.
             done_masks (torch.Tensor): Done masks to be inserted (0 if done, 1 if not).
-            time_limit_masks (torch.Tensor): Time limit masks to be inserted (0 if time-limit is hit, 1 if not).
+            time_limit_masks (torch.Tensor): Time limit recurrent_state_masks to be inserted (0 if time-limit is hit,
+            1 if not).
+            recurrent_state_masks (torch.Tensor): Recurrent state masks to be inserted (0 to reset the state, 1 if not).
 
         Returns:
             None
@@ -122,22 +163,13 @@ class RolloutStorage:
         self.action_log_probs[self.step].copy_(action_log_probs)
         self.value_preds[self.step].copy_(value_preds)
         self.rewards[self.step].copy_(rewards)
-        self.done_masks[self.step + 1].copy_(done_masks)
-        self.time_limit_masks[self.step + 1].copy_(time_limit_masks)
 
         self.step = (self.step + 1) % self.rollout_steps
 
-    def after_update(self):
-        """
-        Post-update processing to be done once PPO `update` is called.
-
-        Returns:
-            None
-        """
-        self.obs[0].copy_(self.obs[-1])
-        self.recurrent_hidden_states[0].copy_(self.recurrent_hidden_states[-1])
-        self.done_masks[0].copy_(self.done_masks[-1])
-        self.time_limit_masks[0].copy_(self.time_limit_masks[-1])
+        self.done_masks[self.step + 1].copy_(done_masks)
+        self.time_limit_masks[self.step + 1].copy_(time_limit_masks)
+        self.recurrent_state_masks[self.step + 1].copy_(recurrent_state_masks)
+        pass
 
     def compute_returns(
         self,
@@ -277,4 +309,5 @@ class RolloutStorage:
 
             adv_targ = _flatten_helper(T, N, adv_targ)
 
-            yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, adv_targ
+            yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, \
+                masks_batch, old_action_log_probs_batch, adv_targ

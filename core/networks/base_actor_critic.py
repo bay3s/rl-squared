@@ -29,7 +29,7 @@ class BaseActorCritic(ABC):
         self,
         observations: torch.Tensor,
         recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
+        recurrent_state_masks: torch.Tensor,
         deterministic=False,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
@@ -39,7 +39,7 @@ class BaseActorCritic(ABC):
         Args:
           observations (torch.Tensor): The state in which to take an action.
           recurrent_states (torch.Tensor): Recurrent states that are being used in memory-based policies.
-          masks (torch.Tensor): Masks based on terminal states.
+          recurrent_state_masks (torch.Tensor): Masks applied to recurrent states.
           deterministic (bool): Whether to act in a deterministic way.
 
         Returns:
@@ -52,7 +52,7 @@ class BaseActorCritic(ABC):
         self,
         observations: torch.Tensor,
         recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
+        recurrent_state_masks: torch.Tensor,
     ) -> torch.Tensor:
         """
         Given a state returns its corresponding value.
@@ -60,7 +60,7 @@ class BaseActorCritic(ABC):
         Args:
           observations (torch.Tensor): State in which to take an action.
           recurrent_states (torch.Tensor): Recurrent states that are being used in memory-based policies.
-          masks (torch.Tensor): Masks based on terminal states.
+          recurrent_state_masks (torch.Tensor): Masks based on terminal states.
 
         Returns:
           torch.Tensor
@@ -71,11 +71,17 @@ class BaseActorCritic(ABC):
         self,
         inputs: torch.Tensor,
         recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
+        recurrent_state_masks: torch.Tensor,
         actions: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        Evaluate actions given observations, encoded states, done_masks, actions.
+        Evaluate actions given observations, encoded states, recurrent state recurrent_state_masks, actions.
+
+        Args:
+            inputs (torch.Tensor): Observations / states.
+            recurrent_states (torch.Tensor): Recurrent states.
+            recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
+            actions (torch.Tensor): Actions taken.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]

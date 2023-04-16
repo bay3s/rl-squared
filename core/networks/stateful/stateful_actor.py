@@ -80,14 +80,15 @@ class StatefulActor(BaseActor):
 
         return self._dist(x), recurrent_states
 
-    def _forward_gru(self, x, recurrent_states: torch.Tensor, masks: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _forward_gru(self, x, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor
+                     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.
 
         Args:
             x (torch.Tensor): Input to the GRU.
             recurrent_states (torch.Tensor): Recurrent state from the previous forward pass.
-            masks (torch.Tensor): Masks for the recurrent state.
+            recurrent_state_masks (torch.Tensor): Masks for the recurrent state.
 
         Returns:
             Tuple
@@ -95,7 +96,7 @@ class StatefulActor(BaseActor):
         if x.size(0) == recurrent_states.size(0):
             # @todo this line resets the recurrent state, should be changed for RL-Squared.
             x, recurrent_states = self._gru(
-                x.unsqueeze(0), (recurrent_states * masks).unsqueeze(0)
+                x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
             )
             x = x.squeeze(0)
             recurrent_states = recurrent_states.squeeze(0)
@@ -110,11 +111,11 @@ class StatefulActor(BaseActor):
         x = x.view(T, N, x.size(1))
 
         # Same deal with done_masks
-        masks = masks.view(T, N)
+        recurrent_state_masks = recurrent_state_masks.view(T, N)
 
         # Let's figure out which steps in the sequence have a zero for any agent
         # We will always assume t=0 has a zero in it as that makes the logic cleaner
-        has_zeros = (masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
+        has_zeros = (recurrent_state_masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
 
         # +1 to correct the done_masks[1:]
         if has_zeros.dim() == 0:
@@ -137,7 +138,7 @@ class StatefulActor(BaseActor):
 
             rnn_scores, recurrent_states = self._gru(
                 x[start_idx:end_idx],
-                recurrent_states * masks[start_idx].view(1, -1, 1),
+                recurrent_states * recurrent_state_masks[start_idx].view(1, -1, 1),
             )
 
             outputs.append(rnn_scores)

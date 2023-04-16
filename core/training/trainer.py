@@ -83,8 +83,10 @@ class Trainer:
             max_grad_norm=self.params.max_grad_norm,
         )
 
+        num_steps_per_rollout = self.params.steps_per_trial // self.params.num_processes
+
         rollouts = RolloutStorage(
-            self.params.steps_per_rollout,
+            num_steps_per_rollout,
             self.params.num_processes,
             envs.observation_space.shape,
             envs.action_space,
@@ -101,7 +103,7 @@ class Trainer:
 
         total_updates = (
             int(self.params.num_env_steps)
-            // self.params.steps_per_rollout
+            // num_steps_per_rollout
             // self.params.num_processes
         )
 
@@ -111,10 +113,11 @@ class Trainer:
                 ppo.update_linear_schedule(j, total_updates)
                 pass
 
-            # @todo sample tasks
+            # @todo sample meta-tasks
+            print('Sample new task.')
 
             # rollouts
-            for step in range(self.params.steps_per_rollout):
+            for step in range(num_steps_per_rollout):
                 with torch.no_grad():
                     (
                         value,
@@ -124,7 +127,7 @@ class Trainer:
                     ) = actor_critic.act(
                         rollouts.obs[step],
                         rollouts.recurrent_hidden_states[step],
-                        rollouts.done_masks[step],
+                        rollouts.recurrent_state_masks[step],
                     )
 
                 # step
@@ -132,10 +135,10 @@ class Trainer:
 
                 for info in infos:
                     if "episode" in info.keys():
-                        # @todo check compatibility, this comes from `Monitor`.
+                        # @todo check `BaseMetaEnv` compatibility, this is set in `Monitor`.
                         episode_rewards.append(info["episode"]["r"])
 
-                # if done then clean the history of observations
+                # done
                 done_masks = torch.FloatTensor(
                     [[0.0] if done_ else [1.0] for done_ in done]
                 )
@@ -144,6 +147,12 @@ class Trainer:
                     [
                         [0.0] if "time_limit_exceeded" in info.keys() else [1.0]
                         for info in infos
+                    ]
+                )
+
+                recurrent_state_masks = torch.FloatTensor(
+                    [
+                        [1.0] for _ in reward
                     ]
                 )
 
@@ -156,6 +165,7 @@ class Trainer:
                     reward,
                     done_masks,
                     time_limit_masks,
+                    recurrent_state_masks
                 )
                 pass
 
@@ -164,7 +174,7 @@ class Trainer:
                 next_value = actor_critic.get_value(
                     rollouts.obs[-1],
                     rollouts.recurrent_hidden_states[-1],
-                    rollouts.done_masks[-1],
+                    rollouts.recurrent_state_masks[-1],
                 ).detach()
 
             # returns
@@ -177,7 +187,7 @@ class Trainer:
             )
 
             value_loss, action_loss, dist_entropy = ppo.update(rollouts)
-            rollouts.after_update()
+            rollouts.reset()
 
             # checkpoint
             if j % self.params.checkpoint_interval == 0 or j == total_updates - 1:
@@ -197,7 +207,7 @@ class Trainer:
             # log
             if j % self.params.log_interval == 0 and len(episode_rewards) > 1:
                 total_num_steps = (
-                    (j + 1) * self.params.num_processes * self.params.steps_per_rollout
+                    (j + 1) * self.params.num_processes * num_steps_per_rollout
                 )
                 end = time.time()
                 print(

@@ -14,7 +14,7 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
 
         Args:
             venv (VecEnv): Vectorized environment to provide a PyTorch wrapper for.
-            device (str): Device for PyTorch tensors.
+            device (torch.device): Device for PyTorch tensors.
         """
         super(PyTorchVecEnvWrapper, self).__init__(venv)
         self.device = device

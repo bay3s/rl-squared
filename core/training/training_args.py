@@ -21,7 +21,7 @@ class TrainingArgs:
       random_seed (int): Random seed.
       no_cuda (bool): Whether to avoid using CUDA even if a GPU is available.
       cuda_deterministic (float): Whether to use a deterministic version of CUDA.
-      rollout_steps (int): Number of steps per rollout.
+      steps_per_trial (int): Number of steps per RL-Squared trial (one trial includes multiple episodes).
       num_processes (int): Number of parallel training processes.
       discount_gamma (float): Discount applied to trajectories that are sampled.
       use_proper_time_limits (bool): Compute returns taking into account time limits.
@@ -58,7 +58,7 @@ class TrainingArgs:
     use_cuda: bool
 
     # sampling / rollouts
-    steps_per_rollout: int
+    steps_per_trial: int
     num_processes: int
     discount_gamma: float
     use_proper_time_limits: bool

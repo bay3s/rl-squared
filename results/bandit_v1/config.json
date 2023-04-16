@@ -13,7 +13,7 @@
   "random_seed": 1,
   "cuda_deterministic": false,
   "use_cuda": true,
-  "steps_per_rollout": 1000,
+  "steps_per_trial": 2000,
   "num_processes": 16,
   "discount_gamma": 0.99,
   "use_proper_time_limits": false,
