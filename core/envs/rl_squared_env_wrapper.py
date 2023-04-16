@@ -29,7 +29,7 @@ class RLSquaredEnvWrapper(gym.Wrapper):
     if self.action_space.__class__.__name__ == "Discrete":
       obs = np.concatenate([obs, self._one_hot_action(action), [rew], [done]])
     else:
-      # @todo handle continuous spaces.
+      # @todo handle continuous action spaces.
       raise NotImplementedError
 
     return obs, rew, done, info

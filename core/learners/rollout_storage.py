@@ -84,7 +84,7 @@ class RolloutStorage:
             self.rollout_steps + 1, self.num_processes, self.recurrent_state_size
         )
 
-        # @todo self.recurrent_states[0] = torch.ones(self.recurrent_states[0].shape)
+        self.recurrent_states[0] = torch.ones(self.recurrent_states[0].shape)
 
         self.rewards = torch.zeros(self.rollout_steps, self.num_processes, 1)
         self.value_preds = torch.zeros(self.rollout_steps + 1, self.num_processes, 1)
@@ -264,7 +264,7 @@ class RolloutStorage:
 
         for start_ind in range(0, num_processes, num_envs_per_batch):
             obs_batch = []
-            recurrent_hidden_states_batch = []
+            recurrent_states_batch = []
             actions_batch = []
             value_preds_batch = []
             return_batch = []
@@ -284,8 +284,8 @@ class RolloutStorage:
                 old_action_log_probs_batch.append(self.action_log_probs[:, ind])
                 adv_targ.append(advantages[:, ind])
 
-                # @todo invstigate, this always selects the initial state.
-                recurrent_hidden_states_batch.append(self.recurrent_states[0:1, ind])
+                # @todo returns the first hidden state.
+                recurrent_states_batch.append(self.recurrent_states[0:1, ind])
                 pass
 
             T, N = self.rollout_steps, num_envs_per_batch
@@ -301,8 +301,8 @@ class RolloutStorage:
             adv_targ = torch.stack(adv_targ, 1)
 
             # states is just a (N, -1) tensor
-            recurrent_hidden_states_batch = torch.stack(
-                recurrent_hidden_states_batch, 1
+            recurrent_states_batch = torch.stack(
+                recurrent_states_batch, 1
             ).view(N, -1)
 
             # Flatten the (T, N, ...) tensors to (T * N, ...)
@@ -318,5 +318,5 @@ class RolloutStorage:
 
             adv_targ = _flatten_helper(T, N, adv_targ)
 
-            yield obs_batch, recurrent_hidden_states_batch, actions_batch, value_preds_batch, return_batch, \
+            yield obs_batch, recurrent_states_batch, actions_batch, value_preds_batch, return_batch, \
                 done_masks_batch, recurrent_masks_batch, old_action_log_probs_batch, adv_targ

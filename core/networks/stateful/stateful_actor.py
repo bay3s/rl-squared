@@ -95,7 +95,6 @@ class StatefulActor(BaseActor):
             Tuple
         """
         if x.size(0) == recurrent_states.size(0):
-            # @todo this line resets the recurrent state, should be changed for RL-Squared.
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
             )

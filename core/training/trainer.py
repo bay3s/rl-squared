@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from stable_baselines3.common.running_mean_std import RunningMeanStd
 
+
 import core.utils.env_utils as env_utils
 import core.utils.logging_utils as logging_utils
 from core.training.training_args import TrainingArgs
@@ -97,7 +98,7 @@ class Trainer:
         rollouts.obs[0].copy_(obs)
         rollouts.to(self.device)
 
-        episode_rewards = deque(maxlen=10)
+        episode_rewards = deque(maxlen=1_000)
 
         start = time.time()
 
@@ -115,6 +116,9 @@ class Trainer:
 
             # sample
             envs.sample_tasks_async()
+
+            # reset
+            rollouts.reset()
 
             # rollouts
             for step in range(num_steps_per_rollout):
@@ -137,6 +141,7 @@ class Trainer:
                     if "episode" in info.keys():
                         # @todo check `BaseMetaEnv` compatibility, this is set in `Monitor`.
                         episode_rewards.append(info["episode"]["r"])
+                        pass
 
                 # done
                 done_masks = torch.FloatTensor(
