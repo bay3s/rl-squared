@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
-from core.learners.rollout_storage import RolloutStorage
 
 
 class PPO:
@@ -16,7 +15,7 @@ class PPO:
         self,
         actor_critic: StatefulActorCritic,
         clip_param: float,
-        num_epochs: int,
+        opt_epochs: int,
         num_minibatches: int,
         entropy_coef: float,
         value_loss_coef: float,
@@ -32,7 +31,7 @@ class PPO:
         Args:
             actor_critic (BaseActorCritic): Actor-Critic to train with PPO.
             clip_param (float): Clip param for PPO.
-            num_epochs (int): Number of epochs to train over.
+            opt_epochs (int): Number of epochs to train over.
             num_minibatches (int): Number of minibatches for training.
             entropy_coef (float): Entropy coefficient to be used while computing the loss.
             value_loss_coef (float): Value loss coefficient to be used while computing the loss.
@@ -45,7 +44,7 @@ class PPO:
         self.actor_critic = actor_critic
 
         self.clip_param = clip_param
-        self.num_epochs = num_epochs
+        self.opt_epochs = opt_epochs
         self.num_minibatches = num_minibatches
 
         self.value_loss_coef = value_loss_coef
@@ -95,29 +94,29 @@ class PPO:
             param_group["lr"] = lr
             pass
 
-    def update(self, rollouts: RolloutStorage) -> Tuple[float, float, float]:
+    def update(self, minibatch_sampler) -> Tuple[float, float, float]:
         """
         Update the policy and value function.
 
         Args:
-          rollouts (RolloutStorage): Rollouts to be used as data points for making updates.
+          minibatch_sampler (RolloutStorage): Rollouts to be used as data points for making updates.
 
         Returns:
           Tuple[float, float, float]
         """
-        advantages = rollouts.returns[:-1] - rollouts.value_preds[:-1]
+        advantages = minibatch_sampler.returns[:-1] - minibatch_sampler.value_preds[:-1]
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-5)
 
         value_loss_epoch = 0
         action_loss_epoch = 0
         dist_entropy_epoch = 0
 
-        for e in range(self.num_epochs):
-            minibatch_samples = rollouts.minibatches(
+        for e in range(self.opt_epochs):
+            minibatches = minibatch_sampler.sample(
                 advantages, self.num_minibatches
             )
 
-            for sample in minibatch_samples:
+            for sample in minibatches:
                 (
                     obs_batch,
                     recurrent_hidden_states_batch,
@@ -178,7 +177,7 @@ class PPO:
                 action_loss_epoch += action_loss.item()
                 dist_entropy_epoch += dist_entropy.item()
 
-        num_updates = self.num_epochs * self.num_minibatches
+        num_updates = self.opt_epochs * self.num_minibatches
 
         value_loss_epoch /= num_updates
         action_loss_epoch /= num_updates

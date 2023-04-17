@@ -12,5 +12,5 @@ if __name__ == '__main__':
 
   args = TrainingArgs.from_json(config_path)
   trainer = Trainer(args)
-  trainer.train()
+  trainer.meta_train()
   pass

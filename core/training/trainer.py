@@ -13,7 +13,8 @@ from core.training.training_args import TrainingArgs
 from core.learners import PPO
 
 from core.utils.env_utils import make_vec_envs
-from core.learners.rollout_storage import RolloutStorage
+from core.utils.training_utils import sample_meta_episodes
+from core.training.meta_batch_sampler import MetaBatchSampler
 
 from core.networks.base_actor_critic import BaseActorCritic
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
@@ -36,13 +37,16 @@ class Trainer:
         self._eval_log_dir = None
         pass
 
-    def train(self) -> None:
+    def meta_train(self) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
         Returns:
           None
         """
+        # start time
+        start = time.time()
+
         # save
         self.save_params()
 
@@ -56,7 +60,7 @@ class Trainer:
 
         torch.set_num_threads(1)
 
-        envs = make_vec_envs(
+        meta_envs = make_vec_envs(
             self.params.env_name,
             self.params.env_configs,
             self.params.random_seed,
@@ -64,17 +68,18 @@ class Trainer:
             self.params.discount_gamma,
             self.params.log_dir,
             self.device,
-            False,
+            allow_early_resets = True,
         )
 
         actor_critic = StatefulActorCritic(
-            envs.observation_space, envs.action_space
+            meta_envs.observation_space,
+            meta_envs.action_space
         ).to_device(self.device)
 
         ppo = PPO(
             actor_critic=actor_critic,
             clip_param=self.params.ppo_clip_param,
-            num_epochs=self.params.ppo_num_epochs,
+            opt_epochs=self.params.ppo_opt_epochs,
             num_minibatches=self.params.ppo_num_minibatches,
             value_loss_coef=self.params.ppo_value_loss_coef,
             entropy_coef=self.params.ppo_entropy_coef,
@@ -84,166 +89,31 @@ class Trainer:
             max_grad_norm=self.params.max_grad_norm,
         )
 
-        num_steps_per_rollout = self.params.steps_per_trial // self.params.num_processes
-
-        rollouts = RolloutStorage(
-            num_steps_per_rollout,
-            self.params.num_processes,
-            envs.observation_space.shape,
-            envs.action_space,
-            actor_critic.recurrent_state_size,
-        )
-
-        obs = envs.reset()
-        rollouts.obs[0].copy_(obs)
-        rollouts.to(self.device)
-
         episode_rewards = deque(maxlen=1_000)
+        steps_per_epoch = self.params.meta_episode_length * self.params.meta_episodes_per_epoch
+        training_epochs = self.params.total_steps // steps_per_epoch
 
-        start = time.time()
-
-        total_updates = (
-            int(self.params.num_env_steps)
-            // num_steps_per_rollout
-            // self.params.num_processes
-        )
-
-        for j in range(total_updates):
-            # decay
-            if self.params.use_linear_lr_decay:
-                ppo.update_linear_schedule(j, total_updates)
-                pass
-
-            # sample
-            envs.sample_tasks_async()
-
-            # reset
-            rollouts.reset()
-
-            # rollouts
-            for step in range(num_steps_per_rollout):
-                with torch.no_grad():
-                    (
-                        value,
-                        action,
-                        action_log_prob,
-                        recurrent_hidden_states,
-                    ) = actor_critic.act(
-                        rollouts.obs[step],
-                        rollouts.recurrent_states[step],
-                        rollouts.recurrent_state_masks[step],
-                    )
-
-                # step
-                obs, reward, done, infos = envs.step(action)
-
-                for info in infos:
-                    if "episode" in info.keys():
-                        # @todo check `BaseMetaEnv` compatibility, this is set in `Monitor`.
-                        episode_rewards.append(info["episode"]["r"])
-                        pass
-
-                # done
-                done_masks = torch.FloatTensor(
-                    [[0.0] if done_ else [1.0] for done_ in done]
-                )
-
-                time_limit_masks = torch.FloatTensor(
-                    [
-                        [0.0] if "time_limit_exceeded" in info.keys() else [1.0]
-                        for info in infos
-                    ]
-                )
-
-                recurrent_state_masks = torch.FloatTensor(
-                    [
-                        [1.0] for _ in action
-                    ]
-                )
-
-                rollouts.insert(
-                    obs,
-                    recurrent_hidden_states,
-                    action,
-                    action_log_prob,
-                    value,
-                    reward,
-                    done_masks,
-                    time_limit_masks,
-                    recurrent_state_masks
-                )
-                pass
-
-            # value
+        for j in range(training_epochs):
+            # generate episodes
             with torch.no_grad():
-                next_value = actor_critic.get_value(
-                    rollouts.obs[-1],
-                    rollouts.recurrent_states[-1],
-                    rollouts.recurrent_state_masks[-1],
-                ).detach()
-
-            # returns
-            rollouts.compute_returns(
-                next_value,
-                self.params.use_gae,
-                self.params.discount_gamma,
-                self.params.gae_lambda,
-                self.params.use_proper_time_limits,
-            )
-
-            value_loss, action_loss, dist_entropy = ppo.update(rollouts)
-            rollouts.reset()
-
-            # checkpoint
-            if j % self.params.checkpoint_interval == 0 or j == total_updates - 1:
-                try:
-                    os.makedirs(self.params.checkpoint_dir)
-                except OSError:
-                    pass
-
-                torch.save(
-                    [
-                        actor_critic,
-                        getattr(env_utils.get_vec_normalize(envs), "obs_rms", None),
-                    ],
-                    os.path.join(self.params.checkpoint_dir, "model.pt"),
+                meta_episode_batches = sample_meta_episodes(
+                    actor_critic,
+                    meta_envs,
+                    self.params.meta_episode_length,
+                    self.params.meta_episodes_per_epoch,
+                    self.params.use_gae,
+                    self.params.gae_lambda,
+                    self.params.discount_gamma,
+                    self.params.use_proper_time_limits
                 )
 
-            # log
-            if j % self.params.log_interval == 0 and len(episode_rewards) > 1:
-                total_num_steps = (
-                    (j + 1) * self.params.num_processes * num_steps_per_rollout
-                )
-                end = time.time()
-                print(
-                    "Updates {}, num timesteps {}, FPS {} \n "
-                    "Last {} training episodes: mean/median reward "
-                    "{:.1f}/{:.1f}, min/max reward {:.1f}/{:.1f}\n".format(
-                        j,
-                        total_num_steps,
-                        int(total_num_steps / (end - start)),
-                        len(episode_rewards),
-                        np.mean(episode_rewards),
-                        np.median(episode_rewards),
-                        np.min(episode_rewards),
-                        np.max(episode_rewards),
-                        dist_entropy,
-                        value_loss,
-                        action_loss,
-                    )
-                )
+            minibatch_sampler = MetaBatchSampler(meta_episode_batches)
+            value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
-            # evaluate
-            # if (
-            #     self.params.eval_interval is not None
-            #     and len(episode_rewards) > 1
-            #     and j % self.params.eval_interval == 0
-            # ):
-            #     obs_rms = env_utils.get_vec_normalize(envs).obs_rms
-            #     self.evaluate(actor_critic, obs_rms)
-            #     pass
+            # @todo checkpoint
+            # @todo meta-evaluate
 
-    def evaluate(
+    def meta_evaluate(
         self,
         actor_critic: BaseActorCritic,
         obs_rms: RunningMeanStd,

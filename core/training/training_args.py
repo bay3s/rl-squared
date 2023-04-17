@@ -43,7 +43,6 @@ class TrainingArgs:
     algo: str
     env_name: str
     env_configs: dict
-    num_env_steps: int
 
     # opt / grad clipping
     actor_lr: float
@@ -57,14 +56,16 @@ class TrainingArgs:
     cuda_deterministic: float
     use_cuda: bool
 
-    # sampling / rollouts
-    steps_per_trial: int
+    # sampling
+    total_steps: int
+    meta_episodes_per_epoch: int
+    meta_episode_length: int
     num_processes: int
     discount_gamma: float
     use_proper_time_limits: bool
 
     # ppo
-    ppo_num_epochs: int
+    ppo_opt_epochs: int
     ppo_clip_param: float
     ppo_entropy_coef: float
     ppo_value_loss_coef: float
