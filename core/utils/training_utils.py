@@ -36,6 +36,7 @@ def sample_meta_episodes(
             recurrent_state_size,
         )
 
+        meta_envs.sample_tasks_async()
         initial_observations = meta_envs.reset()
         meta_episodes.obs[0].copy_(initial_observations)
 

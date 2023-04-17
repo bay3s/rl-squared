@@ -52,7 +52,6 @@ class MetaBatchSampler:
       value_preds_batch = []
       return_batch = []
       done_masks_batch = []
-      recurrent_masks_batch = []
       old_action_log_probs_batch = []
       adv_targ = []
 
@@ -67,7 +66,7 @@ class MetaBatchSampler:
         old_action_log_probs_batch.append(self.action_log_probs[:, ind])
         adv_targ.append(advantages[:, ind])
 
-        # @todo returns the first hidden state.
+        # @todo returns the first hidden state, verify.
         recurrent_states_batch.append(self.recurrent_states[0:1, ind])
         pass
 
@@ -79,7 +78,6 @@ class MetaBatchSampler:
       value_preds_batch = torch.stack(value_preds_batch, 1)
       return_batch = torch.stack(return_batch, 1)
       done_masks_batch = torch.stack(done_masks_batch, 1)
-      recurrent_masks_batch = torch.stack(recurrent_masks_batch, 1)
       old_action_log_probs_batch = torch.stack(old_action_log_probs_batch, 1)
       adv_targ = torch.stack(adv_targ, 1)
 
@@ -89,23 +87,22 @@ class MetaBatchSampler:
       ).view(N, -1)
 
       # flatten the (T, N, ...) tensors to (T * N, ...)
-      obs_batch = _flatten_helper(T, N, obs_batch)
-      actions_batch = _flatten_helper(T, N, actions_batch)
-      value_preds_batch = _flatten_helper(T, N, value_preds_batch)
-      return_batch = _flatten_helper(T, N, return_batch)
-      done_masks_batch = _flatten_helper(T, N, done_masks_batch)
-      recurrent_masks_batch = _flatten_helper(T, N, recurrent_masks_batch)
-      old_action_log_probs_batch = _flatten_helper(
+      obs_batch = _flatten(T, N, obs_batch)
+      actions_batch = _flatten(T, N, actions_batch)
+      value_preds_batch = _flatten(T, N, value_preds_batch)
+      return_batch = _flatten(T, N, return_batch)
+      done_masks_batch = _flatten(T, N, done_masks_batch)
+      old_action_log_probs_batch = _flatten(
         T, N, old_action_log_probs_batch
       )
 
-      adv_targ = _flatten_helper(T, N, adv_targ)
+      adv_targ = _flatten(T, N, adv_targ)
 
-      yield obs_batch, recurrent_states_batch, actions_batch, value_preds_batch, return_batch, \
-        done_masks_batch, recurrent_masks_batch, old_action_log_probs_batch, adv_targ
+      yield obs_batch, recurrent_states_batch, actions_batch, value_preds_batch, return_batch, done_masks_batch, \
+        old_action_log_probs_batch, adv_targ
 
 
-def _flatten_helper(T: int, N: int, _tensor: torch.Tensor) -> torch.Tensor:
+def _flatten(T: int, N: int, _tensor: torch.Tensor) -> torch.Tensor:
   """
   Flatten a given tensor containing rollout information.
 

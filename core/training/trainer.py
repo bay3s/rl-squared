@@ -113,7 +113,7 @@ class Trainer:
             # @todo checkpoint
             # @todo meta-evaluate
 
-    def meta_evaluate(
+    def evaluate(
         self,
         actor_critic: BaseActorCritic,
         obs_rms: RunningMeanStd,

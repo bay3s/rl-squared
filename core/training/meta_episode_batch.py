@@ -48,7 +48,7 @@ class MetaEpisodeBatch:
             action_shape = 1
             return torch.zeros(meta_episode_length, num_meta_episodes, action_shape).long()
         elif action_space.__class__.__name__ == "Box":
-            action_shape = self.action_space.shape[0]
+            action_shape = action_space.shape[0]
             return torch.zeros(meta_episode_length, num_meta_episodes, action_shape)
         else:
             raise NotImplementedError
