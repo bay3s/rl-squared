@@ -140,8 +140,6 @@ class RLSquaredEnv:
       """
     return self.observation_space, self.action_space
 
-  @property
-  @abstractmethod
   def sample_task(self) -> None:
     """
     Samples a new task for the environment.
