@@ -39,8 +39,8 @@ class MetaBatchSampler:
     Yields:
         Tuple
     """
-    num_meta_episodes = self.rewards.shape[0]
-    meta_episode_length = self.rewards.shape[1]
+    meta_episode_length = self.rewards.shape[0]
+    num_meta_episodes = self.rewards.shape[1]
 
     num_envs_per_batch = num_meta_episodes // num_minibatches
     perm = torch.randperm(num_meta_episodes)

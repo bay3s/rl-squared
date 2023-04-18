@@ -65,7 +65,7 @@ def sample_meta_episodes(
             )
 
             done_masks = torch.FloatTensor(
-                [[0.0] if done_ else [1.0] for done_ in dones]
+                [[1.0] for _ in rewards]
             )
 
             # insert

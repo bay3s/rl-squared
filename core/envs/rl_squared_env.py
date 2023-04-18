@@ -85,7 +85,6 @@ class RLSquaredEnv:
 
     next_obs = self._next_observation(obs, self._prev_action, self._prev_reward, self._prev_done)
 
-    # @todo verify expected (array([0.]), 1, True, {}) for BanditEnv
     return next_obs, rew, done, info
 
   def _next_observation(self, obs: np.ndarray, action: Union[int, np.ndarray], rew: float, done: bool) -> np.ndarray:
