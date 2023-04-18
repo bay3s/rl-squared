@@ -115,10 +115,7 @@ def make_vec_envs(
         for i in range(num_processes)
     ]
 
-    if len(envs) > 1:
-        envs = MultiprocessingVecEnv(envs)
-    else:
-        envs = DummyVecEnv(envs)
+    envs = MultiprocessingVecEnv(envs)
 
     # @todo normalize
     if len(envs.observation_space.shape) == 1:

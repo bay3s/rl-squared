@@ -21,6 +21,11 @@ class RLSquaredEnv:
     self._action_space = self._wrapped_env.action_space
     self._observation_space = self._make_observation_space()
 
+    # pass these onwards
+    self._prev_action = None
+    self._prev_reward = None
+    self._prev_done = None
+
     assert isinstance(self._observation_space, type(self._wrapped_env.observation_space))
     pass
 
@@ -54,9 +59,13 @@ class RLSquaredEnv:
       np.ndarray
     """
     obs = self._wrapped_env.reset()
-    obs = self._format_observation(obs, None, 0., False)
 
-    return obs
+    if self._prev_action is not None:
+      next_obs = self._next_observation(obs, self._prev_action, self._prev_reward, self._prev_done)
+    else:
+      next_obs = self._next_observation(obs, None, 0., False)
+
+    return next_obs
 
   def step(self, action: Union[int, np.ndarray]) -> Tuple:
     """
@@ -69,12 +78,17 @@ class RLSquaredEnv:
       Tuple
     """
     obs, rew, done, info = self._wrapped_env.step(action)
-    next_obs = self._format_observation(obs, action, rew, done)
+
+    self._prev_action = action
+    self._prev_reward = rew
+    self._prev_done = done
+
+    next_obs = self._next_observation(obs, self._prev_action, self._prev_reward, self._prev_done)
 
     # @todo verify expected (array([0.]), 1, True, {}) for BanditEnv
     return next_obs, rew, done, info
 
-  def _format_observation(self, obs: np.ndarray, action: Union[int, np.ndarray], rew: float, done: bool) -> np.ndarray:
+  def _next_observation(self, obs: np.ndarray, action: Union[int, np.ndarray], rew: float, done: bool) -> np.ndarray:
     """
     Given an observation, action, reward, and whether an episode is done - return the formatted observation.
 
