@@ -12,7 +12,7 @@ from core.training.meta_episode_batch import MetaEpisodeBatch
 @torch.no_grad()
 def sample_meta_episodes(
     actor_critic: StatefulActorCritic,
-    meta_envs: PyTorchVecEnvWrapper,
+    rl_squared_envs: PyTorchVecEnvWrapper,
     meta_episode_length: int,
     num_meta_episodes: int,
     use_gae: bool,
@@ -20,10 +20,11 @@ def sample_meta_episodes(
     discount_gamma: float,
     use_proper_time_limits: bool
 ) -> List[MetaEpisodeBatch]:
-    obs_shape = meta_envs.observation_space.shape
-    action_space = meta_envs.action_space
+    observation_space = rl_squared_envs.observation_space
+    action_space = rl_squared_envs.action_space
+
     recurrent_state_size = actor_critic.recurrent_state_size
-    num_parallel_envs = meta_envs.num_envs
+    num_parallel_envs = rl_squared_envs.num_envs
 
     meta_episodes_all = list()
 
@@ -31,13 +32,13 @@ def sample_meta_episodes(
         meta_episodes = MetaEpisodeBatch(
             meta_episode_length,
             num_parallel_envs,
-            obs_shape,
+            observation_space,
             action_space,
             recurrent_state_size,
         )
 
-        meta_envs.sample_tasks_async()
-        initial_observations = meta_envs.reset()
+        # @todo rl_squared_envs.sample_tasks_async()
+        initial_observations = rl_squared_envs.reset()
         meta_episodes.obs[0].copy_(initial_observations)
 
         for step in range(meta_episode_length):
@@ -52,7 +53,7 @@ def sample_meta_episodes(
                 meta_episodes.done_masks[step],
             )
 
-            obs, rewards, dones, infos = meta_envs.step(actions)
+            obs, rewards, dones, infos = rl_squared_envs.step(actions)
 
             # masks
             time_limit_masks = torch.FloatTensor(
@@ -66,6 +67,7 @@ def sample_meta_episodes(
                 [[0.0] if done_ else [1.0] for done_ in dones]
             )
 
+            # insert
             meta_episodes.insert(
                 obs,
                 recurrent_states,

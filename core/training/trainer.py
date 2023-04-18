@@ -2,6 +2,7 @@ import os
 import time
 from collections import deque
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from stable_baselines3.common.running_mean_std import RunningMeanStd
@@ -90,6 +91,8 @@ class Trainer:
         )
 
         episode_rewards = deque(maxlen=1_000)
+        mean_rewards = list()
+
         steps_per_epoch = self.params.meta_episode_length * self.params.meta_episodes_per_epoch
         training_epochs = self.params.total_steps // steps_per_epoch
 
@@ -110,8 +113,15 @@ class Trainer:
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
+            episode_rewards.append(minibatch_sampler.rewards.mean().item())
+            mean_rewards.append(np.mean(episode_rewards))
+
             # @todo checkpoint
             # @todo meta-evaluate
+            pass
+
+        plt.plot(mean_rewards)
+        pass
 
     def evaluate(
         self,

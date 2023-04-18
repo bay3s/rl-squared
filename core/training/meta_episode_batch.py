@@ -1,5 +1,3 @@
-from typing import Tuple, Union
-
 import torch
 import gym
 
@@ -10,7 +8,7 @@ class MetaEpisodeBatch:
         self,
         meta_episode_length: int,
         num_meta_episodes: int,
-        obs_shape: Tuple,
+        observation_space: gym.Space,
         action_space: gym.Space,
         recurrent_state_size: int,
     ):
@@ -20,14 +18,14 @@ class MetaEpisodeBatch:
         Args:
             meta_episode_length (int): Number of steps per meta-episode.
             num_meta_episodes (int): Number of meta episodes.
-            obs_shape (Tuple): Observation shape.
+            observation_space (int): Dimensions of the observation space.
             action_space (gym.Space): Action space for the environment.
             recurrent_state_size (int): Recurrent state size for a memory-augmented agent.
         """
         self.meta_episode_length = meta_episode_length
         self.step = 0
 
-        self.obs = torch.zeros(meta_episode_length + 1, num_meta_episodes, *obs_shape)
+        self.obs = torch.zeros(meta_episode_length + 1, num_meta_episodes, *observation_space.shape)
         self.rewards = torch.zeros(meta_episode_length, num_meta_episodes, 1)
         self.value_preds = torch.zeros(meta_episode_length + 1, num_meta_episodes, 1)
         self.returns = torch.zeros(meta_episode_length + 1, num_meta_episodes, 1)
@@ -43,10 +41,21 @@ class MetaEpisodeBatch:
         pass
 
     @staticmethod
-    def _init_actions(action_space: gym.Space, meta_episode_length: int, num_meta_episodes: int) -> Union[int, Tuple]:
+    def _init_actions(action_space: gym.Space, meta_episode_length: int, num_meta_episodes: int) -> torch.Tensor:
+        """
+        Init actions based on the action space.
+
+        Args:
+            action_space (gym.Space): Action space for the meta-episodes.
+            meta_episode_length (int): Meta-episode length.
+            num_meta_episodes (int): Number of meta-episodes to sample.
+
+        Returns:
+            torch.Tensor
+        """
         if action_space.__class__.__name__ == "Discrete":
             action_shape = 1
-            return torch.zeros(meta_episode_length, num_meta_episodes, action_shape).long()
+            return torch.zeros(meta_episode_length, num_meta_episodes, action_shape)
         elif action_space.__class__.__name__ == "Box":
             action_shape = action_space.shape[0]
             return torch.zeros(meta_episode_length, num_meta_episodes, action_shape)
@@ -71,8 +80,8 @@ class MetaEpisodeBatch:
         self.action_log_probs = self.action_log_probs.to(device)
         self.actions = self.actions.to(device)
 
-        self.done_masks = self.dones.to(device)
-        self.time_limit_masks = self.time_exceeded.to(device)
+        self.done_masks = self.done_masks.to(device)
+        self.time_limit_masks = self.time_limit_masks.to(device)
         pass
 
     def insert(

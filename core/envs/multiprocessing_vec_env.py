@@ -1,10 +1,12 @@
+from collections import OrderedDict
 import multiprocessing as mp
 from typing import Any, Callable, List, Optional, Sequence, Type, Union, Tuple
-from collections import OrderedDict
 
 import numpy as np
+
 import gym
 import gym.spaces as spaces
+
 
 from stable_baselines3.common.vec_env.base_vec_env import (
     CloudpickleWrapper,
@@ -23,9 +25,10 @@ def _flatten_obs(
 
     Args:
         obs (np.array): A list or tuple of observations, one per environment.
+        space (spaces.Space): Observation space.
 
     Returns:
-        np.array
+        VecEnvObs
     """
     assert isinstance(
         obs, (list, tuple)
@@ -145,11 +148,26 @@ class MultiprocessingVecEnv(VecEnv):
             process.start()
             self.processes.append(process)
             work_remote.close()
+            pass
 
         self.remotes[0].send(("get_spaces", None))
         observation_space, action_space = self.remotes[0].recv()
-        VecEnv.__init__(self, len(env_fns), observation_space, action_space)
+
+        # VecEnv.__init__(self, len(env_fns), observation_space, action_space)
+        self.num_envs = len(env_fns)
+        self.observation_space = observation_space
+        self.action_space = action_space
         pass
+
+    def step(self, actions: np.ndarray) -> VecEnvStepReturn:
+        """
+        Step the environments with the given action
+
+        :param actions: the action
+        :return: observation, reward, done, information
+        """
+        self.step_async(actions)
+        return self.step_wait()
 
     def sample_tasks_async(self) -> None:
         """

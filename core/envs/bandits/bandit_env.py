@@ -2,11 +2,13 @@ from typing import Tuple, List
 import numpy as np
 
 import gym
-from gym.utils import seeding, EzPickle
+from gym.utils import EzPickle
 import gym.spaces as spaces
 
+from core.envs.base_meta_env import BaseMetaEnv
 
-class MultiArmedBanditEnv(gym.Env, EzPickle):
+
+class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
 
     def __init__(self, num_actions: int, seed: int = None):
         """
@@ -15,6 +17,7 @@ class MultiArmedBanditEnv(gym.Env, EzPickle):
         Args:
           num_actions (int): Number of actions that the bandit is able to take.
         """
+
         EzPickle.__init__(self)
         self.seed(seed)
         self.viewer = None
@@ -82,20 +85,6 @@ class MultiArmedBanditEnv(gym.Env, EzPickle):
           Tuple[gym.Space, gym.Space]
         """
         return self.observation_space, self.action_space
-
-    def seed(self, seed: int = None) -> List:
-        """
-        Set the seed for np.random
-
-        Args:
-          seed (int): Seed to set for random number generator.
-
-        Returns:
-          List
-        """
-        self.np_random, seed = seeding.np_random(seed)
-
-        return [seed]
 
     def step(self, action: int) -> Tuple:
         """
