@@ -42,6 +42,7 @@ def sample_meta_episodes(
         meta_episodes.obs[0].copy_(initial_observations)
 
         for step in range(meta_episode_length):
+            # @todo deal with masks differently for RL-Squared
             (
                 value_preds,
                 actions,
@@ -50,7 +51,7 @@ def sample_meta_episodes(
             ) = actor_critic.act(
                 meta_episodes.obs[step],
                 meta_episodes.recurrent_states[step],
-                meta_episodes.done_masks[step],
+                meta_episodes.done_masks[step]
             )
 
             obs, rewards, dones, infos = rl_squared_envs.step(actions)

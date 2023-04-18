@@ -1,7 +1,5 @@
 from typing import Union, Tuple
 
-from abc import abstractmethod
-
 import numpy as np
 import gym
 from copy import deepcopy
@@ -11,7 +9,7 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 class RLSquaredEnv:
 
-  def __init__(self, env: BaseMetaEnv):
+  def __init__(self, env: BaseMetaEnv): # @todo whether reward, action, done should be udpated in next obs
     """
     Abstract class that outlines functions required by an environment for meta-learning via RL-Squared.
 
@@ -70,10 +68,10 @@ class RLSquaredEnv:
     Returns:
       Tuple
     """
-    wrapped_step = self._wrapped_env.step(action)
-    obs, rew, done, info = wrapped_step
+    obs, rew, done, info = self._wrapped_env.step(action)
     next_obs = self._format_observation(obs, action, rew, done)
 
+    # @todo verify expected (array([0.]), 1, True, {}) for BanditEnv
     return next_obs, rew, done, info
 
   def _format_observation(self, obs: np.ndarray, action: Union[int, np.ndarray], rew: float, done: bool) -> np.ndarray:
@@ -107,7 +105,7 @@ class RLSquaredEnv:
     encoded_action = np.zeros(self.action_space.n)
 
     if action is not None:
-      encoded_action[action] = 1.0
+      encoded_action[action] = 1.
 
     return encoded_action
 
