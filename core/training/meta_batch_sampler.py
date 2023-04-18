@@ -1,7 +1,6 @@
 import torch
 from typing import List
 
-
 from core.training.meta_episode_batch import MetaEpisodeBatch
 
 
@@ -57,6 +56,7 @@ class MetaBatchSampler:
 
       for offset in range(num_envs_per_batch):
         ind = perm[start_ind + offset]
+
         obs_batch.append(self.obs[:-1, ind])
         actions_batch.append(self.actions[:, ind])
         value_preds_batch.append(self.value_preds[:-1, ind])

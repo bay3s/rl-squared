@@ -158,4 +158,11 @@ class RLSquaredEnv:
     Returns:
       np.ndarray
     """
+    # reset
+    self._prev_action = None
+    self._prev_reward = None
+    self._prev_done = None
+
+    # sample
     self._wrapped_env.sample_task()
+    pass

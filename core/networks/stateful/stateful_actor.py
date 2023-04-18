@@ -94,6 +94,9 @@ class StatefulActor(BaseActor):
         Returns:
             Tuple
         """
+        # @todo remove
+        recurrent_state_masks = torch.ones(recurrent_state_masks.shape)
+
         if x.size(0) == recurrent_states.size(0):
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
