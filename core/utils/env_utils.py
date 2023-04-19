@@ -5,7 +5,6 @@ import torch
 import gym
 
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import DummyVecEnv
 
 
 from core.envs.normalized_vec_env import NormalizedVecEnv as NormalizedVecEnv
@@ -117,12 +116,8 @@ def make_vec_envs(
 
     envs = MultiprocessingVecEnv(envs)
 
-    # @todo normalize
     if len(envs.observation_space.shape) == 1:
-        # if gamma is None:
-        #     envs = NormalizedVecEnv(envs, norm_reward = False)
-        # else:
-        #     envs = NormalizedVecEnv(envs, gamma = gamma)
+        # @todo normalize
         pass
     else:
         raise NotImplementedError

@@ -17,8 +17,9 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         Args:
           num_actions (int): Number of actions that the bandit is able to take.
         """
-
         EzPickle.__init__(self)
+        BaseMetaEnv.__init__(self, seed)
+
         self.seed(seed)
         self.viewer = None
 
@@ -26,13 +27,13 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         self._state = np.array([0.0])
         self._payout_odds = None
 
-        # same as the number of actions
+        # spaces
         self._action_space = spaces.Discrete(num_actions)
 
-        # observation space
         high = np.array([1.0], dtype=np.float32)
         self._observation_space = spaces.box.Box(-high, high)
 
+        # sample
         self.sample_task()
         pass
 
@@ -43,7 +44,7 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         Returns:
           None
         """
-        self._payout_odds = np.random.uniform(low=0.0, high=1.0, size=self._num_actions)
+        self._payout_odds = self.np_random.uniform(low=0.0, high=1.0, size=self._num_actions)
         pass
 
     def reset(self) -> np.ndarray:
@@ -97,10 +98,7 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         Returns:
           Tuple
         """
-        if self._payout_odds is None:
-            raise RuntimeError('Must call `sample_task` before beginning an episode.')
-
-        reward = np.random.binomial(n=1, p=self._payout_odds[action], size=1)[0]
+        reward = self.np_random.binomial(n=1, p=self._payout_odds[action], size=1)[0]
 
         return self._state, reward, True, {}
 

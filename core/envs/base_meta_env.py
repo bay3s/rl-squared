@@ -7,10 +7,22 @@ import gym
 from gym.utils import seeding
 
 
-class BaseMetaEnv(ABC):
+class BaseMetaEnv(gym.Env, ABC):
   """
   Outline expected functionality for environments being used in meta-learning experiments.
   """
+
+  def __init__(self, seed: int = None):
+    """
+    Initialize a base meta-learning environment.
+
+    Args:
+      seed (int): Random seed.
+    """
+    gym.Env.__init__(self)
+    self.np_random = np.random.RandomState()
+    self.seed(seed)
+    pass
 
   def sample_task(self) -> None:
     """
