@@ -14,7 +14,9 @@ class TrainingArgs:
       env_configs (dict): Additional configs for each of the meta-environments.
       num_env_steps (int): Number of total steps to train over.
       actor_lr (float): Learning rate of the actor.
+      actor_wd (float): Weight decay for the actor.
       critic_lr (float): Learning rate of the critic / value function.
+      critic_wd (float): Weight decay for the critic.
       optimizer_eps (float): `eps` parameter value for Adam or RMSProp
       max_grad_norm (float): Max grad norm for gradient clipping.
       use_linear_lr_decay (bool): Whether to use linear learning rate decay in training.
@@ -46,10 +48,11 @@ class TrainingArgs:
 
     # opt / grad clipping
     actor_lr: float
+    actor_wd: float
     critic_lr: float
+    critic_wd: float
     optimizer_eps: float
     max_grad_norm: float
-    use_linear_lr_decay: bool
 
     # setup
     random_seed: int

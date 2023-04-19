@@ -20,7 +20,9 @@ class PPO:
         entropy_coef: float,
         value_loss_coef: float,
         actor_lr: float,
+        actor_wd: float,
         critic_lr: float,
+        critic_wd: float,
         eps: float = None,
         max_grad_norm: float = None,
         use_clipped_value_loss: bool = True,
@@ -36,7 +38,9 @@ class PPO:
             entropy_coef (float): Entropy coefficient to be used while computing the loss.
             value_loss_coef (float): Value loss coefficient to be used while computing the loss.
             actor_lr (float): Learning rate of the actor network.
+            actor_wd (float): Weight decay for the actor.
             critic_lr (float): Learning rate of the critic network.
+            critic_wd (float): Weight decay for the critic.
             eps (float): Epsilon value to use with the Adam optimizer.
             max_grad_norm (float): Max gradient norm for gradient clipping.
             use_clipped_value_loss (bool): Whether to use the clipped value loss while computing the objective.
@@ -53,46 +57,25 @@ class PPO:
         self.max_grad_norm = max_grad_norm
         self.use_clipped_value_loss = use_clipped_value_loss
 
-        self.initial_actor_lr = actor_lr
-
         self.optimizer = torch.optim.Adam(
             [
                 {
+                    "name": self.OPT_ACTOR_PARAMS,
                     "params": self.actor_critic.actor.parameters(),
                     "lr": actor_lr,
                     "eps": eps,
-                    "name": self.OPT_ACTOR_PARAMS,
+                    # "weight_decay": actor_wd
                 },
                 {
+                    "name": self.OPT_CRITIC_PARAMS,
                     "params": self.actor_critic.critic.parameters(),
                     "lr": critic_lr,
                     "eps": eps,
-                    "name": self.OPT_CRITIC_PARAMS,
+                    # "weight_decay": critic_wd
                 },
             ]
         )
         pass
-
-    def update_linear_schedule(self, current_epoch: int, total_epochs: int):
-        """
-        Update linear schedule for the actor's learning rate.
-
-        Args:
-            current_epoch (int): Current training epoch.
-            total_epochs (int): Total epochs over which to decay the learning rate.
-
-        Returns:
-            None
-        """
-        for param_group in self.optimizer.param_groups:
-            if param_group["name"] != self.OPT_ACTOR_PARAMS:
-                continue
-
-            lr = self.initial_actor_lr - (
-                self.initial_actor_lr * (current_epoch / float(total_epochs))
-            )
-            param_group["lr"] = lr
-            pass
 
     def update(self, minibatch_sampler) -> Tuple[float, float, float]:
         """

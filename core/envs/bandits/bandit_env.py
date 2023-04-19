@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple
 import numpy as np
 
 import gym
@@ -9,8 +9,6 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 
 class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
-
-    PAYOUT_ODDS = np.array([0.06131155, 0.66141169, 0.4622481, 0.83258692, 0.2821721])
 
     def __init__(self, num_actions: int, seed: int = None):
         """
@@ -45,7 +43,6 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         Returns:
           None
         """
-        # self._payout_odds = self.PAYOUT_ODDS
         self._payout_odds = np.random.uniform(low=0.0, high=1.0, size=self._num_actions)
         pass
 

@@ -94,7 +94,7 @@ class StatefulActor(BaseActor):
         Returns:
             Tuple
         """
-        # @todo remove
+        # @todo remove, handle masks properly
         recurrent_state_masks = torch.ones(recurrent_state_masks.shape)
 
         if x.size(0) == recurrent_states.size(0):

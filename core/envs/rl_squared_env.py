@@ -9,7 +9,7 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 class RLSquaredEnv:
 
-  def __init__(self, env: BaseMetaEnv): # @todo whether reward, action, done should be udpated in next obs
+  def __init__(self, env: BaseMetaEnv):
     """
     Abstract class that outlines functions required by an environment for meta-learning via RL-Squared.
 

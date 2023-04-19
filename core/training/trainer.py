@@ -1,5 +1,4 @@
 import os
-import time
 from collections import deque
 
 import matplotlib.pyplot as plt
@@ -45,9 +44,6 @@ class Trainer:
         Returns:
           None
         """
-        # start time
-        start = time.time()
-
         # save
         self.save_params()
 
@@ -85,7 +81,9 @@ class Trainer:
             value_loss_coef=self.params.ppo_value_loss_coef,
             entropy_coef=self.params.ppo_entropy_coef,
             actor_lr=self.params.actor_lr,
+            actor_wd = self.params.actor_wd,
             critic_lr=self.params.critic_lr,
+            critic_wd = self.params.critic_wd,
             eps=self.params.optimizer_eps,
             max_grad_norm=self.params.max_grad_norm,
         )
