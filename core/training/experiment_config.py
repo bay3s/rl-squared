@@ -1,10 +1,10 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, asdict
 import os
 import json
 
 
 @dataclass(frozen=True)
-class TrainingArgs:
+class ExperimentConfig:
     """
     Dataclass to keep track of experiment configs.
 
@@ -106,12 +106,12 @@ class TrainingArgs:
         return f"{self.directory}/checkpoints/"
 
     @classmethod
-    def from_json(cls, json_file_path: str) -> "TrainingArgs":
+    def from_json(cls, json_file_path: str) -> "ExperimentConfig":
         """
         Takes the json file path as parameter and returns the populated TrainingConfigs.
 
         Returns:
-          TrainingArgs
+          ExperimentConfig
         """
         keys = [f.name for f in fields(cls)]
         file = json.load(open(json_file_path))
@@ -127,6 +127,16 @@ class TrainingArgs:
           str
         """
         return json.dumps(self.__dict__, indent=2)
+
+    @property
+    def dict(self) -> dict:
+        """
+        Return dictionary with dataclass fields.
+
+        Returns:
+          dict
+        """
+        return {k: str(v) for k, v in asdict(self).items()}
 
     def save(self) -> None:
         """

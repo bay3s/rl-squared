@@ -2,7 +2,7 @@
   "algo": "PPO",
   "env_name": "Bandit-v0",
   "env_configs": {
-    "num_actions": 5
+    "num_actions": 10
   },
   "actor_lr": 0.0001,
   "actor_wd": 0.003,
@@ -16,8 +16,8 @@
   "use_cuda": true,
   "total_steps": 5000000,
   "meta_episode_length": 100,
-  "meta_episodes_per_epoch": 100,
-  "num_processes": 10,
+  "meta_episodes_per_epoch": 240,
+  "num_processes": 20,
   "discount_gamma": 0.99,
   "use_proper_time_limits": false,
   "ppo_opt_epochs": 10,

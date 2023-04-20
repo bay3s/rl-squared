@@ -1,5 +1,4 @@
-# @todo move
-from typing import List
+from typing import List, Tuple
 
 import torch
 
@@ -19,14 +18,15 @@ def sample_meta_episodes(
     gae_lambda: float,
     discount_gamma: float,
     use_proper_time_limits: bool
-) -> List[MetaEpisodeBatch]:
+) -> Tuple[List[MetaEpisodeBatch], List]:
     observation_space = rl_squared_envs.observation_space
     action_space = rl_squared_envs.action_space
 
     recurrent_state_size = actor_critic.recurrent_state_size
     num_parallel_envs = rl_squared_envs.num_envs
 
-    meta_episodes_all = list()
+    meta_episode_batch = list()
+    meta_episode_rewards = list()
 
     for _ in range(num_meta_episodes // num_parallel_envs):
         meta_episodes = MetaEpisodeBatch(
@@ -42,7 +42,6 @@ def sample_meta_episodes(
         meta_episodes.obs[0].copy_(initial_observations)
 
         for step in range(meta_episode_length):
-            # @todo deal with masks differently for RL-Squared
             (
                 value_preds,
                 actions,
@@ -55,6 +54,11 @@ def sample_meta_episodes(
             )
 
             obs, rewards, dones, infos = rl_squared_envs.step(actions)
+
+            # rewards
+            for info in infos:
+                if 'episode' in info.keys():
+                    meta_episode_rewards.append(info['episode']['r'])
 
             # masks
             time_limit_masks = torch.FloatTensor(
@@ -97,7 +101,7 @@ def sample_meta_episodes(
             use_proper_time_limits
         )
 
-        meta_episodes_all.append(meta_episodes)
+        meta_episode_batch.append(meta_episodes)
         pass
 
-    return meta_episodes_all
+    return meta_episode_batch, meta_episode_rewards

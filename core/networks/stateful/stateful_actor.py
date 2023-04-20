@@ -16,7 +16,7 @@ class StatefulActor(BaseActor):
         self,
         observation_space: gym.Space,
         action_space: gym.Space,
-        hidden_size: int = 64,
+        hidden_size: int = 256,
     ):
         """
         Stateful actor for a discrete action space.

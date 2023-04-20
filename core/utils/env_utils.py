@@ -6,7 +6,7 @@ import gym
 
 from stable_baselines3.common.monitor import Monitor
 
-
+from gym.envs.registration import register
 from core.envs.normalized_vec_env import NormalizedVecEnv as NormalizedVecEnv
 from core.envs.time_limit_env_wrapper import TimeLimitEnvWrapper
 from core.envs.multiprocessing_vec_env import MultiprocessingVecEnv
@@ -126,3 +126,22 @@ def make_vec_envs(
 
     return envs
 
+
+def register_custom_envs() -> None:
+    """
+    Register custom environments for experiments.
+
+    Returns:
+        None
+    """
+    register(
+        id = 'Bandit-v0',
+        entry_point = 'core.envs.bandits.bandit_env:BanditEnv',
+        max_episode_steps = 1,
+    )
+
+    register(
+        id = 'Tabular-v0',
+        entry_point = 'core.envs.mdps.tabular_mdp_env:TabularMDPEnv',
+        max_episode_steps = 10,
+    )

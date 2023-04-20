@@ -20,6 +20,7 @@ class BaseMetaEnv(gym.Env, ABC):
       seed (int): Random seed.
     """
     gym.Env.__init__(self)
+
     self.np_random = np.random.RandomState()
     self.seed(seed)
     pass

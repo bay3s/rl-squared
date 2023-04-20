@@ -8,7 +8,7 @@ import gym.spaces as spaces
 from core.envs.base_meta_env import BaseMetaEnv
 
 
-class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
+class BanditEnv(EzPickle, BaseMetaEnv):
 
     def __init__(self, num_actions: int, seed: int = None):
         """
@@ -20,7 +20,6 @@ class BanditEnv(gym.Env, EzPickle, BaseMetaEnv):
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
-        self.seed(seed)
         self.viewer = None
 
         self._num_actions = num_actions

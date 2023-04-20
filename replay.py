@@ -2,13 +2,13 @@ import os
 import sys
 import torch
 
-from core.training.training_args import TrainingArgs
+from core.training.experiment_config import ExperimentConfig
 from core.utils.env_utils import get_render_func, get_vec_normalize, make_vec_envs
 
 sys.path.append('core')
 
 config_json = f'{os.path.dirname(__file__)}/results/cartpole_v1/config.json'
-args = TrainingArgs.from_json(config_json)
+args = ExperimentConfig.from_json(config_json)
 
 env = make_vec_envs(
     args.env_name,

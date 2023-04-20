@@ -1,16 +1,22 @@
 import os
 
-import core.envs
-import gym
+import wandb
 
-from core.training.trainer import TrainingArgs
+from core.training.trainer import ExperimentConfig
 from core.training.trainer import Trainer
+
+from core.utils.env_utils import register_custom_envs
+register_custom_envs()
 
 
 if __name__ == '__main__':
-  config_path = f'{os.path.dirname(__file__)}/configs/tabular_v0.json'
+  wandb.login()
 
-  args = TrainingArgs.from_json(config_path)
+  config_path = f'{os.path.dirname(__file__)}/configs/tabular_v0.json'
+  args = ExperimentConfig.from_json(config_path)
+
+  # start
   trainer = Trainer(args)
-  trainer.meta_train()
+  trainer.train()
+
   pass

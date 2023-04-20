@@ -32,7 +32,7 @@ class MetaEpisodeBatch:
         self.action_log_probs = torch.zeros(meta_episode_length, num_meta_episodes, 1)
         self.actions = self._init_actions(action_space, meta_episode_length, num_meta_episodes)
 
-        # @todo verify
+        # recurrent states
         self.recurrent_states = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
 
         # terminated
