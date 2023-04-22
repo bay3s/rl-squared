@@ -17,14 +17,14 @@ from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
 
 class Trainer:
 
-    def __init__(self, config: ExperimentConfig):
+    def __init__(self, experiment_config: ExperimentConfig):
         """
         Initialize an instance of a trainer for PPO.
 
         Args:
-          config (ExperimentConfig): Params to be used for the trainer.
+          experiment_config (ExperimentConfig): Params to be used for the trainer.
         """
-        self.config = config
+        self.config = experiment_config
 
         # private
         self._device = None
@@ -69,7 +69,8 @@ class Trainer:
 
         actor_critic = StatefulActorCritic(
             rl_squared_envs.observation_space,
-            rl_squared_envs.action_space
+            rl_squared_envs.action_space,
+            recurrent_state_size = 256
         ).to_device(self.device)
 
         ppo = PPO(
@@ -80,17 +81,17 @@ class Trainer:
             value_loss_coef=self.config.ppo_value_loss_coef,
             entropy_coef=self.config.ppo_entropy_coef,
             actor_lr=self.config.actor_lr,
-            actor_wd = self.config.actor_wd,
             critic_lr=self.config.critic_lr,
-            critic_wd = self.config.critic_wd,
             eps=self.config.optimizer_eps,
             max_grad_norm=self.config.max_grad_norm,
         )
 
-        steps_per_epoch = self.config.meta_episode_length * self.config.meta_episodes_per_epoch
-        training_epochs = self.config.total_steps // steps_per_epoch
+        for j in range(self.config.policy_iterations):
+            # anneal
+            if self.config.use_linear_lr_decay:
+                ppo.anneal_learning_rates(j, self.config.policy_iterations)
+                pass
 
-        for j in range(training_epochs):
             # sample
             meta_episode_batches, meta_episode_rewards = sample_meta_episodes(
                 actor_critic,
@@ -146,7 +147,7 @@ class Trainer:
 
     def save_params(self) -> None:
         """
-        Save config to the logging directory.
+        Save experiment_config to the logging directory.
 
         Returns:
           None

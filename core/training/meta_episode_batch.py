@@ -33,7 +33,8 @@ class MetaEpisodeBatch:
         self.actions = self._init_actions(action_space, meta_episode_length, num_meta_episodes)
 
         # recurrent states
-        self.recurrent_states = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
+        self.recurrent_states_actor = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
+        self.recurrent_states_critic = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
 
         # terminated
         self.done_masks = torch.ones(meta_episode_length + 1, num_meta_episodes, 1)
@@ -73,12 +74,14 @@ class MetaEpisodeBatch:
             None
         """
         self.obs = self.obs.to(device)
-        self.recurrent_states = self.recurrent_states.to(device)
         self.rewards = self.rewards.to(device)
         self.value_preds = self.value_preds.to(device)
         self.returns = self.returns.to(device)
         self.action_log_probs = self.action_log_probs.to(device)
         self.actions = self.actions.to(device)
+
+        self.recurrent_states_actor = self.recurrent_states_actor.to(device)
+        self.recurrent_states_critic = self.recurrent_states_critic.to(device)
 
         self.done_masks = self.done_masks.to(device)
         self.time_limit_masks = self.time_limit_masks.to(device)
@@ -87,7 +90,8 @@ class MetaEpisodeBatch:
     def insert(
         self,
         obs: torch.Tensor,
-        recurrent_states: torch.Tensor,
+        recurrent_states_actor: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
         actions: torch.Tensor,
         action_log_probs: torch.Tensor,
         value_preds: torch.Tensor,
@@ -100,7 +104,8 @@ class MetaEpisodeBatch:
 
         Args:
             obs (torch.Tensor): Observations to be inserted.
-            recurrent_states (torch.Tensor): Recurrent hidden states to be inserted.
+            recurrent_states_actor (torch.Tensor): Recurrent hidden states of the actor to be inserted.
+            recurrent_states_critic (torch.Tensor): Recurrent hidden states of the critic to be inserted.
             actions (torch.Tensor): Actions to be inserted.
             action_log_probs (torch.Tensor): Log probabilities of actions to be inserted.
             value_preds (torch.Tensor): Value predictions to be inserted.
@@ -115,9 +120,12 @@ class MetaEpisodeBatch:
         if self.step > self.meta_episode_length:
             raise IndexError(f'Number of steps exceeded.')
 
+        # states
+        self.recurrent_states_actor[self.step + 1].copy_(recurrent_states_actor)
+        self.recurrent_states_critic[self.step + 1].copy_(recurrent_states_critic)
+
         # obs, r
         self.obs[self.step + 1].copy_(obs)
-        self.recurrent_states[self.step + 1].copy_(recurrent_states)
 
         # masks
         self.done_masks[self.step + 1].copy_(done_masks)

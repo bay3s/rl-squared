@@ -46,11 +46,13 @@ def sample_meta_episodes(
                 value_preds,
                 actions,
                 action_log_probs,
-                recurrent_states,
+                recurrent_states_actor,
+                recurrent_states_critic
             ) = actor_critic.act(
                 meta_episodes.obs[step],
-                meta_episodes.recurrent_states[step],
-                meta_episodes.done_masks[step]
+                meta_episodes.recurrent_states_actor[step],
+                meta_episodes.recurrent_states_critic[step],
+                meta_episodes.done_masks[step],
             )
 
             obs, rewards, dones, infos = rl_squared_envs.step(actions)
@@ -77,7 +79,8 @@ def sample_meta_episodes(
             # insert
             meta_episodes.insert(
                 obs,
-                recurrent_states,
+                recurrent_states_actor,
+                recurrent_states_critic,
                 actions,
                 action_log_probs,
                 value_preds,
@@ -87,11 +90,15 @@ def sample_meta_episodes(
             )
             pass
 
-        next_value_pred = actor_critic.get_value(
+        # @todo remove
+        recurrent_masks = torch.ones(meta_episodes.done_masks[-1].shape)
+        next_value_pred, _ = actor_critic.get_value(
             meta_episodes.obs[-1],
-            meta_episodes.recurrent_states[-1],
-            meta_episodes.done_masks[-1],
-        ).detach()
+            meta_episodes.recurrent_states_critic[-1],
+            recurrent_masks[-1]
+        )
+
+        next_value_pred.detach()
 
         meta_episodes.compute_returns(
             next_value_pred,

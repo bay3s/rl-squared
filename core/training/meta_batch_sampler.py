@@ -16,7 +16,9 @@ class MetaBatchSampler:
     self.action_log_probs = self._concat('action_log_probs')
     self.actions = self._concat('actions')
 
-    self.recurrent_states = self._concat('recurrent_states')
+    self.recurrent_states_actor = self._concat('recurrent_states_actor')
+    self.recurrent_states_critic = self._concat('recurrent_states_critic')
+
     self.done_masks = self._concat('done_masks')
     self.time_limit_masks = self._concat('time_limit_masks')
 
@@ -46,13 +48,15 @@ class MetaBatchSampler:
 
     for start_ind in range(0, num_meta_episodes, num_envs_per_batch):
       obs_batch = []
-      recurrent_states_batch = []
       actions_batch = []
       value_preds_batch = []
       return_batch = []
       done_masks_batch = []
       old_action_log_probs_batch = []
       adv_targ = []
+
+      recurrent_states_actor_batch = []
+      recurrent_states_critic_batch = []
 
       for offset in range(num_envs_per_batch):
         ind = perm[start_ind + offset]
@@ -66,8 +70,8 @@ class MetaBatchSampler:
         old_action_log_probs_batch.append(self.action_log_probs[:, ind])
         adv_targ.append(advantages[:, ind])
 
-        # @todo returns the first hidden state, verify.
-        recurrent_states_batch.append(self.recurrent_states[0:1, ind])
+        recurrent_states_actor_batch.append(self.recurrent_states_actor[0:1, ind])
+        recurrent_states_critic_batch.append(self.recurrent_states_critic[0:1, ind])
         pass
 
       T, N = meta_episode_length, num_envs_per_batch
@@ -81,9 +85,13 @@ class MetaBatchSampler:
       old_action_log_probs_batch = torch.stack(old_action_log_probs_batch, 1)
       adv_targ = torch.stack(adv_targ, 1)
 
-      # states is just a (N, -1) tensor
-      recurrent_states_batch = torch.stack(
-        recurrent_states_batch, 1
+      # recurrent states
+      recurrent_states_actor_batch = torch.stack(
+        recurrent_states_actor_batch, 1
+      ).view(N, -1)
+
+      recurrent_states_critic_batch = torch.stack(
+        recurrent_states_critic_batch, 1
       ).view(N, -1)
 
       # flatten the (T, N, ...) tensors to (T * N, ...)
@@ -98,8 +106,8 @@ class MetaBatchSampler:
 
       adv_targ = _flatten(T, N, adv_targ)
 
-      yield obs_batch, recurrent_states_batch, actions_batch, value_preds_batch, return_batch, done_masks_batch, \
-        old_action_log_probs_batch, adv_targ
+      yield obs_batch, recurrent_states_actor_batch, recurrent_states_critic_batch, actions_batch, value_preds_batch, \
+          return_batch, done_masks_batch, old_action_log_probs_batch, adv_targ
 
 
 def _flatten(T: int, N: int, _tensor: torch.Tensor) -> torch.Tensor:

@@ -3,7 +3,7 @@ from typing import Callable
 from torch import nn as nn
 
 
-def init_module(module: nn.Module, weight_init: Callable, bias_init: Callable, gain: float = 1.0):
+def init_module(module: nn.Module, weight_init: Callable, bias_init: Callable, gain: float = 1.0) -> nn.Module:
     """
     Initialize a module with the given weight and bias functions.
 

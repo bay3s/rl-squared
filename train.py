@@ -12,11 +12,11 @@ register_custom_envs()
 if __name__ == '__main__':
   wandb.login()
 
-  config_path = f'{os.path.dirname(__file__)}/configs/tabular_v0.json'
-  args = ExperimentConfig.from_json(config_path)
+  config_path = f'{os.path.dirname(__file__)}/configs/bandit_v0.json'
+  experiment_config = ExperimentConfig.from_json(config_path)
 
   # start
-  trainer = Trainer(args)
+  trainer = Trainer(experiment_config)
   trainer.train()
 
   pass

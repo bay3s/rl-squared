@@ -20,9 +20,7 @@ class PPO:
         entropy_coef: float,
         value_loss_coef: float,
         actor_lr: float,
-        actor_wd: float,
         critic_lr: float,
-        critic_wd: float,
         eps: float = None,
         max_grad_norm: float = None,
         use_clipped_value_loss: bool = True,
@@ -38,9 +36,7 @@ class PPO:
             entropy_coef (float): Entropy coefficient to be used while computing the loss.
             value_loss_coef (float): Value loss coefficient to be used while computing the loss.
             actor_lr (float): Learning rate of the actor network.
-            actor_wd (float): Weight decay for the actor.
             critic_lr (float): Learning rate of the critic network.
-            critic_wd (float): Weight decay for the critic.
             eps (float): Epsilon value to use with the Adam optimizer.
             max_grad_norm (float): Max gradient norm for gradient clipping.
             use_clipped_value_loss (bool): Whether to use the clipped value loss while computing the objective.
@@ -57,25 +53,48 @@ class PPO:
         self.max_grad_norm = max_grad_norm
         self.use_clipped_value_loss = use_clipped_value_loss
 
+        self.initial_actor_lr = actor_lr
+        self.initial_critic_lr = critic_lr
+
         self.optimizer = torch.optim.Adam(
             [
                 {
                     "name": self.OPT_ACTOR_PARAMS,
                     "params": self.actor_critic.actor.parameters(),
-                    "lr": actor_lr,
+                    "lr": self.initial_actor_lr,
                     "eps": eps,
-                    # "weight_decay": actor_wd
                 },
                 {
                     "name": self.OPT_CRITIC_PARAMS,
                     "params": self.actor_critic.critic.parameters(),
-                    "lr": critic_lr,
+                    "lr": self.initial_critic_lr,
                     "eps": eps,
-                    # "weight_decay": critic_wd
                 },
             ]
         )
         pass
+
+    def anneal_learning_rates(self, current_epoch: int, total_epochs: int) -> None:
+        """
+        Update linear schedule for the actor's learning rate.
+
+        Args:
+            current_epoch (int): Current training epoch.
+            total_epochs (int): Total epochs over which to decay the learning rate.
+
+        Returns:
+            None
+        """
+        for param_group in self.optimizer.param_groups:
+            if param_group["name"] != self.OPT_ACTOR_PARAMS:
+                continue
+
+            lr = self.initial_actor_lr - (
+            self.initial_actor_lr * (current_epoch / float(total_epochs))
+            )
+
+            param_group["lr"] = lr
+            pass
 
     def update(self, minibatch_sampler) -> Tuple[float, float, float]:
         """
@@ -102,7 +121,8 @@ class PPO:
             for sample in minibatches:
                 (
                     obs_batch,
-                    recurrent_states_batch,
+                    actor_states_batch,
+                    critic_states_batch,
                     actions_batch,
                     value_preds_batch,
                     return_batch,
@@ -112,13 +132,13 @@ class PPO:
                 ) = sample
 
                 # reshape
+                recurrent_masks = torch.ones(done_masks_batch.shape) # @todo remove
                 (
                     values,
                     action_log_probs,
-                    dist_entropy,
-                    _,
+                    dist_entropy
                 ) = self.actor_critic.evaluate_actions(
-                    obs_batch, recurrent_states_batch, done_masks_batch, actions_batch
+                    obs_batch, actions_batch, actor_states_batch, critic_states_batch, recurrent_masks
                 )
 
                 ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
