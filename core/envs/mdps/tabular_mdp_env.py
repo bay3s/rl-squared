@@ -10,13 +10,14 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
-    def __init__(self, num_states: int, num_actions: int, seed: int = None):
+    def __init__(self, num_states: int, num_actions: int, episode_length: int, seed: int = None):
         """
         Initialize a tabular MDP.
 
         Args:
           num_states (int): Number of states.
           num_actions (int): Number of actions.
+          episode_length (int): Number of steps per episode.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
@@ -25,17 +26,21 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
         self._num_states = num_states
         self._num_actions = num_actions
+        self._start_state = 0
+
+        self._episode_length = episode_length
         self._num_steps = 0
 
         # sampled later
-        self._initial_state = 0
         self._current_state = None
         self._transitions = None
         self._rewards_mean = None
 
         # spaces
         self._action_space = spaces.Discrete(self._num_actions)
-        self._observation_space = spaces.Box(low = 0.0, high = 1.0, shape = (self._num_states,))
+        self._observation_space = spaces.Box(
+            low = 0., high = 1., shape = (self._num_states,)
+        )
 
         # sample
         self.sample_task()
@@ -48,13 +53,17 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
           None
         """
-        self._transitions = self.np_random.dirichlet(np.ones(self._num_states), size = (self._num_states,
-                                                                                        self._num_actions))
-
-        self._rewards_mean = self.np_random.normal(1.0, 1.0, size = (self._num_states, self._num_actions))
-        self._current_state = self._initial_state
+        self._current_state = self._start_state
         self._num_steps = 0
-        pass
+
+        self._transitions = self.np_random.dirichlet(
+            alpha = np.ones(self._num_states),
+            size = (self._num_states, self._num_actions)
+        )
+
+        self._rewards_mean = self.np_random.normal(
+            loc = 1.0, scale = 1.0, size = (self._num_states, self._num_actions)
+        )
 
     def reset(self) -> np.ndarray:
         """
@@ -65,11 +74,11 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
           np.ndarray
         """
-        self._current_state = self._initial_state
+        self._current_state = self._start_state
         self._num_steps = 0
 
         observation = np.zeros(self._num_states)
-        observation[self._initial_state] = 1.
+        observation[self._start_state] = 1.
 
         return observation
 
@@ -114,17 +123,21 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           Tuple
         """
         self._num_steps += 1
-        mean = self._rewards_mean[self._current_state, action]
-        reward = self.np_random.normal(mean, 1.0)
 
-        self._current_state = self.np_random.choice(self._num_states, p = self._transitions[self._current_state, action]
-                                                    )
+        reward = self.np_random.normal(
+            loc = self._rewards_mean[self._current_state, action],
+            scale = 1.0
+        )
+
+        self._current_state = self.np_random.choice(
+            a = self._num_states,
+            p = self._transitions[self._current_state, action]
+        )
 
         observation = np.zeros(self._num_states)
         observation[self._current_state] = 1.
 
-        # @todo pass `episode_length` variable
-        done = self._num_steps == 10
+        done = self._num_steps == self._episode_length
 
         return observation, reward, done, {}
 

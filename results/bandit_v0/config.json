@@ -17,7 +17,7 @@
   "meta_episode_length": 100,
   "num_processes": 20,
   "discount_gamma": 0.99,
-  "use_proper_time_limits": false,
+  "use_proper_time_limits": true,
   "ppo_opt_epochs": 10,
   "ppo_clip_param": 0.1,
   "ppo_entropy_coef": 0.01,

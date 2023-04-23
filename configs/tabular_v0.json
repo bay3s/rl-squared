@@ -3,7 +3,8 @@
   "env_name": "Tabular-v0",
   "env_configs": {
     "num_states": 10,
-    "num_actions": 5
+    "num_actions": 5,
+    "episode_length": 10
   },
   "actor_lr": 0.0004,
   "critic_lr": 0.0004,

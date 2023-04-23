@@ -1,8 +1,8 @@
 import os
 
 import torch
-import wandb
 import numpy as np
+import wandb
 
 import core.utils.logging_utils as logging_utils
 from core.training.experiment_config import ExperimentConfig
@@ -32,19 +32,22 @@ class Trainer:
         self._eval_log_dir = None
         pass
 
-    def train(self) -> None:
+    def train(self, enable_logging: bool = True) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
         Returns:
           None
         """
-        # track
+        # log
         self.save_params()
-        wandb.init(
-            project = "rl-squared",
-            config = self.config.dict
-        )
+
+        if enable_logging:
+            wandb.login()
+            wandb.init(
+                project = "rl-squared",
+                config = self.config.dict
+            )
 
         # seed
         torch.manual_seed(self.config.random_seed)
@@ -107,16 +110,18 @@ class Trainer:
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
-            wandb.log({
-                'mean_value_loss':  value_loss,
-                'mean_action_loss': action_loss,
-                'mean_dist_entropy': dist_entropy,
-                'mean_rewards': np.mean(meta_episode_rewards)
-            })
+            if enable_logging:
+                wandb.log({
+                    'mean_value_loss':  value_loss,
+                    'mean_action_loss': action_loss,
+                    'mean_dist_entropy': dist_entropy,
+                    'mean_rewards': np.mean(meta_episode_rewards)
+                })
             pass
 
-        # end
-        wandb.finish()
+        if enable_logging:
+            # end
+            wandb.finish()
         pass
 
     @property

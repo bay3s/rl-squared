@@ -136,7 +136,7 @@ def register_custom_envs() -> None:
     """
     register(
         id = 'Bandit-v0',
-        entry_point = 'core.envs.bandits.bandit_env:BanditEnv',
+        entry_point = 'core.envs.bandits.multi_armed_bandit_env:BanditEnv',
         max_episode_steps = 1,
     )
 
