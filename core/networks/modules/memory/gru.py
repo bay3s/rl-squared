@@ -2,7 +2,8 @@ from typing import Tuple
 
 import torch.nn as nn
 import torch
-from torch.nn.utils.weight_norm import weight_norm
+
+from core.utils.torch_utils import init_recurrent
 
 
 class GRU(nn.Module):
@@ -16,30 +17,9 @@ class GRU(nn.Module):
             recurrent_state_size (int): Size of the recurrent state.
         """
         nn.Module.__init__(self)
-        self._gru = self._init_recurrent(input_size, recurrent_state_size)
+
+        self._gru = init_recurrent(input_size, recurrent_state_size)
         pass
-
-    @staticmethod
-    def _init_recurrent(input_size: int, recurrent_state_size: int) -> nn.Module:
-        """
-        Initialize the recurrent module.
-
-        Args:
-            input_size (int): Size of the input to the recurrent layer.
-            recurrent_state_size (int): Size of the recurrent state.
-
-        Returns:
-            nn.Module
-        """
-        gru_module = nn.GRU(input_size, recurrent_state_size)
-
-        for name, param in gru_module.named_parameters():
-            if "bias" in name:
-                nn.init.constant_(param, 0)
-            elif "weight" in name:
-                nn.init.xavier_normal_(param)
-
-        return gru_module
 
     def forward(self, x, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -49,6 +29,7 @@ class GRU(nn.Module):
         Args:
             x (torch.Tensor): Input to the GRU.
             recurrent_states (torch.Tensor): Recurrent state from the previous forward pass.
+            recurrent_masks (torch.Tensor): Masks to be applied to the recurrent states.
 
         Returns:
             Tuple

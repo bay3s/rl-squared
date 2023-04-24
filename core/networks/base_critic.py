@@ -22,13 +22,15 @@ class BaseCritic(ABC, nn.Module):
             raise NotImplementedError("Expected vectorized 1-d observation space.")
 
     @abstractmethod
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
+                ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Conduct the forward pass through the network.
 
         Args:
           x (torch.Tensor): Input for the forward pass.
-          recurrent_states (torch.Tensor): Recurrent states of the critic.
+          recurrent_states (torch.Tensor): Recurrent states for the actor.
+          recurrent_masks (torch.Tensor): Masks to be applied to the recurrent state.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor]

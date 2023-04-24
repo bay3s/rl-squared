@@ -35,6 +35,8 @@ class StatefulActorCritic(BaseActorCritic):
             recurrent_state_size = recurrent_state_size,
             hidden_sizes = [256]
         )
+
+        self._recurrent_state_size = recurrent_state_size
         pass
 
     @property
@@ -137,7 +139,7 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
           int
         """
-        return self.actor.recurrent_state_size
+        return self._recurrent_state_size
 
     def forward(self) -> None:
         """

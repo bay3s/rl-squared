@@ -8,7 +8,7 @@ register_custom_envs()
 
 
 if __name__ == '__main__':
-  config_path = f'{os.path.dirname(__file__)}/configs/tabular_v0.json'
+  config_path = f'{os.path.dirname(__file__)}/configs/debugging_config.json'
   experiment_config = ExperimentConfig.from_json(config_path)
 
   # start
