@@ -7,24 +7,39 @@ from core.training.meta_episode_batch import MetaEpisodeBatch
 class MetaBatchSampler:
 
   def __init__(self, batches: List[MetaEpisodeBatch]):
+    """
+    A list of sampled episode batches.
+
+    Args:
+      batches (List[MetaEpisodeBatch): A list of sampled `MetaEpisodeBatch`-es
+    """
     self.meta_episode_batches = batches
 
-    self.obs = self._concat('obs')
-    self.rewards = self._concat('rewards')
-    self.value_preds = self._concat('value_preds')
-    self.returns = self._concat('returns')
-    self.action_log_probs = self._concat('action_log_probs')
-    self.actions = self._concat('actions')
+    self.obs = self._concat_attr('obs')
+    self.rewards = self._concat_attr('rewards')
+    self.value_preds = self._concat_attr('value_preds')
+    self.returns = self._concat_attr('returns')
+    self.action_log_probs = self._concat_attr('action_log_probs')
+    self.actions = self._concat_attr('actions')
 
-    self.recurrent_states_actor = self._concat('recurrent_states_actor')
-    self.recurrent_states_critic = self._concat('recurrent_states_critic')
+    self.recurrent_states_actor = self._concat_attr('recurrent_states_actor')
+    self.recurrent_states_critic = self._concat_attr('recurrent_states_critic')
 
-    self.done_masks = self._concat('done_masks')
-    self.time_limit_masks = self._concat('time_limit_masks')
+    self.done_masks = self._concat_attr('done_masks')
+    self.time_limit_masks = self._concat_attr('time_limit_masks')
 
     pass
 
-  def _concat(self, attr: str) -> torch.Tensor:
+  def _concat_attr(self, attr: str) -> torch.Tensor:
+    """
+    Conacatenate attribute values.
+
+    Args:
+      attr (str): Attribute whose values to concatenate.
+
+    Returns:
+      torch.Tensor
+    """
     tensors = [getattr(meta_episode_batch, attr) for meta_episode_batch in self.meta_episode_batches]
 
     return torch.cat(tensors = tensors, dim = 1)

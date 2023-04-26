@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
+from core.training.meta_batch_sampler import MetaBatchSampler
 
 
 class PPO:
@@ -96,7 +97,7 @@ class PPO:
             param_group["lr"] = lr
             pass
 
-    def update(self, minibatch_sampler) -> Tuple[float, float, float]:
+    def update(self, minibatch_sampler: MetaBatchSampler) -> Tuple[float, float, float]:
         """
         Update the policy and value function.
 
@@ -132,13 +133,12 @@ class PPO:
                 ) = sample
 
                 # reshape
-                recurrent_masks = torch.ones(done_masks_batch.shape) # @todo remove
                 (
                     values,
                     action_log_probs,
                     dist_entropy
                 ) = self.actor_critic.evaluate_actions(
-                    obs_batch, actions_batch, actor_states_batch, critic_states_batch, recurrent_masks
+                    obs_batch, actions_batch, actor_states_batch, critic_states_batch
                 )
 
                 ratio = torch.exp(action_log_probs - old_action_log_probs_batch)

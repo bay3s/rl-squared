@@ -19,6 +19,22 @@ def sample_meta_episodes(
     discount_gamma: float,
     use_proper_time_limits: bool
 ) -> Tuple[List[MetaEpisodeBatch], List]:
+    """
+    Sample meta-episodes in parallel.
+
+    Args:
+        actor_critic (StatefulActorCritic): Actor-critic to be used for sampling.
+        rl_squared_envs (PyTorchVecEnvWrapper): Parallel environments for sampling episodes.
+        meta_episode_length (int): Meta-episode length, each "meta-episode" has multiple episodes.
+        num_meta_episodes (int): Number of meta-episodes to sample.
+        use_gae (bool): Whether to use GAE to compute advantages.
+        gae_lambda (float): GAE lambda parameter.
+        discount_gamma (float): Discount rate.
+        use_proper_time_limits (bool): Whether to use proper time limits.
+
+    Returns:
+        Tuple[List[MetaEpisodeBatch], List]
+    """
     observation_space = rl_squared_envs.observation_space
     action_space = rl_squared_envs.action_space
 
