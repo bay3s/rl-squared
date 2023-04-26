@@ -13,6 +13,6 @@ if __name__ == '__main__':
 
   # start
   trainer = Trainer(experiment_config)
-  trainer.train(False)
+  trainer.train(enable_logging = True)
 
   pass

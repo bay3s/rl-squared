@@ -124,8 +124,8 @@ class StatefulActorCritic(BaseActorCritic):
           Tuple
         """
         value, _ = self.critic(inputs, recurrent_states_critic, recurrent_masks)
-
         dist, _ = self.actor(inputs, recurrent_states_actor, recurrent_masks)
+
         log_probs = dist.log_probs(actions)
         dist_entropy = dist.entropy().mean()
 

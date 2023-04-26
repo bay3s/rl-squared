@@ -48,7 +48,8 @@ class StatefulCritic(BaseCritic):
         """
         return self._recurrent_state_size
 
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
+                ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Conduct the forward pass through the network.
 

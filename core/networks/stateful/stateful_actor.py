@@ -1,4 +1,4 @@
-from typing import Tuple, Union, List, Callable, Any
+from typing import Tuple, Union, List
 import gym
 
 import torch
@@ -82,6 +82,7 @@ class StatefulActor(BaseActor):
         """
         x, recurrent_states = self._gru(x, recurrent_states, recurrent_masks)
         x = self._mlp(x)
+        x = self._policy_head(x)
 
-        return self._policy_head(x), recurrent_states
+        return x, recurrent_states
 
