@@ -76,7 +76,7 @@ class StatefulActorCritic(BaseActorCritic):
         observations: torch.Tensor,
         recurrent_states_actor: torch.Tensor,
         recurrent_states_critic: torch.Tensor,
-        done_masks: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None,
         deterministic: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
@@ -87,44 +87,65 @@ class StatefulActorCritic(BaseActorCritic):
           observations (torch.Tensor): State in which to take an action.
           recurrent_states_actor (torch.Tensor): Recurrent states for the actor.
           recurrent_states_critic (torch.Tensor): Recurrent states for the critic.
+          recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
           deterministic (bool): Whether to choose actions deterministically.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
-        recurrent_masks = torch.ones(done_masks.shape)
+        value_estimate, recurrent_states_critic = self.critic(observations, recurrent_states_critic,
+                                                              recurrent_state_masks)
+        action_distribution, recurrent_states_actor = self.actor(observations, recurrent_states_actor,
+                                                                 recurrent_state_masks)
 
-        value_estimate, recurrent_states_critic = self.critic(observations, recurrent_states_critic, recurrent_masks)
-        action_distribution, recurrent_states_actor = self.actor(observations, recurrent_states_actor, recurrent_masks)
-
+        # @todo use mean for Gaussian
         actions = action_distribution.mode() if deterministic else action_distribution.sample()
 
         return value_estimate, actions, action_distribution.log_probs(actions), recurrent_states_actor, \
             recurrent_states_critic
 
-    def get_value(self, observations: torch.Tensor, recurrent_states_critic: torch.Tensor,
-                  recurrent_masks: torch.Tensor) -> torch.Tensor:
+    def get_value(
+        self,
+        observations: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None
+    ) -> torch.Tensor:
         """
         Given a state returns its corresponding value.
 
         Args:
           observations (torch.Tensor): State in which to take an action.
           recurrent_states_critic (torch.Tensor): Recurrent states that are being used in memory-based policies.
+          recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
 
         Returns:
           torch.Tensor
         """
-        return self.critic(observations, recurrent_states_critic, recurrent_masks)
+        return self.critic(observations, recurrent_states_critic, recurrent_state_masks)
 
-    def evaluate_actions(self, inputs, actions, recurrent_states_actor, recurrent_states_critic, recurrent_masks) -> Tuple:
+    def evaluate_actions(
+        self,
+        inputs: torch.Tensor,
+        actions: torch.Tensor,
+        recurrent_states_actor: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None
+    ) -> Tuple:
         """
-        Evaluate actions given observations, encoded states, done_masks, actions.
+        Evaluate actions given observations, states, actions, and recurrent state masks.
+
+        Args:
+            inputs (torch.Tensor): Inputs to the actor and the critic.
+            actions (torch.Tensor): Actions taken at each timestep.
+            recurrent_states_actor (torch.Tensor): Recurrent states for the actor.
+            recurrent_states_critic (torch.Tensor): Recurrent states for the critic.
+            recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
 
         Returns:
-          Tuple
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
-        value, _ = self.critic(inputs, recurrent_states_critic, recurrent_masks)
-        dist, _ = self.actor(inputs, recurrent_states_actor, recurrent_masks)
+        value, _ = self.critic(inputs, recurrent_states_critic, recurrent_state_masks)
+        dist, _ = self.actor(inputs, recurrent_states_actor, recurrent_state_masks)
 
         log_probs = dist.log_probs(actions)
         dist_entropy = dist.entropy().mean()

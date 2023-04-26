@@ -22,7 +22,7 @@ class Trainer:
         Initialize an instance of a trainer for PPO.
 
         Args:
-          experiment_config (ExperimentConfig): Params to be used for the trainer.
+            experiment_config (ExperimentConfig): Params to be used for the trainer.
         """
         self.config = experiment_config
 
@@ -36,8 +36,11 @@ class Trainer:
         """
         Train an agent based on the configs specified by the training parameters.
 
+        Args:
+            enable_logging (bool): Whether to log to Wandb, `True` by default.
+
         Returns:
-          None
+
         """
         # log
         self.save_params()
@@ -46,6 +49,8 @@ class Trainer:
             wandb.login()
             wandb.init(
                 project = "rl-squared",
+                group = f'rl-squared-{self.config.env_name}',
+                job_type = "meta-train",
                 config = self.config.dict
             )
 

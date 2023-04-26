@@ -21,7 +21,7 @@ class GRU(nn.Module):
         self._gru = init_recurrent(input_size, recurrent_state_size)
         pass
 
-    def forward(self, x, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
+    def forward(self, x, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None
                 ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.
@@ -29,14 +29,15 @@ class GRU(nn.Module):
         Args:
             x (torch.Tensor): Input to the GRU.
             recurrent_states (torch.Tensor): Recurrent state from the previous forward pass.
-            recurrent_masks (torch.Tensor): Masks to be applied to the recurrent states.
+            recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
 
         Returns:
             Tuple
         """
-        recurrent_state_masks = torch.ones(recurrent_masks.shape)
-
         if x.size(0) == recurrent_states.size(0):
+            if recurrent_state_masks is None:
+                recurrent_state_masks = torch.ones(recurrent_states.shape)
+
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
             )
@@ -54,7 +55,11 @@ class GRU(nn.Module):
         x = x.view(T, N, x.size(1))
 
         # masks
-        recurrent_state_masks = recurrent_state_masks.view(T, N)
+        if recurrent_state_masks is None:
+            recurrent_state_masks = torch.ones((T, N))
+        else:
+            recurrent_state_masks = recurrent_state_masks.view(T, N)
+
         has_zeros = (recurrent_state_masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
 
         # +1 to correct the recurrent_masks[1:] where zeros are present.

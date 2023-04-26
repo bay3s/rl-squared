@@ -67,7 +67,7 @@ class StatefulActor(BaseActor):
         """
         return self._recurrent_state_size
 
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
+    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None
                 ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
         """
         Conduct the forward pass through the network.
@@ -75,12 +75,12 @@ class StatefulActor(BaseActor):
         Args:
           x (torch.Tensor): Input for the forward pass.
           recurrent_states (torch.Tensor): Recurrent states for the actor.
-          recurrent_masks (torch.Tensor): Masks (if any) to be applied to recurrent states.
+          recurrent_state_masks (torch.Tensor): Masks (if any) to be applied to recurrent states.
 
         Returns:
           Tuple[Categorical, torch.Tensor]
         """
-        x, recurrent_states = self._gru(x, recurrent_states, recurrent_masks)
+        x, recurrent_states = self._gru(x, recurrent_states, recurrent_state_masks)
         x = self._mlp(x)
         x = self._policy_head(x)
 
