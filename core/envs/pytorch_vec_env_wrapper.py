@@ -1,21 +1,22 @@
-from typing import Tuple
+import numpy as np
+from typing import Tuple, List
 
 import torch
 
 from stable_baselines3.common.vec_env import VecEnvWrapper, VecEnv
 
 
-class PyTorchVecEnv(VecEnvWrapper):
+class PyTorchVecEnvWrapper(VecEnvWrapper):
 
-    def __init__(self, venv: VecEnv, device: str):
+    def __init__(self, venv: VecEnv, device: torch.device):
         """
         Initialize an environment compatible with PyTorch.
 
         Args:
             venv (VecEnv): Vectorized environment to provide a PyTorch wrapper for.
-            device (str): Device for PyTorch tensors.
+            device (torch.device): Device for PyTorch tensors.
         """
-        super(PyTorchVecEnv, self).__init__(venv)
+        super(PyTorchVecEnvWrapper, self).__init__(venv)
         self.device = device
         pass
 
@@ -47,13 +48,14 @@ class PyTorchVecEnv(VecEnvWrapper):
 
         actions = actions.cpu().numpy()
         self.venv.step_async(actions)
+        pass
 
-    def step_wait(self) -> Tuple:
+    def step_wait(self) -> Tuple[torch.Tensor, torch.Tensor, np.ndarray, List]:
         """
         Wait for the step taken with step_async() and return resulting observations, rewards, etc.
 
         Returns:
-            Tuple
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
         obs, reward, done, info = self.venv.step_wait()
         obs = torch.from_numpy(obs).float().to(self.device)

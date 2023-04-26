@@ -2,7 +2,7 @@ import glob
 import os
 
 
-def cleanup_log_dir(log_dir) -> None:
+def cleanup_log_dir(log_dir: str) -> None:
     """
     Clean up logs.
 

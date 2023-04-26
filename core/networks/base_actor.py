@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 from abc import ABC, abstractmethod
 
 import gym
@@ -28,16 +28,17 @@ class BaseActor(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def forward(
-        self, x: torch.Tensor
-    ) -> Union[FixedGaussian, FixedBernoulli, FixedCategorical]:
+    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
+                ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
         """
         Forward pass through the network and return a distribution.
 
         Args:
-          x (torch.Tensor): Input for the forward pass.
+            x (torch.Tensor): Input for the forward pass.
+            recurrent_states (torch.Tensor): Recurrent states for the actor.
+            recurrent_masks (torch.Tensor): Masks (if any) to be applied to recurrent states.
 
         Returns:
-          Union[FixedGaussian, FixedBernoulli, FixedCategorical]
+            Union[FixedGaussian, FixedBernoulli, FixedCategorical]
         """
         raise NotImplementedError

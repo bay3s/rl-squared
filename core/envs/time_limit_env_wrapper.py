@@ -22,6 +22,8 @@ class TimeLimitEnvWrapper(gym.Wrapper):
             Tuple
         """
         obs, rew, done, info = self.env.step(action)
+
+        # `_max_episode_steps` and `_elapsed_steps` inherited from `gym.wrappers.time_limit.TimeLimit`
         if done and self.env._max_episode_steps == self.env._elapsed_steps:
             info["time_limit_exceeded"] = True
 

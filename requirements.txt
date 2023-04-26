@@ -1,9 +1,10 @@
 tqdm
 black
-numpy
-torch
-matplotlib
+numpy~=1.24.2
+torch~=2.0.0
+matplotlib~=3.7.1
 gym[box2d] == 0.21.0
 stable-baselines3 == 1.2.0
 mujoco_py == 2.1.2.14
 pyglet==1.5.27
+wandb~=0.14.2

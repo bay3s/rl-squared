@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
-from core.learners.rollout_storage import RolloutStorage
+from core.training.meta_batch_sampler import MetaBatchSampler
 
 
 class PPO:
@@ -16,7 +16,7 @@ class PPO:
         self,
         actor_critic: StatefulActorCritic,
         clip_param: float,
-        num_epochs: int,
+        opt_epochs: int,
         num_minibatches: int,
         entropy_coef: float,
         value_loss_coef: float,
@@ -32,7 +32,7 @@ class PPO:
         Args:
             actor_critic (BaseActorCritic): Actor-Critic to train with PPO.
             clip_param (float): Clip param for PPO.
-            num_epochs (int): Number of epochs to train over.
+            opt_epochs (int): Number of epochs to train over.
             num_minibatches (int): Number of minibatches for training.
             entropy_coef (float): Entropy coefficient to be used while computing the loss.
             value_loss_coef (float): Value loss coefficient to be used while computing the loss.
@@ -45,7 +45,7 @@ class PPO:
         self.actor_critic = actor_critic
 
         self.clip_param = clip_param
-        self.num_epochs = num_epochs
+        self.opt_epochs = opt_epochs
         self.num_minibatches = num_minibatches
 
         self.value_loss_coef = value_loss_coef
@@ -55,26 +55,27 @@ class PPO:
         self.use_clipped_value_loss = use_clipped_value_loss
 
         self.initial_actor_lr = actor_lr
+        self.initial_critic_lr = critic_lr
 
         self.optimizer = torch.optim.Adam(
             [
                 {
-                    "params": self.actor_critic.actor.parameters(),
-                    "lr": actor_lr,
-                    "eps": eps,
                     "name": self.OPT_ACTOR_PARAMS,
+                    "params": self.actor_critic.actor.parameters(),
+                    "lr": self.initial_actor_lr,
+                    "eps": eps,
                 },
                 {
-                    "params": self.actor_critic.critic.parameters(),
-                    "lr": critic_lr,
-                    "eps": eps,
                     "name": self.OPT_CRITIC_PARAMS,
+                    "params": self.actor_critic.critic.parameters(),
+                    "lr": self.initial_critic_lr,
+                    "eps": eps,
                 },
             ]
         )
         pass
 
-    def update_linear_schedule(self, current_epoch: int, total_epochs: int):
+    def anneal_learning_rates(self, current_epoch: int, total_epochs: int) -> None:
         """
         Update linear schedule for the actor's learning rate.
 
@@ -90,53 +91,54 @@ class PPO:
                 continue
 
             lr = self.initial_actor_lr - (
-                self.initial_actor_lr * (current_epoch / float(total_epochs))
+            self.initial_actor_lr * (current_epoch / float(total_epochs))
             )
+
             param_group["lr"] = lr
             pass
 
-    def update(self, rollouts: RolloutStorage) -> Tuple[float, float, float]:
+    def update(self, minibatch_sampler: MetaBatchSampler) -> Tuple[float, float, float]:
         """
         Update the policy and value function.
 
         Args:
-          rollouts (RolloutStorage): Rollouts to be used as data points for making updates.
+          minibatch_sampler (RolloutStorage): Rollouts to be used as data points for making updates.
 
         Returns:
           Tuple[float, float, float]
         """
-        advantages = rollouts.returns[:-1] - rollouts.value_preds[:-1]
+        advantages = minibatch_sampler.returns[:-1] - minibatch_sampler.value_preds[:-1]
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-5)
 
         value_loss_epoch = 0
         action_loss_epoch = 0
         dist_entropy_epoch = 0
 
-        for e in range(self.num_epochs):
-            data_generator = rollouts.minibatch_generator(
+        for e in range(self.opt_epochs):
+            minibatches = minibatch_sampler.sample(
                 advantages, self.num_minibatches
             )
 
-            for sample in data_generator:
+            for sample in minibatches:
                 (
                     obs_batch,
-                    recurrent_hidden_states_batch,
+                    actor_states_batch,
+                    critic_states_batch,
                     actions_batch,
                     value_preds_batch,
                     return_batch,
-                    masks_batch,
+                    done_masks_batch,
                     old_action_log_probs_batch,
                     adv_targ,
                 ) = sample
 
-                # reshape to do in a single forward pass for all steps
+                # reshape
                 (
                     values,
                     action_log_probs,
-                    dist_entropy,
-                    _,
+                    dist_entropy
                 ) = self.actor_critic.evaluate_actions(
-                    obs_batch, recurrent_hidden_states_batch, masks_batch, actions_batch
+                    obs_batch, actions_batch, actor_states_batch, critic_states_batch
                 )
 
                 ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
@@ -165,6 +167,7 @@ class PPO:
                     + action_loss
                     - dist_entropy * self.entropy_coef
                 ).backward()
+
                 nn.utils.clip_grad_norm_(
                     self.actor_critic.actor.parameters(), self.max_grad_norm
                 )
@@ -177,7 +180,7 @@ class PPO:
                 action_loss_epoch += action_loss.item()
                 dist_entropy_epoch += dist_entropy.item()
 
-        num_updates = self.num_epochs * self.num_minibatches
+        num_updates = self.opt_epochs * self.num_minibatches
 
         value_loss_epoch /= num_updates
         action_loss_epoch /= num_updates

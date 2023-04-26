@@ -28,22 +28,24 @@ class BaseActorCritic(ABC):
     def act(
         self,
         observations: torch.Tensor,
-        recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
-        deterministic=False,
+        recurrent_states_actor: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None,
+        deterministic: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Given a state return the action to take, log probability of said action, and the current state value
         computed by the critic.
 
         Args:
-          observations (torch.Tensor): The state in which to take an action.
-          recurrent_states (torch.Tensor): Recurrent states that are being used in memory-based policies.
-          masks (torch.Tensor): Masks based on terminal states.
-          deterministic (bool): Whether to act in a deterministic way.
+          observations (torch.Tensor): State in which to take an action.
+          recurrent_states_actor (torch.Tensor): Recurrent states for the actor.
+          recurrent_states_critic (torch.Tensor): Recurrent states for the critic.
+          recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
+          deterministic (bool): Whether to choose actions deterministically.
 
         Returns:
-          Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+          Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
         raise NotImplementedError
 
@@ -51,16 +53,16 @@ class BaseActorCritic(ABC):
     def get_value(
         self,
         observations: torch.Tensor,
-        recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None
     ) -> torch.Tensor:
         """
         Given a state returns its corresponding value.
 
         Args:
           observations (torch.Tensor): State in which to take an action.
-          recurrent_states (torch.Tensor): Recurrent states that are being used in memory-based policies.
-          masks (torch.Tensor): Masks based on terminal states.
+          recurrent_states_critic (torch.Tensor): Recurrent states that are being used in memory-based critics.
+          recurrent_state_masks (torch.Tensor): Masks based on terminal states.
 
         Returns:
           torch.Tensor
@@ -70,12 +72,20 @@ class BaseActorCritic(ABC):
     def evaluate_actions(
         self,
         inputs: torch.Tensor,
-        recurrent_states: torch.Tensor,
-        masks: torch.Tensor,
         actions: torch.Tensor,
+        recurrent_states_actor: torch.Tensor,
+        recurrent_states_critic: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        Evaluate actions given observations, encoded states, done_masks, actions.
+        Evaluate actions given observations, encoded states, recurrent state recurrent_state_masks, actions.
+
+        Args:
+            inputs (torch.Tensor): Inputs to the actor and the critic.
+            actions (torch.Tensor): Actions taken at each timestep.
+            recurrent_states_actor (torch.Tensor): Recurrent states for the actor.
+            recurrent_states_critic (torch.Tensor): Recurrent states for the critic.
+            recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
