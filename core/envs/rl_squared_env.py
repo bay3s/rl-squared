@@ -5,6 +5,7 @@ import gym
 from copy import deepcopy
 
 from core.envs.base_meta_env import BaseMetaEnv
+from gym.envs.registration import EnvSpec
 
 
 class RLSquaredEnv:
@@ -30,13 +31,18 @@ class RLSquaredEnv:
     pass
 
   @property
-  def spec(self):
+  def spec(self) -> EnvSpec:
+    """
+    Returns specs for the environment.
+
+    Returns:
+      EnvSpec
+    """
     return self._wrapped_env.spec
 
   def _make_observation_space(self) -> gym.Space:
     """
-    Modify the observation space of the wrapped environment to account for rolling forward rewards, actions, terminal
-    states.
+    Modify the observation space of the wrapped environment to include forward rewards, actions, terminal states.
 
     Returns:
       gym.Space
@@ -125,7 +131,7 @@ class RLSquaredEnv:
   @property
   def observation_space(self) -> gym.Space:
     """
-    Return the dimension of the observations.
+    Returns the observation space.
 
     Returns:
       Union[Tuple, int]
@@ -135,7 +141,7 @@ class RLSquaredEnv:
   @property
   def action_space(self) -> gym.Space:
     """
-    Return the dimension of the observations.
+    Returns the action space.
 
     Returns:
       int
@@ -144,11 +150,11 @@ class RLSquaredEnv:
 
   def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
     """
-      Returns the action space
+    Returns the observation space and action space.
 
-      Returns:
-        Tuple[gym.Space, gym.Space]
-      """
+    Returns:
+      Tuple[gym.Space, gym.Space]
+    """
     return self.observation_space, self.action_space
 
   def sample_task(self) -> None:
