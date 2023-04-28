@@ -136,18 +136,15 @@ def register_custom_envs() -> None:
     """
     register(
         id = 'Bandit-v0',
-        entry_point = 'core.envs.bandits.multi_armed_env:BanditEnv',
-        max_episode_steps = 1,
+        entry_point = 'core.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv'
     )
 
     register(
         id = 'Tabular-v0',
-        entry_point = 'core.envs.mdps.tabular_env:TabularMDPEnv',
-        max_episode_steps = 10,
+        entry_point = 'core.envs.mdps.tabular_env:TabularMDPEnv'
     )
 
     register(
         id = 'PointRobot-v0',
-        entry_point = 'core.envs.point_robot.navigation_env:NavigationEnv',
-        max_episode_steps = 10,
+        entry_point = 'core.envs.point_robot.navigation_env:NavigationEnv'
     )

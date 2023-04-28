@@ -10,27 +10,26 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
-    def __init__(self, num_states: int, num_actions: int, episode_length: int, seed: int = None):
+    def __init__(self, num_states: int, num_actions: int, max_episode_steps: int, seed: int = None):
         """
         Initialize a tabular MDP.
 
         Args:
           num_states (int): Number of states.
           num_actions (int): Number of actions.
-          episode_length (int): Number of steps per episode.
+          max_episode_steps (int): Maximum steps per episode.
           seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
+        self._max_episode_steps = max_episode_steps
+        self._elapsed_steps = 0
 
         self._num_states = num_states
         self._num_actions = num_actions
         self._start_state = 0
-
-        self._episode_length = episode_length
-        self._num_steps = 0
 
         # sampled later
         self._current_state = None
@@ -55,7 +54,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           None
         """
         self._current_state = self._start_state
-        self._num_steps = 0
+        self._elapsed_steps = 0
 
         self._transitions = self.np_random.dirichlet(
             alpha = np.ones(self._num_states),
@@ -76,7 +75,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           np.ndarray
         """
         self._current_state = self._start_state
-        self._num_steps = 0
+        self._elapsed_steps = 0
 
         observation = np.zeros(self._num_states)
         observation[self._start_state] = 1.
@@ -123,7 +122,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
           Tuple
         """
-        self._num_steps += 1
+        self._elapsed_steps += 1
 
         reward = self.np_random.normal(
             loc = self._rewards_mean[self._current_state, action],
@@ -138,9 +137,25 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         observation = np.zeros(self._num_states)
         observation[self._current_state] = 1.
 
-        done = self._num_steps == self._episode_length
+        return observation, reward, False, {}
 
-        return observation, reward, done, {}
+    def elapsed_steps(self) -> int:
+        """
+        Returns the elapsed number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        return self._elapsed_steps
+
+    def max_episode_steps(self) -> int:
+        """
+        Returns the maximum number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        return self._max_episode_steps
 
     def render(self, mode: str = "human") -> None:
         """

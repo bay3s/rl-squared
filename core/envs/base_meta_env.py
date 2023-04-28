@@ -94,6 +94,24 @@ class BaseMetaEnv(gym.Env, ABC):
     """
     raise NotImplementedError
 
+  def elapsed_steps(self) -> int:
+    """
+    Returns the elapsed number of episode steps in the environment.
+
+    Returns:
+      int
+    """
+    raise NotImplementedError
+
+  def max_episode_steps(self) -> int:
+    """
+    Returns the maximum number of episode steps in the environment.
+
+    Returns:
+      int
+    """
+    raise NotImplementedError
+
   def reset(self) -> np.ndarray:
       """
       Resets the environment and returns the corresponding observation.

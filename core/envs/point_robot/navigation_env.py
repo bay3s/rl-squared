@@ -1,4 +1,3 @@
-import random
 from typing import Tuple
 import numpy as np
 
@@ -10,9 +9,9 @@ from core.envs.base_meta_env import BaseMetaEnv
 from gym import spaces
 
 
-class GridNavigationEnv(EzPickle, BaseMetaEnv):
+class NavigationEnv(EzPickle, BaseMetaEnv):
 
-    def __init__(self, episode_length: int = 100, low: float = -0.5, high: float = 0.5, seed: int = None):
+    def __init__(self, max_episode_steps: int = 100, low: float = -0.5, high: float = 0.5, seed: int = None):
         """
         2D navigation problems, as described in [1].
 
@@ -30,10 +29,10 @@ class GridNavigationEnv(EzPickle, BaseMetaEnv):
         BaseMetaEnv.__init__(self)
 
         self.viewer = None
+        self._max_episode_steps = max_episode_steps
+        self._elapsed_steps = 0
 
         self._num_dimensions = 2
-        self._episode_length = episode_length
-        self._num_steps = 0
         self._start_state = np.zeros(self._num_dimensions)
 
         self._low = low
@@ -59,7 +58,7 @@ class GridNavigationEnv(EzPickle, BaseMetaEnv):
             None
         """
         self._current_state = self._start_state
-        self._num_steps = 0
+        self._elapsed_steps = 0
 
         self._goal_position = self.np_random.uniform(self._low, self._high, size=2)
         pass
@@ -72,7 +71,7 @@ class GridNavigationEnv(EzPickle, BaseMetaEnv):
             np.ndarray
         """
         self._current_state = self._start_state
-        self._num_steps = 0
+        self._elapsed_steps = 0
 
         return self._current_state
 
@@ -95,7 +94,7 @@ class GridNavigationEnv(EzPickle, BaseMetaEnv):
         y = self._start_state[1] - self._goal_position[1]
 
         reward = -np.sqrt(x ** 2 + y ** 2)
-        done = ((np.abs(x) < 0.01) and (np.abs(y) < 0.01)) or (self._num_steps == self._episode_length)
+        done = (np.abs(x) < 0.01) and (np.abs(y) < 0.01)
 
         return self._start_state, reward, done, {}
 
@@ -127,6 +126,24 @@ class GridNavigationEnv(EzPickle, BaseMetaEnv):
             Tuple
         """
         return self._observation_space, self._action_space
+
+    def elapsed_steps(self) -> int:
+        """
+        Returns the elapsed number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        raise self._elapsed_steps
+
+    def max_episode_steps(self) -> int:
+        """
+        Returns the maximum number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        return self._max_episode_steps
 
     def render(self, mode: str = "human") -> None:
       """
