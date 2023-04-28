@@ -8,3 +8,4 @@ stable-baselines3 == 1.2.0
 mujoco_py == 2.1.2.14
 pyglet==1.5.27
 wandb~=0.14.2
+six~=1.16.0

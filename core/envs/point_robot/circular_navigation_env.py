@@ -10,10 +10,10 @@ from core.envs.base_meta_env import BaseMetaEnv
 from gym import spaces
 
 
-class NavigationEnv(EzPickle, BaseMetaEnv):
+class CircularNavigationEnv(EzPickle, BaseMetaEnv):
 
-    SEMI_CIRCLE_RADIUS = 'semil'
-    FULL_CIRCLE_RADIUS = 'full'
+    SEMICIRCLE = 'semicircle'
+    COMPLETE_CIRCLE = 'circle'
 
     def __init__(self, episode_length: int = 100, type: str = None, seed: int = None):
         """
@@ -35,6 +35,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
           self._sampler = self._sample_semi_circle
 
         self._num_dimensions = 2
+        self._radius = 1.
         self._episode_length = episode_length
         self._num_steps = 0
         self._start_state = np.zeros(self._num_dimensions)
@@ -51,33 +52,27 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self.sample_task()
         pass
 
-    @staticmethod
-    def _sample_semi_circle():
+    def _sample_semi_circle(self) -> np.ndarray:
       """
-      Samples a goal position on the radius of the semi-circle.
+      Samples a goal position on the radius of the semicircle.
 
       Returns:
-
+        np.ndarray
       """
-      r = 1.0
-      angle = random.uniform(0, np.pi)
-      goal = r * np.array((np.cos(angle), np.sin(angle)))
+      angle = self.np_random.uniform(0, np.pi)
 
-      return goal
+      return self._radius * np.array((np.cos(angle), np.sin(angle)))
 
-    @staticmethod
-    def _sample_circle():
+    def _sample_circle(self) -> np.ndarray:
       """
       Sample a goal position on the radius of a circle.
 
       Returns:
-
+          np.ndarray
       """
-      r = 1.0
-      angle = random.uniform(0, 2 * np.pi)
-      goal = r * np.array((np.cos(angle), np.sin(angle)))
+      angle = self.np_random.uniform(0, 2 * np.pi)
 
-      return goal
+      return self._radius * np.array((np.cos(angle), np.sin(angle)))
 
     @property
     def observation_space(self) -> gym.Space:
@@ -108,27 +103,6 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
       """
       return self._observation_space, self._action_space
 
-    def render(self, mode: str = "human") -> None:
-      """
-      Render the environment given the render mode.
-
-      Args:
-        mode (str): Mode in which to render the environment.
-
-      Returns:
-        None
-      """
-      pass
-
-    def close(self) -> None:
-      """
-      Close the environment.
-
-      Returns:
-        None
-      """
-      pass
-
     def sample_task(self) -> None:
       """
       Sample a new goal position for the navigation task
@@ -144,7 +118,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
     def reset(self) -> np.ndarray:
       """
-      Reset the environment and returns the current observation.
+      Resets the environment and returns the current observation.
 
       Returns:
         np.ndarray
@@ -171,6 +145,30 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self._current_state = self._current_state + 0.1 * action
         reward = - np.linalg.norm(self._current_state - self._goal_position, ord=2)
 
-        done = False
+        x = self._start_state[0] - self._goal_position[0]
+        y = self._start_state[1] - self._goal_position[1]
+
+        done = ((np.abs(x) < 0.01) and (np.abs(y) < 0.01)) or (self._num_steps == self._episode_length)
 
         return self._current_state, reward, done, {}
+
+    def render(self, mode: str = "human") -> None:
+      """
+      Render the environment given the render mode.
+
+      Args:
+        mode (str): Mode in which to render the environment.
+
+      Returns:
+        None
+      """
+      pass
+
+    def close(self) -> None:
+      """
+      Close the environment.
+
+      Returns:
+        None
+      """
+      pass
