@@ -3,7 +3,7 @@ from typing import Tuple
 import torch.nn as nn
 import torch
 
-from core.utils.torch_utils import init_recurrent
+from core.utils.torch_utils import init_gru
 
 
 class GRU(nn.Module):
@@ -18,7 +18,7 @@ class GRU(nn.Module):
         """
         nn.Module.__init__(self)
 
-        self._gru = init_recurrent(input_size, recurrent_state_size)
+        self._gru = init_gru(input_size, recurrent_state_size)
         pass
 
     def forward(self, x, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None

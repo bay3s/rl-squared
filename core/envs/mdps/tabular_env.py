@@ -18,6 +18,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           num_states (int): Number of states.
           num_actions (int): Number of actions.
           episode_length (int): Number of steps per episode.
+          seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)

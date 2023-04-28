@@ -1,20 +1,20 @@
 {
   "algo": "PPO",
-  "env_name": "Bandit-v0",
+  "env_name": "PointRobot-v0",
   "env_configs": {
-    "num_actions": 10
+    "episode_length": 100
   },
   "actor_lr": 0.0004,
-  "critic_lr": 0.0004,
+  "critic_lr": 0.0001,
   "use_linear_lr_decay": false,
-  "optimizer_eps": 0.00001,
+  "optimizer_eps": 0.00000001,
   "max_grad_norm": 0.5,
   "random_seed": 6785,
   "cuda_deterministic": false,
   "use_cuda": true,
-  "policy_iterations": 100,
-  "meta_episode_length": 100,
-  "meta_episodes_per_epoch": 2500,
+  "policy_iterations": 500,
+  "meta_episode_length": 300,
+  "meta_episodes_per_epoch": 50,
   "num_processes": 20,
   "discount_gamma": 0.99,
   "use_proper_time_limits": true,
@@ -24,8 +24,8 @@
   "ppo_entropy_coef": 0.01,
   "ppo_value_loss_coef": 0.5,
   "use_gae": true,
-  "gae_lambda": 0.3,
-  "directory": "./results/bandit_v0/",
+  "gae_lambda": 0.95,
+  "directory": "./results/point_robot_v0/",
   "log_interval": 1,
   "checkpoint_interval": 1,
   "eval_interval": 1

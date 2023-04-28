@@ -95,6 +95,7 @@ class StatefulActorCritic(BaseActorCritic):
         """
         value_estimate, recurrent_states_critic = self.critic(observations, recurrent_states_critic,
                                                               recurrent_state_masks)
+
         action_distribution, recurrent_states_actor = self.actor(observations, recurrent_states_actor,
                                                                  recurrent_state_masks)
 

@@ -109,10 +109,25 @@ class RLSquaredEnv:
     if self._wrapped_env.action_space.__class__.__name__ == "Discrete":
       obs = np.concatenate([obs, self._one_hot_action(action), [rew], [float(done)]])
     else:
-      # @todo continuous action spaces
-      raise NotImplementedError
+      obs = np.concatenate([obs, self._flatten_action(action), [rew], [float(done)]])
 
     return obs
+
+  def _flatten_action(self, action: np.ndarray = None) -> np.ndarray:
+    """
+    In the case of discrete action spaces, this returns a one-hot encoded action.
+
+    Returns:
+      np.array
+    """
+    if action is None:
+      flattened = np.zeros(self.action_space.shape[0])
+    elif len(action.shape) > 1:
+      flattened = action.flatten()
+    else:
+      flattened = action
+
+    return flattened
 
   def _one_hot_action(self, action: int = None) -> np.array:
     """

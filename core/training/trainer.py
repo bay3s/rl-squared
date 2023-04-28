@@ -32,12 +32,12 @@ class Trainer:
         self._eval_log_dir = None
         pass
 
-    def train(self, enable_logging: bool = True) -> None:
+    def train(self, enable_wandb: bool = True) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
         Args:
-            enable_logging (bool): Whether to log to Wandb, `True` by default.
+            enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
         Returns:
 
@@ -45,12 +45,10 @@ class Trainer:
         # log
         self.save_params()
 
-        if enable_logging:
+        if enable_wandb:
             wandb.login()
             wandb.init(
                 project = "rl-squared",
-                group = f'rl-squared-{self.config.env_name}',
-                job_type = "meta-train",
                 config = self.config.dict
             )
 
@@ -115,7 +113,7 @@ class Trainer:
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
-            if enable_logging:
+            if enable_wandb:
                 wandb.log({
                     'mean_value_loss':  value_loss,
                     'mean_action_loss': action_loss,
@@ -124,7 +122,7 @@ class Trainer:
                 })
             pass
 
-        if enable_logging:
+        if enable_wandb:
             # end
             wandb.finish()
         pass

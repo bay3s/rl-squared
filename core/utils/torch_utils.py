@@ -6,7 +6,7 @@ from torch import nn as nn
 from torch.nn.utils import weight_norm
 
 
-def init_recurrent(input_size: int, recurrent_state_size: int) -> nn.Module:
+def init_gru(input_size: int, recurrent_state_size: int) -> nn.Module:
     """
     Initialize a GRU module.
 
