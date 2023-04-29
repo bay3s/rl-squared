@@ -14,5 +14,5 @@ if __name__ == "__main__":
 
     # start
     trainer = Trainer(experiment_config)
-    trainer.train(enable_wandb=False)
+    trainer.train(enable_wandb=True)
     pass
