@@ -74,11 +74,20 @@ class ExperimentConfig:
     gae_lambda: bool
 
     # logs
-    directory: str
     log_interval: int
     checkpoint_interval: int
     eval_interval: int
     pass
+
+    @property
+    def directory(self) -> str:
+        """
+        Return the directory to store logs.
+
+        Returns:
+          str
+        """
+        return f"./results/{self.env_name}"
 
     @property
     def log_dir(self) -> str:
