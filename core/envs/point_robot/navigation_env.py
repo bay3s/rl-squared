@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 import numpy as np
 
 import gym
@@ -10,8 +10,13 @@ from gym import spaces
 
 
 class NavigationEnv(EzPickle, BaseMetaEnv):
-
-    def __init__(self, max_episode_steps: int = 100, low: float = -0.5, high: float = 0.5, seed: int = None):
+    def __init__(
+        self,
+        max_episode_steps: int = 100,
+        low: float = -0.5,
+        high: float = 0.5,
+        seed: int = None,
+    ):
         """
         2D navigation problems, as described in [1].
 
@@ -43,8 +48,8 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self._goal_position = None
 
         # spaces
-        self._observation_space = spaces.Box(low = -np.inf, high = np.inf, shape = (2,))
-        self._action_space = spaces.Box(low = -0.1, high = 0.1, shape = (2,))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,))
+        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(2,))
 
         # sample
         self.sample_task()
@@ -93,7 +98,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         x = self._start_state[0] - self._goal_position[0]
         y = self._start_state[1] - self._goal_position[1]
 
-        reward = -np.sqrt(x ** 2 + y ** 2)
+        reward = -np.sqrt(x**2 + y**2)
         done = (np.abs(x) < 0.01) and (np.abs(y) < 0.01)
 
         return self._start_state, reward, done, {}
@@ -101,22 +106,42 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
     @property
     def observation_space(self) -> gym.Space:
         """
-        Observation space for the environment.
+        Returns the observation space of the environment.
 
         Returns:
-            gym.Space
+          gym.Space
         """
         return self._observation_space
+
+    @observation_space.setter
+    def observation_space(self, value: Any) -> None:
+        """
+        Set the observation space for the environment.
+
+        Returns:
+          gym.Space
+        """
+        self._observation_space = value
 
     @property
     def action_space(self) -> gym.Space:
         """
-        Action space for the environment.
+        Returns the action space
+
+        Returns:
+          gym.Space
+        """
+        return self._action_space
+
+    @action_space.setter
+    def action_space(self, value: Any) -> None:
+        """
+        Set the action space for the environment.
 
         Returns:
             gym.Space
         """
-        return self._action_space
+        self._action_space = value
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
@@ -146,23 +171,22 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         return self._max_episode_steps
 
     def render(self, mode: str = "human") -> None:
-      """
-      Render the environment given the render mode.
+        """
+        Render the environment given the render mode.
 
-      Args:
-        mode (str): Mode in which to render the environment.
+        Args:
+          mode (str): Mode in which to render the environment.
 
-      Returns:
-        None
-      """
-      pass
+        Returns:
+          None
+        """
+        pass
 
     def close(self) -> None:
-      """
-      Close the environment.
+        """
+        Close the environment.
 
-      Returns:
-        None
-      """
-      pass
-
+        Returns:
+          None
+        """
+        pass

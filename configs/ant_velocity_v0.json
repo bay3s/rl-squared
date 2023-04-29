@@ -1,0 +1,32 @@
+{
+  "algo": "PPO",
+  "env_name": "AntVelocity-v0",
+  "env_configs": {
+    "max_episode_steps": 100
+  },
+  "actor_lr": 0.0004,
+  "critic_lr": 0.0004,
+  "use_linear_lr_decay": true,
+  "optimizer_eps": 0.00001,
+  "max_grad_norm": 0.5,
+  "random_seed": 6785,
+  "cuda_deterministic": false,
+  "use_cuda": true,
+  "policy_iterations": 100,
+  "meta_episode_length": 100,
+  "meta_episodes_per_epoch": 2500,
+  "num_processes": 1,
+  "discount_gamma": 0.99,
+  "use_proper_time_limits": true,
+  "ppo_opt_epochs": 10,
+  "ppo_num_minibatches": 50,
+  "ppo_clip_param": 0.1,
+  "ppo_entropy_coef": 0.01,
+  "ppo_value_loss_coef": 0.5,
+  "use_gae": true,
+  "gae_lambda": 0.3,
+  "directory": "./results/ant_velocity_v0/",
+  "log_interval": 1,
+  "checkpoint_interval": 1,
+  "eval_interval": 1
+}

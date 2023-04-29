@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 import numpy as np
 
 import gym
@@ -9,8 +9,13 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 
 class TabularMDPEnv(EzPickle, BaseMetaEnv):
-
-    def __init__(self, num_states: int, num_actions: int, max_episode_steps: int, seed: int = None):
+    def __init__(
+        self,
+        num_states: int,
+        num_actions: int,
+        max_episode_steps: int,
+        seed: int = None,
+    ):
         """
         Initialize a tabular MDP.
 
@@ -37,9 +42,9 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self._rewards_mean = None
 
         # spaces
-        self._action_space = spaces.Discrete(self._num_actions)
-        self._observation_space = spaces.Box(
-            low = 0., high = 1., shape = (self._num_states,)
+        self.action_space = spaces.Discrete(self._num_actions)
+        self.observation_space = spaces.Box(
+            low=0.0, high=1.0, shape=(self._num_states,)
         )
 
         # sample
@@ -57,12 +62,11 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps = 0
 
         self._transitions = self.np_random.dirichlet(
-            alpha = np.ones(self._num_states),
-            size = (self._num_states, self._num_actions)
+            alpha=np.ones(self._num_states), size=(self._num_states, self._num_actions)
         )
 
         self._rewards_mean = self.np_random.normal(
-            loc = 1.0, scale = 1.0, size = (self._num_states, self._num_actions)
+            loc=1.0, scale=1.0, size=(self._num_states, self._num_actions)
         )
 
     def reset(self) -> np.ndarray:
@@ -78,7 +82,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps = 0
 
         observation = np.zeros(self._num_states)
-        observation[self._start_state] = 1.
+        observation[self._start_state] = 1.0
 
         return observation
 
@@ -92,6 +96,16 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         """
         return self._observation_space
 
+    @observation_space.setter
+    def observation_space(self, value: Any) -> None:
+        """
+        Set the observation space for the environment.
+
+        Returns:
+          gym.Space
+        """
+        self._observation_space = value
+
     @property
     def action_space(self) -> gym.Space:
         """
@@ -101,6 +115,16 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           gym.Space
         """
         return self._action_space
+
+    @action_space.setter
+    def action_space(self, value: Any) -> None:
+        """
+        Set the action space for the environment.
+
+        Returns:
+            gym.Space
+        """
+        self._action_space = value
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
@@ -125,17 +149,15 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps += 1
 
         reward = self.np_random.normal(
-            loc = self._rewards_mean[self._current_state, action],
-            scale = 1.0
+            loc=self._rewards_mean[self._current_state, action], scale=1.0
         )
 
         self._current_state = self.np_random.choice(
-            a = self._num_states,
-            p = self._transitions[self._current_state, action]
+            a=self._num_states, p=self._transitions[self._current_state, action]
         )
 
         observation = np.zeros(self._num_states)
-        observation[self._current_state] = 1.
+        observation[self._current_state] = 1.0
 
         return observation, reward, False, {}
 

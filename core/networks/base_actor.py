@@ -6,7 +6,11 @@ import torch
 import torch.nn as nn
 
 
-from core.networks.modules.distributions import FixedGaussian, FixedCategorical, FixedBernoulli
+from core.networks.modules.distributions import (
+    FixedGaussian,
+    FixedCategorical,
+    FixedBernoulli,
+)
 
 
 class BaseActor(ABC, nn.Module):
@@ -28,8 +32,12 @@ class BaseActor(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_masks: torch.Tensor
-                ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
+    def forward(
+        self,
+        x: torch.Tensor,
+        recurrent_states: torch.Tensor,
+        recurrent_masks: torch.Tensor,
+    ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
         """
         Forward pass through the network and return a distribution.
 

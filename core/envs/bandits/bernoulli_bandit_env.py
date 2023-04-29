@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 import numpy as np
 
 import gym
@@ -9,13 +9,13 @@ from core.envs.base_meta_env import BaseMetaEnv
 
 
 class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
-
     def __init__(self, num_actions: int, seed: int = None):
         """
         Initialize a multi-armed bandit.
 
         Args:
             num_actions (int): Number of actions that the bandit is able to take.
+            seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
@@ -29,10 +29,9 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         self._payout_odds = None
 
         # spaces
-        self._action_space = spaces.Discrete(num_actions)
-
         high = np.array([1.0], dtype=np.float32)
-        self._observation_space = spaces.box.Box(-high, high)
+        self.observation_space = spaces.box.Box(-high, high)
+        self.action_space = spaces.Discrete(num_actions)
 
         # sample
         self.sample_task()
@@ -45,7 +44,9 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         Returns:
           None
         """
-        self._payout_odds = self.np_random.uniform(low=0.0, high=1.0, size=self._num_actions)
+        self._payout_odds = self.np_random.uniform(
+            low=0.0, high=1.0, size=self._num_actions
+        )
         self._elapsed_steps = 0
         pass
 
@@ -71,6 +72,16 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         """
         return self._observation_space
 
+    @observation_space.setter
+    def observation_space(self, value: Any) -> None:
+        """
+        Set the observation space for the environment.
+
+        Returns:
+          gym.Space
+        """
+        self._observation_space = value
+
     @property
     def action_space(self) -> gym.Space:
         """
@@ -80,6 +91,16 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
           gym.Space
         """
         return self._action_space
+
+    @action_space.setter
+    def action_space(self, value: Any) -> None:
+        """
+        Set the action space for the environment.
+
+        Returns:
+            gym.Space
+        """
+        self._action_space = value
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """

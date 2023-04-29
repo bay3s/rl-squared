@@ -3,7 +3,6 @@ import gym
 
 
 class MetaEpisodeBatch:
-
     def __init__(
         self,
         meta_episode_length: int,
@@ -25,24 +24,36 @@ class MetaEpisodeBatch:
         self.meta_episode_length = meta_episode_length
         self.step = 0
 
-        self.obs = torch.zeros(meta_episode_length + 1, num_meta_episodes, *observation_space.shape)
+        self.obs = torch.zeros(
+            meta_episode_length + 1, num_meta_episodes, *observation_space.shape
+        )
         self.rewards = torch.zeros(meta_episode_length, num_meta_episodes, 1)
         self.value_preds = torch.zeros(meta_episode_length + 1, num_meta_episodes, 1)
         self.returns = torch.zeros(meta_episode_length + 1, num_meta_episodes, 1)
         self.action_log_probs = torch.zeros(meta_episode_length, num_meta_episodes, 1)
-        self.actions = self._init_actions(action_space, meta_episode_length, num_meta_episodes)
+        self.actions = self._init_actions(
+            action_space, meta_episode_length, num_meta_episodes
+        )
 
         # recurrent states
-        self.recurrent_states_actor = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
-        self.recurrent_states_critic = torch.zeros(meta_episode_length + 1, num_meta_episodes, recurrent_state_size)
+        self.recurrent_states_actor = torch.zeros(
+            meta_episode_length + 1, num_meta_episodes, recurrent_state_size
+        )
+        self.recurrent_states_critic = torch.zeros(
+            meta_episode_length + 1, num_meta_episodes, recurrent_state_size
+        )
 
         # terminated
         self.done_masks = torch.ones(meta_episode_length + 1, num_meta_episodes, 1)
-        self.time_limit_masks = torch.ones(meta_episode_length + 1, num_meta_episodes, 1)
+        self.time_limit_masks = torch.ones(
+            meta_episode_length + 1, num_meta_episodes, 1
+        )
         pass
 
     @staticmethod
-    def _init_actions(action_space: gym.Space, meta_episode_length: int, num_meta_episodes: int) -> torch.Tensor:
+    def _init_actions(
+        action_space: gym.Space, meta_episode_length: int, num_meta_episodes: int
+    ) -> torch.Tensor:
         """
         Init actions based on the action space.
 
@@ -97,7 +108,7 @@ class MetaEpisodeBatch:
         value_preds: torch.Tensor,
         rewards: torch.Tensor,
         done_masks: torch.Tensor,
-        time_limit_masks: torch.Tensor
+        time_limit_masks: torch.Tensor,
     ):
         """
         Insert transition details into storage.
@@ -118,7 +129,7 @@ class MetaEpisodeBatch:
             None
         """
         if self.step > self.meta_episode_length:
-            raise IndexError(f'Number of steps exceeded.')
+            raise IndexError(f"Number of steps exceeded.")
 
         # states
         self.recurrent_states_actor[self.step + 1].copy_(recurrent_states_actor)

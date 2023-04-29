@@ -6,7 +6,6 @@ from core.networks.modules.distributions.gaussian.fixed_gaussian import FixedGau
 
 
 class _AddBias(nn.Module):
-
     def __init__(self, bias: torch.Tensor):
         """
         Class used to add bias to
@@ -27,7 +26,6 @@ class _AddBias(nn.Module):
 
 
 class DiagonalGaussian(nn.Module):
-
     def __init__(self, num_inputs: int, num_outputs: int):
         """
         Initialize the diagonal gaussian.
@@ -39,7 +37,9 @@ class DiagonalGaussian(nn.Module):
         super(DiagonalGaussian, self).__init__()
 
         self.fc_mean = init_module(
-            nn.Linear(num_inputs, num_outputs), nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0)
+            nn.Linear(num_inputs, num_outputs),
+            nn.init.orthogonal_,
+            lambda x: nn.init.constant_(x, 0),
         )
 
         self.logstd = _AddBias(torch.zeros(num_outputs))

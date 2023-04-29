@@ -17,7 +17,7 @@ def sample_meta_episodes(
     use_gae: bool,
     gae_lambda: float,
     discount_gamma: float,
-    use_proper_time_limits: bool
+    use_proper_time_limits: bool,
 ) -> Tuple[List[MetaEpisodeBatch], List]:
     """
     Sample meta-episodes in parallel.
@@ -63,7 +63,7 @@ def sample_meta_episodes(
                 actions,
                 action_log_probs,
                 recurrent_states_actor,
-                recurrent_states_critic
+                recurrent_states_critic,
             ) = actor_critic.act(
                 meta_episodes.obs[step],
                 meta_episodes.recurrent_states_actor[step],
@@ -74,21 +74,19 @@ def sample_meta_episodes(
 
             # rewards
             for info in infos:
-                if 'episode' in info.keys():
-                    meta_episode_rewards.append(info['episode']['r'])
+                if "episode" in info.keys():
+                    meta_episode_rewards.append(info["episode"]["r"])
 
             # masks
             time_limit_masks = torch.FloatTensor(
                 [
-                    [0.] if "time_limit_exceeded" in info.keys() else [1.]
+                    [0.0] if "time_limit_exceeded" in info.keys() else [1.0]
                     for info in infos
                 ]
             )
 
             done_masks = torch.FloatTensor(
-                [
-                    [0.] if _done else [1.] for _done in dones
-                ]
+                [[0.0] if _done else [1.0] for _done in dones]
             )
 
             # insert
@@ -113,11 +111,7 @@ def sample_meta_episodes(
         next_value_pred.detach()
 
         meta_episodes.compute_returns(
-            next_value_pred,
-            use_gae,
-            discount_gamma,
-            gae_lambda,
-            use_proper_time_limits
+            next_value_pred, use_gae, discount_gamma, gae_lambda, use_proper_time_limits
         )
 
         meta_episode_batch.append(meta_episodes)

@@ -53,8 +53,14 @@ def get_vec_normalize(venv: gym.Env) -> Union[NormalizedVecEnv, None]:
     return None
 
 
-def make_env_thunk(env_name: str, env_configs: dict, seed: int, rank: int, log_dir: str, allow_early_resets: bool
-                   ) -> Callable:
+def make_env_thunk(
+    env_name: str,
+    env_configs: dict,
+    seed: int,
+    rank: int,
+    log_dir: str,
+    allow_early_resets: bool,
+) -> Callable:
     """
     Returns a callable to create environments based on the specs provided.
 
@@ -69,6 +75,7 @@ def make_env_thunk(env_name: str, env_configs: dict, seed: int, rank: int, log_d
     Returns:
         Callable
     """
+
     def _thunk():
         env = gym.make(env_name, **env_configs)
         env.seed(seed + rank)
@@ -77,7 +84,9 @@ def make_env_thunk(env_name: str, env_configs: dict, seed: int, rank: int, log_d
         if str(env.__class__.__name__).find("TimeLimit") >= 0:
             env = TimeLimitEnvWrapper(env)
 
-        env = Monitor(env, os.path.join(log_dir, str(rank)), allow_early_resets=allow_early_resets)
+        env = Monitor(
+            env, os.path.join(log_dir, str(rank)), allow_early_resets=allow_early_resets
+        )
 
         # @todo requires convolutions
         obs_shape = env.observation_space.shape
@@ -90,8 +99,14 @@ def make_env_thunk(env_name: str, env_configs: dict, seed: int, rank: int, log_d
 
 
 def make_vec_envs(
-    env_name: str, env_kwargs: dict, seed: int, num_processes: int, gamma: float, log_dir: str, device: torch.device,
-    allow_early_resets: bool
+    env_name: str,
+    env_kwargs: dict,
+    seed: int,
+    num_processes: int,
+    gamma: float,
+    log_dir: str,
+    device: torch.device,
+    allow_early_resets: bool,
 ) -> PyTorchVecEnvWrapper:
     """
     Returns PyTorch compatible vectorized environments.
@@ -135,16 +150,28 @@ def register_custom_envs() -> None:
         None
     """
     register(
-        id = 'Bandit-v0',
-        entry_point = 'core.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv'
+        id="Bandit-v0",
+        entry_point="core.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv",
+    )
+
+    register(id="Tabular-v0", entry_point="core.envs.mdps.tabular_env:TabularMDPEnv")
+
+    register(
+        id="PointRobot-v0",
+        entry_point="core.envs.point_robot.navigation_env:NavigationEnv",
     )
 
     register(
-        id = 'Tabular-v0',
-        entry_point = 'core.envs.mdps.tabular_env:TabularMDPEnv'
+        id="AntPosition-v0",
+        entry_point="core.envs.ant.ant_target_position_env:AntTargetPositionEnv",
     )
 
     register(
-        id = 'PointRobot-v0',
-        entry_point = 'core.envs.point_robot.navigation_env:NavigationEnv'
+        id="AntVelocity-v0",
+        entry_point="core.envs.ant.ant_target_velocity_env:AntTargetVelocityEnv",
+    )
+
+    register(
+        id="CheetahVelocity-v0",
+        entry_point="core.envs.cheetah.cheetah_target_velocity_env:CheetahTargetVelocityEnv",
     )

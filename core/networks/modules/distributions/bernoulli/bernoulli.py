@@ -6,7 +6,6 @@ from core.utils.torch_utils import init_module
 
 
 class Bernoulli(nn.Module):
-
     def __init__(self, num_inputs: int, num_outputs: int):
         """
         Initialize the Bernoulli distribution with a single linear layer.
@@ -18,7 +17,9 @@ class Bernoulli(nn.Module):
         super(Bernoulli, self).__init__()
 
         self.linear = init_module(
-            nn.Linear(num_inputs, num_outputs), nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0)
+            nn.Linear(num_inputs, num_outputs),
+            nn.init.orthogonal_,
+            lambda x: nn.init.constant_(x, 0),
         )
 
     def forward(self, x) -> FixedBernoulli:

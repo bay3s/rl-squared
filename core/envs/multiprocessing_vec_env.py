@@ -121,7 +121,6 @@ def _worker(
 
 
 class MultiprocessingVecEnv(VecEnv):
-
     def __init__(self, env_fns: List[Callable[[], gym.Env]]):
         """
         Creates a multiprocess vectorized wrapper for multiple environments, distributing each environment to its own
@@ -303,7 +302,9 @@ class MultiprocessingVecEnv(VecEnv):
 
         return [remote.recv() for remote in target_remotes]
 
-    def set_attr(self, attr_name: str, value: Any, indices: VecEnvIndices = None) -> None:
+    def set_attr(
+        self, attr_name: str, value: Any, indices: VecEnvIndices = None
+    ) -> None:
         """
         Set attribute inside vectorized environments (see base class).
 
@@ -323,7 +324,13 @@ class MultiprocessingVecEnv(VecEnv):
         for remote in target_remotes:
             remote.recv()
 
-    def env_method(self, method_name: str, *method_args, indices: VecEnvIndices = None, **method_kwargs) -> List[Any]:
+    def env_method(
+        self,
+        method_name: str,
+        *method_args,
+        indices: VecEnvIndices = None,
+        **method_kwargs,
+    ) -> List[Any]:
         """
         Call instance methods of vectorized environments.
 
@@ -343,7 +350,9 @@ class MultiprocessingVecEnv(VecEnv):
 
         return [remote.recv() for remote in target_remotes]
 
-    def env_is_wrapped(self, wrapper_class: Type[gym.Wrapper], indices: VecEnvIndices = None) -> List[bool]:
+    def env_is_wrapped(
+        self, wrapper_class: Type[gym.Wrapper], indices: VecEnvIndices = None
+    ) -> List[bool]:
         """
         Check if worker environments are wrapped with a given wrapper
 
@@ -361,7 +370,9 @@ class MultiprocessingVecEnv(VecEnv):
 
         return [remote.recv() for remote in target_remotes]
 
-    def _get_target_remotes(self, indices: VecEnvIndices) -> List[mp.connection.Connection]:
+    def _get_target_remotes(
+        self, indices: VecEnvIndices
+    ) -> List[mp.connection.Connection]:
         """
         Get the connection object needed to communicate with the wanted envs that are in subprocesses.
 

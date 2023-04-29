@@ -7,7 +7,6 @@ from core.utils.torch_utils import init_gru
 
 
 class GRU(nn.Module):
-
     def __init__(self, input_size: int, recurrent_state_size: int):
         """
         Stateful actor for a discrete action space.
@@ -21,8 +20,12 @@ class GRU(nn.Module):
         self._gru = init_gru(input_size, recurrent_state_size)
         pass
 
-    def forward(self, x, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self,
+        x,
+        recurrent_states: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.
 
@@ -60,7 +63,9 @@ class GRU(nn.Module):
         else:
             recurrent_state_masks = recurrent_state_masks.view(T, N)
 
-        has_zeros = (recurrent_state_masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
+        has_zeros = (
+            (recurrent_state_masks[1:] == 0.0).any(dim=-1).nonzero().squeeze().cpu()
+        )
 
         # +1 to correct the recurrent_masks[1:] where zeros are present.
         if has_zeros.dim() == 0:

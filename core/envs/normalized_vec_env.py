@@ -4,7 +4,6 @@ from stable_baselines3.common.vec_env import VecNormalize as VecNormalize_
 
 
 class NormalizedVecEnv(VecNormalize_):
-
     def __init__(self, *args: Any, **kwargs: Any):
         """
         Wrapper to normalize observations from a vectorized environment.

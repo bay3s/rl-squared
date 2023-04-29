@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Any
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -8,139 +8,160 @@ from gym.utils import seeding
 
 
 class BaseMetaEnv(gym.Env, ABC):
-  """
-  Outline expected functionality for environments being used in meta-learning experiments.
-  """
-
-  def __init__(self, seed: int = None):
     """
-    Initialize a base meta-learning environment.
-
-    Args:
-      seed (int): Random seed.
+    Outline expected functionality for environments being used in meta-learning experiments.
     """
-    gym.Env.__init__(self)
 
-    self.np_random = np.random.RandomState()
-    self.seed(seed)
-    pass
+    def __init__(self, seed: int = None):
+        """
+        Initialize a base meta-learning environment.
 
-  def sample_task(self) -> None:
-    """
-    Sample a new multi-armed bandit problem from distribution over problems.
+        Args:
+          seed (int): Random seed.
+        """
+        gym.Env.__init__(self)
 
-    Returns:
-      None
-    """
-    raise NotImplementedError
+        self.np_random = np.random.RandomState()
+        self.seed(seed)
+        pass
 
-  @property
-  @abstractmethod
-  def observation_space(self) -> gym.Space:
-    """
-    Returns the observation space for the environment.
+    def sample_task(self) -> None:
+        """
+        Sample a new multi-armed bandit problem from distribution over problems.
 
-    Returns:
-      gym.Space
-    """
-    raise NotImplementedError
+        Returns:
+          None
+        """
+        raise NotImplementedError
 
-  @property
-  @abstractmethod
-  def action_space(self) -> gym.Space:
-    """
-    Returns the action space for the environment.
+    @property
+    @abstractmethod
+    def observation_space(self) -> gym.Space:
+        """
+        Returns the observation space for the environment.
 
-    Returns:
-      gym.Space
-    """
-    raise NotImplementedError
+        Returns:
+          gym.Space
+        """
+        raise NotImplementedError
 
-  def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
-    """
-    Returns the observation space and the action space.
+    @observation_space.setter
+    @abstractmethod
+    def observation_space(self, value: Any) -> gym.Space:
+        """
+        Set the observation space for the environment.
 
-    Returns:
-      Tuple[gym.Space, gym.Space]
-    """
-    raise NotImplementedError
+        Returns:
+          gym.Space
+        """
+        raise NotImplementedError
 
-  def seed(self, seed: int = None) -> List:
-    """
-    Set the seed for np.random
+    @property
+    @abstractmethod
+    def action_space(self) -> gym.Space:
+        """
+        Returns the action space for the environment.
 
-    Args:
-      seed (int): Seed to set for random number generator.
+        Returns:
+            gym.Space
+        """
+        raise NotImplementedError
 
-    Returns:
-      List
-    """
-    self.np_random, seed = seeding.np_random(seed)
+    @action_space.setter
+    @abstractmethod
+    def action_space(self, value: Any) -> gym.Space:
+        """
+        Set the action space for the environment.
 
-    return [seed]
+        Returns:
+            gym.Space
+        """
+        raise NotImplementedError
 
-  def step(self, action: Union[int, np.ndarray]) -> Tuple:
-    """
-    Take one step in the current environment given the action.
+    def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
+        """
+        Returns the observation space and the action space.
 
-    Additionally, as per the RL^2 paper this wrapper updates the observation returned to include the previous
-    action, reward, and whether the episode is done.
+        Returns:
+          Tuple[gym.Space, gym.Space]
+        """
+        raise NotImplementedError
 
-    Args:
-        action (Any): Action to be taken in the environment.
+    def seed(self, seed: int = None) -> List:
+        """
+        Set the seed for np.random
 
-    Returns:
-        Tuple
-    """
-    raise NotImplementedError
+        Args:
+          seed (int): Seed to set for random number generator.
 
-  def elapsed_steps(self) -> int:
-    """
-    Returns the elapsed number of episode steps in the environment.
+        Returns:
+          List
+        """
+        self.np_random, seed = seeding.np_random(seed)
 
-    Returns:
-      int
-    """
-    raise NotImplementedError
+        return [seed]
 
-  def max_episode_steps(self) -> int:
-    """
-    Returns the maximum number of episode steps in the environment.
+    def step(self, action: Union[int, np.ndarray]) -> Tuple:
+        """
+        Take one step in the current environment given the action.
 
-    Returns:
-      int
-    """
-    raise NotImplementedError
+        Additionally, as per the RL^2 paper this wrapper updates the observation returned to include the previous
+        action, reward, and whether the episode is done.
 
-  def reset(self) -> np.ndarray:
-      """
-      Resets the environment and returns the corresponding observation.
+        Args:
+            action (Any): Action to be taken in the environment.
 
-      This is different from `sample_task`, unlike the former this will not change the payout probabilities.
+        Returns:
+            Tuple
+        """
+        raise NotImplementedError
 
-      Returns:
-        np.ndarray
-      """
-      raise NotImplementedError
+    def elapsed_steps(self) -> int:
+        """
+        Returns the elapsed number of episode steps in the environment.
 
-  def render(self, mode: str = "human") -> None:
-    """
-    Render the environment.
+        Returns:
+          int
+        """
+        raise NotImplementedError
 
-    Args:
-      mode (str): Render mode.
+    def max_episode_steps(self) -> int:
+        """
+        Returns the maximum number of episode steps in the environment.
 
-    Returns:
-      None
-    """
-    raise NotImplementedError
+        Returns:
+          int
+        """
+        raise NotImplementedError
 
-  def close(self) -> None:
-    """
-    Close the current environment.
+    def reset(self) -> np.ndarray:
+        """
+        Resets the environment and returns the corresponding observation.
 
-    Returns:
-      None
-    """
-    raise NotImplementedError
+        This is different from `sample_task`, unlike the former this will not change the payout probabilities.
 
+        Returns:
+          np.ndarray
+        """
+        raise NotImplementedError
+
+    def render(self, mode: str = "human") -> None:
+        """
+        Render the environment.
+
+        Args:
+          mode (str): Render mode.
+
+        Returns:
+          None
+        """
+        raise NotImplementedError
+
+    def close(self) -> None:
+        """
+        Close the current environment.
+
+        Returns:
+          None
+        """
+        raise NotImplementedError

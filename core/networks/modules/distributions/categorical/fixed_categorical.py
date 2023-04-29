@@ -2,7 +2,6 @@ import torch
 
 
 class FixedCategorical(torch.distributions.Categorical):
-
     def sample(self) -> torch.Tensor:
         """
         Sample from the categorical distribution.

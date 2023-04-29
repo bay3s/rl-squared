@@ -16,7 +16,6 @@ from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
 
 
 class Trainer:
-
     def __init__(self, experiment_config: ExperimentConfig):
         """
         Initialize an instance of a trainer for PPO.
@@ -47,10 +46,7 @@ class Trainer:
 
         if enable_wandb:
             wandb.login()
-            wandb.init(
-                project = "rl-squared",
-                config = self.config.dict
-            )
+            wandb.init(project="rl-squared", config=self.config.dict)
 
         # seed
         torch.manual_seed(self.config.random_seed)
@@ -70,13 +66,13 @@ class Trainer:
             self.config.discount_gamma,
             self.config.log_dir,
             self.device,
-            allow_early_resets = True,
+            allow_early_resets=True,
         )
 
         actor_critic = StatefulActorCritic(
             rl_squared_envs.observation_space,
             rl_squared_envs.action_space,
-            recurrent_state_size = 256
+            recurrent_state_size=256,
         ).to_device(self.device)
 
         ppo = PPO(
@@ -107,19 +103,21 @@ class Trainer:
                 self.config.use_gae,
                 self.config.gae_lambda,
                 self.config.discount_gamma,
-                self.config.use_proper_time_limits
+                self.config.use_proper_time_limits,
             )
 
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
             if enable_wandb:
-                wandb.log({
-                    'mean_value_loss':  value_loss,
-                    'mean_action_loss': action_loss,
-                    'mean_dist_entropy': dist_entropy,
-                    'mean_rewards': np.mean(meta_episode_rewards)
-                })
+                wandb.log(
+                    {
+                        "mean_value_loss": value_loss,
+                        "mean_action_loss": action_loss,
+                        "mean_dist_entropy": dist_entropy,
+                        "mean_rewards": np.mean(meta_episode_rewards),
+                    }
+                )
             pass
 
         if enable_wandb:
