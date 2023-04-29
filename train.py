@@ -9,7 +9,7 @@ register_custom_envs()
 
 
 if __name__ == "__main__":
-    config_path = f"{os.path.dirname(__file__)}/configs/cheetah_velocity_v0.json"
+    config_path = f"{os.path.dirname(__file__)}/configs/bandit_v0.json"
     experiment_config = ExperimentConfig.from_json(config_path)
 
     # start

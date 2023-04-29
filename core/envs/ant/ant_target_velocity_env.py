@@ -96,7 +96,7 @@ class AntTargetVelocityEnv(BaseAntEnv, EzPickle):
         state = self.state_vector()
 
         not_done = np.isfinite(state).all() and 0.2 <= state[2] <= 1.0
-        done = not not_done
+        done = self.max_episode_steps == self.elapsed_steps and (not not_done)
 
         infos = dict(
             reward_forward=forward_reward,
@@ -106,7 +106,9 @@ class AntTargetVelocityEnv(BaseAntEnv, EzPickle):
             task=self._target_velocity,
         )
 
-        return observation, reward, done, infos
+        time_exceeded = self.elapsed_steps == self.max_episode_steps
+
+        return observation, reward, (done or time_exceeded), infos
 
     def sample_task(self):
         """
@@ -132,6 +134,7 @@ class AntTargetVelocityEnv(BaseAntEnv, EzPickle):
 
         return BaseAntEnv.reset(self)
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Return the elapsed steps.
@@ -141,6 +144,7 @@ class AntTargetVelocityEnv(BaseAntEnv, EzPickle):
         """
         return self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Return the maximum episode steps.

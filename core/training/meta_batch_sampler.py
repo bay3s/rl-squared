@@ -25,8 +25,6 @@ class MetaBatchSampler:
         self.recurrent_states_critic = self._concat_attr("recurrent_states_critic")
 
         self.done_masks = self._concat_attr("done_masks")
-        self.time_limit_masks = self._concat_attr("time_limit_masks")
-
         pass
 
     def _concat_attr(self, attr: str) -> torch.Tensor:

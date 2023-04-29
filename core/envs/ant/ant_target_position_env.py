@@ -77,8 +77,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
         state = self.state_vector()
 
-        not_done = np.isfinite(state).all() and 0.2 <= state[2] <= 1.0
-        done = not not_done
+        done = not (np.isfinite(state).all() and 0.2 <= state[2] <= 1.0)
 
         infos = dict(
             reward_goal=goal_reward,
@@ -88,7 +87,9 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
             task=self._target_position,
         )
 
-        return observation, reward, done, infos
+        time_exceeded = self.elapsed_steps == self.max_episode_steps
+
+        return observation, reward, (done or time_exceeded), infos
 
     def sample_task(self) -> None:
         """

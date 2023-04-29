@@ -88,7 +88,8 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
 
         observation = self._get_obs()
         reward = forward_reward - ctrl_cost
-        done = False
+
+        time_exceeded = self.elapsed_steps == self.max_episode_steps
 
         infos = dict(
             reward_forward=forward_reward,
@@ -96,7 +97,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
             task=self._target_velocity,
         )
 
-        return observation, reward, done, infos
+        return observation, reward, time_exceeded, infos
 
     def sample_task(self):
         """
@@ -122,6 +123,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
 
         return BaseCheetahEnv.reset(self)
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Return the elapsed steps.
@@ -131,6 +133,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         """
         return self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Return the maximum episode steps.

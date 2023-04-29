@@ -43,11 +43,8 @@ class MetaEpisodeBatch:
             meta_episode_length + 1, num_meta_episodes, recurrent_state_size
         )
 
-        # terminated
+        # masks
         self.done_masks = torch.ones(meta_episode_length + 1, num_meta_episodes, 1)
-        self.time_limit_masks = torch.ones(
-            meta_episode_length + 1, num_meta_episodes, 1
-        )
         pass
 
     @staticmethod
@@ -95,7 +92,6 @@ class MetaEpisodeBatch:
         self.recurrent_states_critic = self.recurrent_states_critic.to(device)
 
         self.done_masks = self.done_masks.to(device)
-        self.time_limit_masks = self.time_limit_masks.to(device)
         pass
 
     def insert(
@@ -108,7 +104,6 @@ class MetaEpisodeBatch:
         value_preds: torch.Tensor,
         rewards: torch.Tensor,
         done_masks: torch.Tensor,
-        time_limit_masks: torch.Tensor,
     ):
         """
         Insert transition details into storage.
@@ -122,8 +117,6 @@ class MetaEpisodeBatch:
             value_preds (torch.Tensor): Value predictions to be inserted.
             rewards (torch.Tensor): Rewards to be inserted.
             done_masks (torch.Tensor): Done masks to be inserted (0 if done, 1 if not).
-            time_limit_masks (torch.Tensor): Masks indicating whether an episode was terminated as a result of exceeding
-                the time limit.
 
         Returns:
             None
@@ -140,7 +133,6 @@ class MetaEpisodeBatch:
 
         # masks
         self.done_masks[self.step + 1].copy_(done_masks)
-        self.time_limit_masks[self.step + 1].copy_(time_limit_masks)
 
         # actions, log probs, value preds, rewards to the current one.
         self.actions[self.step].copy_(actions)
@@ -157,8 +149,7 @@ class MetaEpisodeBatch:
         next_value: torch.Tensor,
         use_gae: bool,
         gamma: float,
-        gae_lambda: float,
-        use_proper_time_limits: bool = True,
+        gae_lambda: float
     ) -> None:
         """
         Compute returns for each of the rollouts.
@@ -168,51 +159,25 @@ class MetaEpisodeBatch:
             use_gae (bool): Whether to use GAE for advantage estimates.
             gamma (float): Discount gamme to be used.
             gae_lambda (float): GAE lambda value.
-            use_proper_time_limits (bool): Whether to use proper time limits for end of episode.
 
         Returns:
             None
         """
-        if use_proper_time_limits:
-            if use_gae:
-                self.value_preds[-1] = next_value
-                gae = 0
-                for step in reversed(range(self.rewards.size(0))):
-                    delta = (
-                        self.rewards[step]
-                        + gamma * self.value_preds[step + 1] * self.done_masks[step + 1]
-                        - self.value_preds[step]
-                    )
-                    gae = delta + gamma * gae_lambda * self.done_masks[step + 1] * gae
-                    gae = gae * self.time_limit_masks[step + 1]
-                    self.returns[step] = gae + self.value_preds[step]
-            else:
-                self.returns[-1] = next_value
-                for step in reversed(range(self.rewards.size(0))):
-                    self.returns[step] = (
-                        self.returns[step + 1] * gamma * self.done_masks[step + 1]
-                        + self.rewards[step]
-                    ) * self.time_limit_masks[step + 1] + (
-                        1 - self.time_limit_masks[step + 1]
-                    ) * self.value_preds[
-                        step
-                    ]
+        if use_gae:
+            self.value_preds[-1] = next_value
+            gae = 0
+            for step in reversed(range(self.rewards.size(0))):
+                delta = (
+                    self.rewards[step]
+                    + gamma * self.value_preds[step + 1] * self.done_masks[step + 1]
+                    - self.value_preds[step]
+                )
+                gae = delta + gamma * gae_lambda * self.done_masks[step + 1] * gae
+                self.returns[step] = gae + self.value_preds[step]
         else:
-            if use_gae:
-                self.value_preds[-1] = next_value
-                gae = 0
-                for step in reversed(range(self.rewards.size(0))):
-                    delta = (
-                        self.rewards[step]
-                        + gamma * self.value_preds[step + 1] * self.done_masks[step + 1]
-                        - self.value_preds[step]
-                    )
-                    gae = delta + gamma * gae_lambda * self.done_masks[step + 1] * gae
-                    self.returns[step] = gae + self.value_preds[step]
-            else:
-                self.returns[-1] = next_value
-                for step in reversed(range(self.rewards.size(0))):
-                    self.returns[step] = (
-                        self.returns[step + 1] * gamma * self.done_masks[step + 1]
-                        + self.rewards[step]
-                    )
+            self.returns[-1] = next_value
+            for step in reversed(range(self.rewards.size(0))):
+                self.returns[step] = (
+                    self.returns[step + 1] * gamma * self.done_masks[step + 1]
+                    + self.rewards[step]
+                )

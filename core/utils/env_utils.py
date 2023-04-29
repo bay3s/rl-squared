@@ -8,7 +8,6 @@ from stable_baselines3.common.monitor import Monitor
 
 from gym.envs.registration import register
 from core.envs.normalized_vec_env import NormalizedVecEnv as NormalizedVecEnv
-from core.envs.time_limit_env_wrapper import TimeLimitEnvWrapper
 from core.envs.multiprocessing_vec_env import MultiprocessingVecEnv
 from core.envs.pytorch_vec_env_wrapper import PyTorchVecEnvWrapper
 from core.envs.rl_squared_env import RLSquaredEnv
@@ -79,10 +78,8 @@ def make_env_thunk(
     def _thunk():
         env = gym.make(env_name, **env_configs)
         env.seed(seed + rank)
-        env = RLSquaredEnv(env)
 
-        if str(env.__class__.__name__).find("TimeLimit") >= 0:
-            env = TimeLimitEnvWrapper(env)
+        env = RLSquaredEnv(env)
 
         env = Monitor(
             env, os.path.join(log_dir, str(rank)), allow_early_resets=allow_early_resets
@@ -132,7 +129,7 @@ def make_vec_envs(
     envs = MultiprocessingVecEnv(envs)
 
     if len(envs.observation_space.shape) == 1:
-        # @todo normalize
+        # @todo normalize when necessary
         pass
     else:
         raise NotImplementedError

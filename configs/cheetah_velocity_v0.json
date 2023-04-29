@@ -17,7 +17,6 @@
   "meta_episodes_per_epoch": 2500,
   "num_processes": 1,
   "discount_gamma": 0.99,
-  "use_proper_time_limits": true,
   "ppo_opt_epochs": 10,
   "ppo_num_minibatches": 50,
   "ppo_clip_param": 0.1,

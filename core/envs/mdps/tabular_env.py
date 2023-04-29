@@ -159,8 +159,11 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         observation = np.zeros(self._num_states)
         observation[self._current_state] = 1.0
 
-        return observation, reward, False, {}
+        done = self.elapsed_steps == self.max_episode_steps
 
+        return observation, reward, done, {}
+
+    @property
     def elapsed_steps(self) -> int:
         """
         Returns the elapsed number of episode steps in the environment.
@@ -170,6 +173,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         """
         return self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Returns the maximum number of episode steps in the environment.

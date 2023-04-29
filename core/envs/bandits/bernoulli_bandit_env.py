@@ -127,6 +127,7 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
 
         return self._state, reward, True, {}
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Returns the elapsed number of episode steps in the environment.
@@ -136,6 +137,7 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         """
         return self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Returns the maximum number of episode steps in the environment.

@@ -116,6 +116,7 @@ class BaseMetaEnv(gym.Env, ABC):
         """
         raise NotImplementedError
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Returns the elapsed number of episode steps in the environment.
@@ -125,6 +126,7 @@ class BaseMetaEnv(gym.Env, ABC):
         """
         raise NotImplementedError
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Returns the maximum number of episode steps in the environment.
