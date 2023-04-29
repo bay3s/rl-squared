@@ -66,5 +66,5 @@ if __name__ == "__main__":
 
         # train
         trainer = Trainer(experiment_config)
-        trainer.train(enable_wandb=not args.disable_wandb))
+        trainer.train(enable_wandb=not args.disable_wandb)
         pass
