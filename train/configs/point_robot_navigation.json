@@ -4,7 +4,7 @@
   "env_configs": {
     "max_episode_steps": 100
   },
-  "actor_lr": 0.0004,
+  "actor_lr": 0.0003,
   "critic_lr": 0.0001,
   "use_linear_lr_decay": false,
   "optimizer_eps": 0.00000001,
@@ -12,10 +12,10 @@
   "random_seed": 6785,
   "cuda_deterministic": false,
   "use_cuda": true,
-  "policy_iterations": 500,
-  "meta_episode_length": 500,
-  "meta_episodes_per_epoch": 40,
-  "num_processes": 1,
+  "policy_iterations": 200,
+  "meta_episode_length": 100,
+  "meta_episodes_per_epoch": 2500,
+  "num_processes": 20,
   "discount_gamma": 0.99,
   "ppo_opt_epochs": 10,
   "ppo_num_minibatches": 50,

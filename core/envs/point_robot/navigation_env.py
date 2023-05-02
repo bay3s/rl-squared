@@ -31,7 +31,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Networks", 2017 (https://arxiv.org/abs/1703.03400)
         """
         EzPickle.__init__(self)
-        BaseMetaEnv.__init__(self)
+        BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
         self._max_episode_steps = max_episode_steps

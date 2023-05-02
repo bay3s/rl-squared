@@ -13,9 +13,9 @@ SUPPORTED_ENVIRONMENTS = [
     "bernoulli_bandit",
     "tabular_mdp",
     "point_robot_navigation",
-    "ant_target_position",
-    "ant_target_velocity",
-    "cheetah_target_velocity",
+    # "ant_target_position",
+    # "ant_target_velocity",
+    # "cheetah_target_velocity",
 ]
 
 
