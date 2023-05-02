@@ -9,13 +9,8 @@ from core.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-SUPPORTED_ENVIRONMENTS = [
-    "bernoulli_bandit",
-    "tabular_mdp",
-    "point_robot_navigation",
-    # "ant_target_position",
-    # "ant_target_velocity",
-    # "cheetah_target_velocity",
+NUM_INTERACTION_EPISODES = [
+  10, 25, 50, 75, 100
 ]
 
 
@@ -34,10 +29,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--env-name",
-        choices=SUPPORTED_ENVIRONMENTS,
+        "--n",
+        choices=NUM_INTERACTION_EPISODES,
         default=None,
-        help=f"Environment to run the experiment in, one of [{', '.join(SUPPORTED_ENVIRONMENTS)}].",
+        help=f"Number of episodes of interaction per MDP, one of [{', '.join([str(n) for n in NUM_INTERACTION_EPISODES])}"
+             f"].",
     )
 
     parser.add_argument(
@@ -50,19 +46,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.env_name is None and not args.run_all:
+    if args.n is None and not args.run_all:
         raise ValueError(
             f"Unable to infer experiment environment from the inputs, either provide `--env-name` or "
             f"set `--run-all` to `True`"
         )
 
-    environments = [args.env_name] if not args.run_all else SUPPORTED_ENVIRONMENTS
+    env_names = [f'tabular_mdp_n_{args.n}'] if not args.run_all \
+        else [f'tabular_mdp_n_{n}' for n in NUM_INTERACTION_EPISODES]
 
-    for env_name in environments:
-        # load config
+    for env_name in env_names:
+        # config
         config_path = f"{os.path.dirname(__file__)}/configs/{env_name}.json"
         experiment_config = ExperimentConfig.from_json(config_path)
-        print(experiment_config)
 
         # train
         trainer = Trainer(experiment_config)

@@ -117,6 +117,9 @@ class Trainer:
                         "mean_rewards": np.mean(meta_episode_rewards),
                     }
                 )
+
+            # @todo evaluation
+            # @todo checkpoint
             pass
 
         if enable_wandb:
