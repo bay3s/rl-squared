@@ -5,9 +5,9 @@ import torch
 from core.training.experiment_config import ExperimentConfig
 from core.utils.env_utils import get_render_func, get_vec_normalize, make_vec_envs
 
-sys.path.append('core')
+sys.path.append("core")
 
-config_json = f'{os.path.dirname(__file__)}/results/cartpole_v1/config.json'
+config_json = f"{os.path.dirname(__file__)}/results/cartpole_v1/config.json"
 args = ExperimentConfig.from_json(config_json)
 
 env = make_vec_envs(
@@ -16,8 +16,8 @@ env = make_vec_envs(
     1,
     None,
     None,
-    device='cpu',
-    allow_early_resets=False
+    device="cpu",
+    allow_early_resets=False,
 )
 
 # get a render function
@@ -25,8 +25,7 @@ render_func = get_render_func(env)
 
 # we need to use the same statistics for normalization as used in training
 actor_critic, obs_rms = torch.load(
-    os.path.join(args.checkpoint_dir + "model.pt"),
-    map_location='cpu'
+    os.path.join(args.checkpoint_dir + "model.pt"), map_location="cpu"
 )
 
 vec_norm = get_vec_normalize(env)
@@ -41,7 +40,7 @@ masks = torch.zeros(1, 1)
 obs = env.reset()
 
 if render_func is not None:
-    render_func('human')
+    render_func("human")
 
 while True:
     with torch.no_grad():
@@ -55,4 +54,4 @@ while True:
     masks.fill_(0.0 if done else 1.0)
 
     if render_func is not None:
-        render_func('human')
+        render_func("human")

@@ -2,7 +2,6 @@ import torch
 
 
 class FixedBernoulli(torch.distributions.Bernoulli):
-
     def log_probs(self, actions: torch.Tensor):
         """
         Returns the log probabilities for the Bernoulli.

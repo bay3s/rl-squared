@@ -24,7 +24,6 @@ class ExperimentConfig:
       steps_per_trial (int): Number of steps per RL-Squared trial (one trial includes multiple episodes).
       num_processes (int): Number of parallel training processes.
       discount_gamma (float): Discount applied to trajectories that are sampled.
-      use_proper_time_limits (bool): Compute returns taking into account time limits.
       ppo_epochs (int): Number of PPO epochs for training.
       ppo_clip_param (int): The `epsilon` clip parameter for the surrogate objective.
       ppo_entropy_coef (float): Entropy coefficient.
@@ -62,7 +61,6 @@ class ExperimentConfig:
     meta_episode_length: int
     num_processes: int
     discount_gamma: float
-    use_proper_time_limits: bool
 
     # ppo
     ppo_opt_epochs: int
@@ -76,11 +74,20 @@ class ExperimentConfig:
     gae_lambda: bool
 
     # logs
-    directory: str
     log_interval: int
     checkpoint_interval: int
     eval_interval: int
     pass
+
+    @property
+    def directory(self) -> str:
+        """
+        Return the directory to store logs.
+
+        Returns:
+          str
+        """
+        return f"./results/{self.env_name}"
 
     @property
     def log_dir(self) -> str:

@@ -6,19 +6,22 @@ import torch
 from core.networks.modules.distributions import Categorical, DiagonalGaussian
 from core.networks.modules.memory.gru import GRU
 from core.networks.base_actor import BaseActor
-from core.networks.modules.distributions import FixedGaussian, FixedCategorical, FixedBernoulli
+from core.networks.modules.distributions import (
+    FixedGaussian,
+    FixedCategorical,
+    FixedBernoulli,
+)
 
 from core.utils.torch_utils import init_mlp
 
 
 class StatefulActor(BaseActor):
-
     def __init__(
         self,
         observation_space: gym.Space,
         action_space: gym.Space,
         recurrent_state_size: int,
-        hidden_sizes: List[int]
+        hidden_sizes: List[int],
     ):
         """
         Stateful actor for a discrete action space.
@@ -39,7 +42,9 @@ class StatefulActor(BaseActor):
         self._policy_head = self._init_dist(hidden_sizes[-1], action_space)
         pass
 
-    def _init_dist(self, last_hidden_size: int, action_space: gym.Space) -> Union[Categorical, DiagonalGaussian]:
+    def _init_dist(
+        self, last_hidden_size: int, action_space: gym.Space
+    ) -> Union[Categorical, DiagonalGaussian]:
         """
         Initialize the action distribution.
 
@@ -67,8 +72,12 @@ class StatefulActor(BaseActor):
         """
         return self._recurrent_state_size
 
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None
-                ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
+    def forward(
+        self,
+        x: torch.Tensor,
+        recurrent_states: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None,
+    ) -> Tuple[Union[FixedGaussian, FixedBernoulli, FixedCategorical], torch.Tensor]:
         """
         Conduct the forward pass through the network.
 
@@ -85,4 +94,3 @@ class StatefulActor(BaseActor):
         x = self._policy_head(x)
 
         return x, recurrent_states
-

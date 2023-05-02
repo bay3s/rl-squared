@@ -13,8 +13,12 @@ from core.networks.modules.memory.gru import GRU
 
 
 class StatefulCritic(BaseCritic):
-
-    def __init__(self, observation_space: gym.Space, recurrent_state_size: int, hidden_sizes: List[int]):
+    def __init__(
+        self,
+        observation_space: gym.Space,
+        recurrent_state_size: int,
+        hidden_sizes: List[int],
+    ):
         """
         Stateful critic.
 
@@ -34,7 +38,10 @@ class StatefulCritic(BaseCritic):
         self._gru = GRU(observation_space.shape[0], recurrent_state_size)
         self._mlp = init_mlp(recurrent_state_size, hidden_sizes)
         self._value_head = init_module(
-            nn.Linear(hidden_sizes[-1], 1), nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), np.sqrt(2)
+            nn.Linear(hidden_sizes[-1], 1),
+            nn.init.orthogonal_,
+            lambda x: nn.init.constant_(x, 0),
+            np.sqrt(2),
         )
         pass
 
@@ -48,8 +55,12 @@ class StatefulCritic(BaseCritic):
         """
         return self._recurrent_state_size
 
-    def forward(self, x: torch.Tensor, recurrent_states: torch.Tensor, recurrent_state_masks: torch.Tensor = None
-                ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self,
+        x: torch.Tensor,
+        recurrent_states: torch.Tensor,
+        recurrent_state_masks: torch.Tensor = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Conduct the forward pass through the network.
 

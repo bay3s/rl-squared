@@ -12,8 +12,12 @@ from core.networks.base_critic import BaseCritic
 
 
 class StatefulActorCritic(BaseActorCritic):
-
-    def __init__(self, observation_space: gym.Space, action_space: gym.Space, recurrent_state_size: int):
+    def __init__(
+        self,
+        observation_space: gym.Space,
+        action_space: gym.Space,
+        recurrent_state_size: int,
+    ):
         """
         Actor-Critic for a discrete action space.
 
@@ -24,16 +28,16 @@ class StatefulActorCritic(BaseActorCritic):
         super(StatefulActorCritic, self).__init__(observation_space, action_space)
 
         self._actor = StatefulActor(
-            observation_space = observation_space,
-            action_space = action_space,
-            recurrent_state_size = recurrent_state_size,
-            hidden_sizes = [256]
+            observation_space=observation_space,
+            action_space=action_space,
+            recurrent_state_size=recurrent_state_size,
+            hidden_sizes=[256],
         )
 
         self._critic = StatefulCritic(
-            observation_space = observation_space,
-            recurrent_state_size = recurrent_state_size,
-            hidden_sizes = [256]
+            observation_space=observation_space,
+            recurrent_state_size=recurrent_state_size,
+            hidden_sizes=[256],
         )
 
         self._recurrent_state_size = recurrent_state_size
@@ -93,22 +97,34 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
           Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
-        value_estimate, recurrent_states_critic = self.critic(observations, recurrent_states_critic,
-                                                              recurrent_state_masks)
-        action_distribution, recurrent_states_actor = self.actor(observations, recurrent_states_actor,
-                                                                 recurrent_state_masks)
+        value_estimate, recurrent_states_critic = self.critic(
+            observations, recurrent_states_critic, recurrent_state_masks
+        )
+
+        action_distribution, recurrent_states_actor = self.actor(
+            observations, recurrent_states_actor, recurrent_state_masks
+        )
 
         # @todo use mean for Gaussian
-        actions = action_distribution.mode() if deterministic else action_distribution.sample()
+        actions = (
+            action_distribution.mode()
+            if deterministic
+            else action_distribution.sample()
+        )
 
-        return value_estimate, actions, action_distribution.log_probs(actions), recurrent_states_actor, \
-            recurrent_states_critic
+        return (
+            value_estimate,
+            actions,
+            action_distribution.log_probs(actions),
+            recurrent_states_actor,
+            recurrent_states_critic,
+        )
 
     def get_value(
         self,
         observations: torch.Tensor,
         recurrent_states_critic: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None
+        recurrent_state_masks: torch.Tensor = None,
     ) -> torch.Tensor:
         """
         Given a state returns its corresponding value.
@@ -129,7 +145,7 @@ class StatefulActorCritic(BaseActorCritic):
         actions: torch.Tensor,
         recurrent_states_actor: torch.Tensor,
         recurrent_states_critic: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None
+        recurrent_state_masks: torch.Tensor = None,
     ) -> Tuple:
         """
         Evaluate actions given observations, states, actions, and recurrent state masks.

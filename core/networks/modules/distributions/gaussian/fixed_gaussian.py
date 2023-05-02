@@ -2,7 +2,6 @@ import torch
 
 
 class FixedGaussian(torch.distributions.Normal):
-
     def log_probs(self, actions: torch.Tensor) -> torch.Tensor:
         """
         Log probabilities of actions.

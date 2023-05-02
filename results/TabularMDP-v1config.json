@@ -1,0 +1,32 @@
+{
+  "algo": "PPO",
+  "env_name": "TabularMDP-v1",
+  "env_configs": {
+    "num_states": 10,
+    "num_actions": 5,
+    "max_episode_steps": 10
+  },
+  "use_linear_lr_decay": false,
+  "actor_lr": 0.0004,
+  "critic_lr": 0.0004,
+  "optimizer_eps": 1e-05,
+  "max_grad_norm": 0.5,
+  "random_seed": 796,
+  "cuda_deterministic": false,
+  "use_cuda": true,
+  "policy_iterations": 1,
+  "meta_episodes_per_epoch": 100,
+  "meta_episode_length": 100,
+  "num_processes": 1,
+  "discount_gamma": 0.99,
+  "ppo_opt_epochs": 10,
+  "ppo_clip_param": 0.1,
+  "ppo_entropy_coef": 0.01,
+  "ppo_value_loss_coef": 0.5,
+  "ppo_num_minibatches": 50,
+  "use_gae": true,
+  "gae_lambda": 0.3,
+  "log_interval": 1,
+  "checkpoint_interval": 1,
+  "eval_interval": 1
+}

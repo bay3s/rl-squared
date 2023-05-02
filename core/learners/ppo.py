@@ -8,7 +8,6 @@ from core.training.meta_batch_sampler import MetaBatchSampler
 
 
 class PPO:
-
     OPT_ACTOR_PARAMS = "params:actor"
     OPT_CRITIC_PARAMS = "params:critic"
 
@@ -91,7 +90,7 @@ class PPO:
                 continue
 
             lr = self.initial_actor_lr - (
-            self.initial_actor_lr * (current_epoch / float(total_epochs))
+                self.initial_actor_lr * (current_epoch / float(total_epochs))
             )
 
             param_group["lr"] = lr
@@ -115,9 +114,7 @@ class PPO:
         dist_entropy_epoch = 0
 
         for e in range(self.opt_epochs):
-            minibatches = minibatch_sampler.sample(
-                advantages, self.num_minibatches
-            )
+            minibatches = minibatch_sampler.sample(advantages, self.num_minibatches)
 
             for sample in minibatches:
                 (
@@ -136,7 +133,7 @@ class PPO:
                 (
                     values,
                     action_log_probs,
-                    dist_entropy
+                    dist_entropy,
                 ) = self.actor_critic.evaluate_actions(
                     obs_batch, actions_batch, actor_states_batch, critic_states_batch
                 )

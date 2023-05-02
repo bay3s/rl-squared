@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any
 import numpy as np
 
 import gym
@@ -8,29 +8,30 @@ import gym.spaces as spaces
 from core.envs.base_meta_env import BaseMetaEnv
 
 
-class BanditEnv(EzPickle, BaseMetaEnv):
-
+class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
     def __init__(self, num_actions: int, seed: int = None):
         """
         Initialize a multi-armed bandit.
 
         Args:
-          num_actions (int): Number of actions that the bandit is able to take.
+            num_actions (int): Number of actions that the bandit is able to take.
+            seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
+        self._max_episode_steps = 1
+        self._elapsed_steps = 0
 
         self._num_actions = num_actions
         self._state = np.array([0.0])
         self._payout_odds = None
 
         # spaces
-        self._action_space = spaces.Discrete(num_actions)
-
         high = np.array([1.0], dtype=np.float32)
-        self._observation_space = spaces.box.Box(-high, high)
+        self.observation_space = spaces.box.Box(-high, high)
+        self.action_space = spaces.Discrete(num_actions)
 
         # sample
         self.sample_task()
@@ -38,12 +39,15 @@ class BanditEnv(EzPickle, BaseMetaEnv):
 
     def sample_task(self) -> None:
         """
-        Sample a new multi-armed bandit problem from distribution over problems.
+        Sample a new bandit task.
 
         Returns:
           None
         """
-        self._payout_odds = self.np_random.uniform(low=0.0, high=1.0, size=self._num_actions)
+        self._payout_odds = self.np_random.uniform(
+            low=0.0, high=1.0, size=self._num_actions
+        )
+        self._elapsed_steps = 0
         pass
 
     def reset(self) -> np.ndarray:
@@ -55,6 +59,7 @@ class BanditEnv(EzPickle, BaseMetaEnv):
         Returns:
           np.ndarray
         """
+        self._elapsed_steps = 0
         return self._state
 
     @property
@@ -67,6 +72,16 @@ class BanditEnv(EzPickle, BaseMetaEnv):
         """
         return self._observation_space
 
+    @observation_space.setter
+    def observation_space(self, value: Any) -> None:
+        """
+        Set the observation space for the environment.
+
+        Returns:
+          gym.Space
+        """
+        self._observation_space = value
+
     @property
     def action_space(self) -> gym.Space:
         """
@@ -76,6 +91,16 @@ class BanditEnv(EzPickle, BaseMetaEnv):
           gym.Space
         """
         return self._action_space
+
+    @action_space.setter
+    def action_space(self, value: Any) -> None:
+        """
+        Set the action space for the environment.
+
+        Returns:
+            gym.Space
+        """
+        self._action_space = value
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
@@ -97,9 +122,30 @@ class BanditEnv(EzPickle, BaseMetaEnv):
         Returns:
           Tuple
         """
+        self._elapsed_steps += 1
         reward = self.np_random.binomial(n=1, p=self._payout_odds[action], size=1)[0]
 
         return self._state, reward, True, {}
+
+    @property
+    def elapsed_steps(self) -> int:
+        """
+        Returns the elapsed number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        return self._elapsed_steps
+
+    @property
+    def max_episode_steps(self) -> int:
+        """
+        Returns the maximum number of episode steps in the environment.
+
+        Returns:
+          int
+        """
+        return self._max_episode_steps
 
     def render(self, mode: str = "human") -> None:
         """

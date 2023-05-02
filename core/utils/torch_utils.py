@@ -6,7 +6,7 @@ from torch import nn as nn
 from torch.nn.utils import weight_norm
 
 
-def init_recurrent(input_size: int, recurrent_state_size: int) -> nn.Module:
+def init_gru(input_size: int, recurrent_state_size: int) -> nn.Module:
     """
     Initialize a GRU module.
 
@@ -20,15 +20,17 @@ def init_recurrent(input_size: int, recurrent_state_size: int) -> nn.Module:
     gru = nn.GRU(input_size, recurrent_state_size)
 
     for name, param in gru.named_parameters():
-        if 'bias' in name:
+        if "bias" in name:
             nn.init.constant_(param, 0)
-        elif 'weight' in name:
+        elif "weight" in name:
             nn.init.orthogonal_(param)
 
     return gru
 
 
-def init_module(module: nn.Module, weight_init: Callable, bias_init: Callable, gain: float = 1.0) -> nn.Module:
+def init_module(
+    module: nn.Module, weight_init: Callable, bias_init: Callable, gain: float = 1.0
+) -> nn.Module:
     """
     Initialize a module with the given weight and bias functions.
 
@@ -59,6 +61,7 @@ def init_mlp(input_size: int, hidden_sizes: List[int]) -> nn.Sequential:
     Returns:
         nn.Sequential
     """
+
     def _init_orthogonal(m: nn.Module):
         return init_module(
             m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), np.sqrt(2)
@@ -69,7 +72,9 @@ def init_mlp(input_size: int, hidden_sizes: List[int]) -> nn.Sequential:
 
     mlp_modules = list()
     for i in range(len(feature_sizes) - 1):
-        hidden_layer = _init_orthogonal(nn.Linear(feature_sizes[i], feature_sizes[i + 1]))
+        hidden_layer = _init_orthogonal(
+            nn.Linear(feature_sizes[i], feature_sizes[i + 1])
+        )
 
         # zero bias
         torch.nn.init.zeros_(hidden_layer.bias)
@@ -80,5 +85,3 @@ def init_mlp(input_size: int, hidden_sizes: List[int]) -> nn.Sequential:
         pass
 
     return nn.Sequential(*mlp_modules)
-
-

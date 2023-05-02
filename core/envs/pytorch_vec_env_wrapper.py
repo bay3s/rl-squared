@@ -7,7 +7,6 @@ from stable_baselines3.common.vec_env import VecEnvWrapper, VecEnv
 
 
 class PyTorchVecEnvWrapper(VecEnvWrapper):
-
     def __init__(self, venv: VecEnv, device: torch.device):
         """
         Initialize an environment compatible with PyTorch.

@@ -9,7 +9,6 @@ from core.networks.base_critic import BaseCritic
 
 
 class BaseActorCritic(ABC):
-
     def __init__(self, observation_space: gym.Space, action_space: gym.Space):
         """
         Abstract class outlines functions expected from actor-critic implementations.
@@ -54,7 +53,7 @@ class BaseActorCritic(ABC):
         self,
         observations: torch.Tensor,
         recurrent_states_critic: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None
+        recurrent_state_masks: torch.Tensor = None,
     ) -> torch.Tensor:
         """
         Given a state returns its corresponding value.
@@ -75,7 +74,7 @@ class BaseActorCritic(ABC):
         actions: torch.Tensor,
         recurrent_states_actor: torch.Tensor,
         recurrent_states_critic: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None
+        recurrent_state_masks: torch.Tensor = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Evaluate actions given observations, encoded states, recurrent state recurrent_state_masks, actions.
