@@ -24,7 +24,6 @@ class PPO:
         eps: float = None,
         max_grad_norm: float = None,
         use_clipped_value_loss: bool = True,
-        optimizer: torch.optim.Optimizer = None
     ):
         """
         PPO implementation based on "Proximal Policy Optimization Algorithms" https://arxiv.org/abs/1707.06347.
@@ -41,7 +40,6 @@ class PPO:
             eps (float): Epsilon value to use with the Adam optimizer.
             max_grad_norm (float): Max gradient norm for gradient clipping.
             use_clipped_value_loss (bool): Whether to use the clipped value loss while computing the objective.
-            optimizer (torch.optim.Optimizer): Optimizer to use with PPO.
         """
         self.actor_critic = actor_critic
 
