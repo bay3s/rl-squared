@@ -13,9 +13,9 @@ SUPPORTED_ENVIRONMENTS = [
     "bernoulli_bandit",
     "tabular_mdp",
     "point_robot_navigation",
-    # "ant_target_position",
-    # "ant_target_velocity",
-    # "cheetah_target_velocity",
+    "ant_target_position",
+    "ant_target_velocity",
+    "cheetah_target_velocity",
 ]
 
 
@@ -41,6 +41,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--from-checkpoint",
+        type=str,
+        default=None,
+        help="Checkpoint, if any, from which to restart the training run.",
+    )
+
+    parser.add_argument(
         "--disable-wandb",
         type=bool,
         default=False,
@@ -62,9 +69,8 @@ if __name__ == "__main__":
         # load config
         config_path = f"{os.path.dirname(__file__)}/configs/{env_name}.json"
         experiment_config = ExperimentConfig.from_json(config_path)
-        print(experiment_config)
 
         # train
-        trainer = Trainer(experiment_config)
+        trainer = Trainer(experiment_config, checkpoint_path = args.from_checkpoint)
         trainer.train(enable_wandb=not args.disable_wandb)
         pass

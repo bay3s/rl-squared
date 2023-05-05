@@ -1,6 +1,10 @@
+import os
 from typing import List, Tuple
+from datetime import datetime
 
+import pathlib
 import torch
+import torch.nn as nn
 
 from core.envs.pytorch_vec_env_wrapper import PyTorchVecEnvWrapper
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
@@ -107,3 +111,51 @@ def sample_meta_episodes(
         pass
 
     return meta_episode_batch, meta_episode_rewards
+
+
+def save_checkpoint(
+    iteration: int,
+    checkpoint_dir: str,
+    checkpoint_name: str,
+    actor: nn.Module,
+    critic: nn.Module,
+    optimizer: torch.optim.Optimizer
+):
+    """
+    Saves a checkpoint of the latest actor, critic, optimizer.
+
+    Args:
+        iteration (int): Number of training iterations so far.
+        checkpoint_dir (str): Directory for checkpointing.
+        checkpoint_name (str): Model name for checkpointing.
+        actor (nn.Module): Actor in the actor-critic setup.
+        critic (nn.Module): Critic in the actor-critic setup.
+        optimizer (torch.optim.Optimizer): Optimizer to be updated from checkpoint.
+
+    Returns:
+        None
+    """
+    if not os.path.exists(checkpoint_dir):
+        pathlib.Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
+
+    checkpoint_path = f'{checkpoint_dir}/checkpoint-{checkpoint_name}.pt'
+
+    # save
+    torch.save({
+        'iteration': iteration,
+        'actor': actor.state_dict(),
+        'critic': critic.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }, checkpoint_path)
+    pass
+
+
+def timestamp() -> int:
+    """
+    Return the current timestamp in integer format.
+
+    Returns:
+        int
+    """
+    return int(datetime.timestamp(datetime.now()))
+

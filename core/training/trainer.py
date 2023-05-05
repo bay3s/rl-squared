@@ -9,19 +9,20 @@ from core.training.experiment_config import ExperimentConfig
 from core.learners import PPO
 
 from core.utils.env_utils import make_vec_envs
-from core.utils.training_utils import sample_meta_episodes
+from core.utils.training_utils import sample_meta_episodes, save_checkpoint, timestamp
 from core.training.meta_batch_sampler import MetaBatchSampler
 
 from core.networks.stateful.stateful_actor_critic import StatefulActorCritic
 
 
 class Trainer:
-    def __init__(self, experiment_config: ExperimentConfig):
+    def __init__(self, experiment_config: ExperimentConfig, checkpoint_path: str = None):
         """
         Initialize an instance of a trainer for PPO.
 
         Args:
             experiment_config (ExperimentConfig): Params to be used for the trainer.
+            checkpoint_path (str): Checkpoint path from where to restart the experiment.
         """
         self.config = experiment_config
 
@@ -29,17 +30,22 @@ class Trainer:
         self._device = None
         self._log_dir = None
         self._eval_log_dir = None
+
+        # checkpoint
+        self._checkpoint_path = checkpoint_path
         pass
 
-    def train(self, enable_wandb: bool = True) -> None:
+    def train(self, checkpoint_interval: int = 1, evaluation_interval: int = 10, enable_wandb: bool = True, ) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
         Args:
+            checkpoint_interval (bool): Number of iterations after which to checkpoint.
+            evaluation_interval (bool): Number of iterations after which to evaluate.
             enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
         Returns:
-
+            None
         """
         # log
         self.save_params()
@@ -88,7 +94,18 @@ class Trainer:
             max_grad_norm=self.config.max_grad_norm,
         )
 
-        for j in range(self.config.policy_iterations):
+        current_iteration = 0
+
+        # load
+        if self._checkpoint_path:
+            checkpoint = torch.load(self._checkpoint_path)
+            actor_critic.actor.load_state_dict(checkpoint['actor'])
+            actor_critic.critic.load_state_dict(checkpoint['critic'])
+            ppo.optimizer.load_state_dict(checkpoint['optimizer'])
+            current_iteration = checkpoint['epoch']
+            pass
+
+        for j in range(current_iteration, self.config.policy_iterations):
             # anneal
             if self.config.use_linear_lr_decay:
                 ppo.anneal_learning_rates(j, self.config.policy_iterations)
@@ -117,11 +134,30 @@ class Trainer:
                         "mean_rewards": np.mean(meta_episode_rewards),
                     }
                 )
-            pass
 
+            # save
+            if j % checkpoint_interval == 0:
+                save_checkpoint(
+                    iteration = j,
+                    checkpoint_dir = self.config.checkpoint_dir,
+                    checkpoint_name = str(timestamp()),
+                    actor = actor_critic.actor,
+                    critic = actor_critic.critic,
+                    optimizer = ppo.optimizer
+                )
+                pass
+
+            # eval
+            if j % evaluation_interval == 0:
+                # @todo evaluate
+                pass
+
+        # end
         if enable_wandb:
-            # end
             wandb.finish()
+
+        # save
+
         pass
 
     @property
