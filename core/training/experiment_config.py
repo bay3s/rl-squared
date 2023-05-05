@@ -59,6 +59,7 @@ class ExperimentConfig:
     # sampling
     policy_iterations: int
     meta_episodes_per_epoch: int
+    meta_episodes_per_eval: int
     meta_episode_length: int
     num_processes: int
     discount_gamma: float

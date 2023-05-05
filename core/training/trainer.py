@@ -1,7 +1,6 @@
 import os
 
 import torch
-import numpy as np
 import wandb
 
 import core.utils.logging_utils as logging_utils
@@ -35,7 +34,7 @@ class Trainer:
         self._checkpoint_path = checkpoint_path
         pass
 
-    def train(self, checkpoint_interval: int = 1, evaluation_interval: int = 10, enable_wandb: bool = True, ) -> None:
+    def train(self, checkpoint_interval: int = 1, evaluation_interval: int = 10, enable_wandb: bool = True) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
@@ -112,7 +111,7 @@ class Trainer:
                 pass
 
             # sample
-            meta_episode_batches, meta_episode_rewards = sample_meta_episodes(
+            meta_episode_batches, meta_train_reward_per_step = sample_meta_episodes(
                 actor_critic,
                 rl_squared_envs,
                 self.config.meta_episode_length,
@@ -125,15 +124,12 @@ class Trainer:
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
-            if enable_wandb:
-                wandb.log(
-                    {
-                        "mean_value_loss": value_loss,
-                        "mean_action_loss": action_loss,
-                        "mean_dist_entropy": dist_entropy,
-                        "mean_rewards": np.mean(meta_episode_rewards),
-                    }
-                )
+            wandb_logs = {
+                "meta_train/mean_value_loss": value_loss,
+                "meta_train/mean_action_loss": action_loss,
+                "meta_train/mean_dist_entropy": dist_entropy,
+                "meta_train/mean_meta_episode_reward": meta_train_reward_per_step * self.config.meta_episode_length,
+            }
 
             # save
             if j % checkpoint_interval == 0:
@@ -147,10 +143,25 @@ class Trainer:
                 )
                 pass
 
-            # eval
+            # evaluate
             if j % evaluation_interval == 0:
-                # @todo evaluate
+                _, mean_reward_per_step = sample_meta_episodes(
+                    actor_critic,
+                    rl_squared_envs,
+                    self.config.meta_episode_length,
+                    self.config.meta_episodes_per_eval,
+                    self.config.use_gae,
+                    self.config.gae_lambda,
+                    self.config.discount_gamma,
+                )
+
+                wandb_logs.update({
+                    "meta_eval/mean_meta_episode_reward": mean_reward_per_step * self.config.meta_episode_length
+                })
                 pass
+
+            if enable_wandb:
+                wandb.log(wandb_logs)
 
         # end
         if enable_wandb:
