@@ -1,6 +1,7 @@
 from dataclasses import dataclass, fields, asdict
 import os
 import json
+from datetime import datetime
 
 
 @dataclass(frozen=True)
@@ -69,7 +70,7 @@ class ExperimentConfig:
     ppo_value_loss_coef: float
     ppo_num_minibatches: int
 
-    # advantage estimates
+    # advantage
     use_gae: bool
     gae_lambda: bool
 
@@ -79,6 +80,15 @@ class ExperimentConfig:
     eval_interval: int
     pass
 
+    def __post_init__(self):
+        """
+        Sets a timestamp for the config.
+
+        Returns:
+            None
+        """
+        object.__setattr__(self, '_timestamp', int(datetime.timestamp(datetime.now())))
+
     @property
     def directory(self) -> str:
         """
@@ -87,7 +97,7 @@ class ExperimentConfig:
         Returns:
           str
         """
-        return f"./results/{self.env_name}"
+        return f"./results/{self.env_name.lower()}/run-{self._timestamp}/"
 
     @property
     def log_dir(self) -> str:
@@ -152,6 +162,6 @@ class ExperimentConfig:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
-        with open(f"{self.directory}config.json", "w") as outfile:
+        with open(f"{self.directory}/config.json", "w") as outfile:
             outfile.write(self.json)
             pass
