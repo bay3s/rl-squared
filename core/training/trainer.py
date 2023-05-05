@@ -112,7 +112,7 @@ class Trainer:
                 pass
 
             # sample
-            meta_episode_batches, meta_episode_rewards = sample_meta_episodes(
+            meta_episode_batches, meta_train_rewards = sample_meta_episodes(
                 actor_critic,
                 rl_squared_envs,
                 self.config.meta_episode_length,
@@ -126,10 +126,11 @@ class Trainer:
             value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
 
             wandb_logs = {
-                "mean_value_loss": value_loss,
-                "mean_action_loss": action_loss,
-                "mean_dist_entropy": dist_entropy,
-                "mean_rewards": np.mean(meta_episode_rewards),
+                "meta_train/mean_value_loss": value_loss,
+                "meta_train/mean_action_loss": action_loss,
+                "meta_train/mean_dist_entropy": dist_entropy,
+                "meta_train/mean_reward_per_step": np.mean(meta_train_rewards),
+                "meta_train/mean_reward_per_episode": np.mean(meta_train_rewards) * self.config.meta_episode_length,
             }
 
             # save
@@ -146,19 +147,19 @@ class Trainer:
 
             # evaluate
             if j % evaluation_interval == 0:
-                _, evaluation_rewards = sample_meta_episodes(
+                _, meta_eval_rewards = sample_meta_episodes(
                     actor_critic,
                     rl_squared_envs,
                     self.config.meta_episode_length,
-                    10, # @todo update this to 1_000
+                    self.config.meta_episodes_per_eval,
                     self.config.use_gae,
                     self.config.gae_lambda,
                     self.config.discount_gamma,
                 )
 
                 wandb_logs.update({
-                    "evaluation_rewards_mean": np.mean(evaluation_rewards),
-                    "evaluation_rewards_variance": np.var(evaluation_rewards)
+                    "meta_eval/mean_reward_per_episode": np.mean(meta_eval_rewards) * self.config.meta_episode_length,
+                    "meta_eval/mean_reward_per_step": np.mean(meta_eval_rewards)
                 })
                 pass
 
