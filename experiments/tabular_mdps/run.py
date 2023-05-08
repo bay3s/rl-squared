@@ -2,9 +2,9 @@ import os
 
 import argparse
 
-from core.training.trainer import ExperimentConfig
-from core.training.trainer import Trainer
-from core.utils.env_utils import register_custom_envs
+from rl_squared.training.trainer import ExperimentConfig
+from rl_squared.training.trainer import Trainer
+from rl_squared.utils.env_utils import register_custom_envs
 
 register_custom_envs()
 

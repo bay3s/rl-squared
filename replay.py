@@ -2,10 +2,10 @@ import os
 import sys
 import torch
 
-from core.training.experiment_config import ExperimentConfig
-from core.utils.env_utils import get_render_func, get_vec_normalize, make_vec_envs
+from rl_squared.training.experiment_config import ExperimentConfig
+from rl_squared.utils.env_utils import get_render_func, get_vec_normalize, make_vec_envs
 
-sys.path.append("core")
+sys.path.append("rl_squared")
 
 config_json = f"{os.path.dirname(__file__)}/results/cartpole_v1/config.json"
 args = ExperimentConfig.from_json(config_json)
