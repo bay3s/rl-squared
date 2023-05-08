@@ -8,9 +8,7 @@ setup(
   name = "rl_squared",
   install_requires=required,
   packages = setuptools.find_packages(exclude = [
-    'train',
     'experiments',
-    'notebooks',
     'notes',
   ])
 )
