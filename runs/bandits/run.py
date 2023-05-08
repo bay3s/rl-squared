@@ -9,13 +9,9 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-NUM_EPISODES = [
-  10, 100, 500
-]
+NUM_EPISODES = [10, 100, 500]
 
-NUM_ACTIONS = [
-  5, 10, 50
-]
+NUM_ACTIONS = [5, 10, 50]
 
 
 if __name__ == "__main__":
@@ -28,7 +24,7 @@ if __name__ == "__main__":
         "--run-all",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help="Whether to run all environments, if this is set then the environment parameter is ignored.",
     )
 
@@ -36,21 +32,23 @@ if __name__ == "__main__":
         "--n",
         choices=NUM_EPISODES,
         default=None,
-        help=f"Number of episodes, one of [{', '.join([str(n) for n in NUM_EPISODES])}"f"].",
+        help=f"Number of episodes, one of [{', '.join([str(n) for n in NUM_EPISODES])}"
+        f"].",
     )
 
     parser.add_argument(
         "--k",
         choices=NUM_ACTIONS,
         default=None,
-        help=f"Number of arms, one of [{', '.join([str(n) for n in NUM_ACTIONS])}"f"].",
+        help=f"Number of arms, one of [{', '.join([str(n) for n in NUM_ACTIONS])}"
+        f"].",
     )
 
     parser.add_argument(
         "--disable-wandb",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help=f"Whether to log the experiment to `wandb`.",
     )
 
@@ -63,12 +61,12 @@ if __name__ == "__main__":
         )
 
     if not args.run_all:
-        env_names = [f'bandit_n_{args.n}_k_{args.k}']
+        env_names = [f"bandit_n_{args.n}_k_{args.k}"]
     else:
         env_names = []
         for n in NUM_EPISODES:
             for k in NUM_ACTIONS:
-                env_names.append(f'bandit_n_{n}_k_{k}')
+                env_names.append(f"bandit_n_{n}_k_{k}")
 
     for env_name in env_names:
         # config

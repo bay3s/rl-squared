@@ -151,10 +151,7 @@ def register_custom_envs() -> None:
         entry_point="core.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv",
     )
 
-    register(
-        id="TabularMDP-v1",
-        entry_point="core.envs.mdps.tabular_env:TabularMDPEnv"
-    )
+    register(id="TabularMDP-v1", entry_point="core.envs.mdps.tabular_env:TabularMDPEnv")
 
     register(
         id="PointRobotNavigation-v1",

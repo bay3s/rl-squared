@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 
-from rl_squared.networks.modules.distributions.bernoulli.fixed_bernoulli import FixedBernoulli
+from rl_squared.networks.modules.distributions.bernoulli.fixed_bernoulli import (
+    FixedBernoulli,
+)
 from rl_squared.utils.torch_utils import init_module
 
 

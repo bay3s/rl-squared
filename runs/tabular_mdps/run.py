@@ -9,9 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-NUM_INTERACTION_EPISODES = [
-  10, 25, 50, 75, 100
-]
+NUM_INTERACTION_EPISODES = [10, 25, 50, 75, 100]
 
 
 if __name__ == "__main__":
@@ -24,7 +22,7 @@ if __name__ == "__main__":
         "--run-all",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help="Whether to run all environments, if this is set then the environment parameter is ignored.",
     )
 
@@ -33,14 +31,14 @@ if __name__ == "__main__":
         choices=NUM_INTERACTION_EPISODES,
         default=None,
         help=f"Number of episodes of interaction per MDP, one of [{', '.join([str(n) for n in NUM_INTERACTION_EPISODES])}"
-             f"].",
+        f"].",
     )
 
     parser.add_argument(
         "--disable-wandb",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help=f"Whether to log the experiment to `wandb`.",
     )
 
@@ -52,8 +50,11 @@ if __name__ == "__main__":
             f"set `--run-all` to `True`"
         )
 
-    env_names = [f'tabular_mdp_n_{args.n}'] if not args.run_all \
-        else [f'tabular_mdp_n_{n}' for n in NUM_INTERACTION_EPISODES]
+    env_names = (
+        [f"tabular_mdp_n_{args.n}"]
+        if not args.run_all
+        else [f"tabular_mdp_n_{n}" for n in NUM_INTERACTION_EPISODES]
+    )
 
     for env_name in env_names:
         # config

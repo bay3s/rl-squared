@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 
 from rl_squared.utils.torch_utils import init_module
-from rl_squared.networks.modules.distributions.gaussian.fixed_gaussian import FixedGaussian
+from rl_squared.networks.modules.distributions.gaussian.fixed_gaussian import (
+    FixedGaussian,
+)
 
 
 class _AddBias(nn.Module):

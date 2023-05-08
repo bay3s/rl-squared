@@ -9,10 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-SUPPORTED_ENVIRONMENTS = [
-    'ant_target_position',
-    'ant_target_velocity'
-]
+SUPPORTED_ENVIRONMENTS = ["ant_target_position", "ant_target_velocity"]
 
 
 if __name__ == "__main__":
@@ -25,7 +22,7 @@ if __name__ == "__main__":
         "--run-all",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help="Whether to run all environments, if this is set then the environment parameter is ignored.",
     )
 
@@ -33,14 +30,15 @@ if __name__ == "__main__":
         "--env-name",
         choices=SUPPORTED_ENVIRONMENTS,
         default=None,
-        help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"f"].",
+        help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
+        f"].",
     )
 
     parser.add_argument(
         "--disable-wandb",
         type=bool,
         default=False,
-        action = argparse.BooleanOptionalAction,
+        action=argparse.BooleanOptionalAction,
         help=f"Whether to log the experiment to `wandb`.",
     )
 
