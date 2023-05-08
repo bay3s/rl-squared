@@ -148,27 +148,27 @@ def register_custom_envs() -> None:
     """
     register(
         id="BernoulliBandit-v1",
-        entry_point="core.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv",
+        entry_point="rl_squared.envs.bandits.bernoulli_bandit_env:BernoulliBanditEnv",
     )
 
     register(id="TabularMDP-v1", entry_point="core.envs.mdps.tabular_env:TabularMDPEnv")
 
     register(
         id="PointRobotNavigation-v1",
-        entry_point="core.envs.point_robot.navigation_env:NavigationEnv",
+        entry_point="rl_squared.envs.point_robot.navigation_env:NavigationEnv",
     )
 
     register(
         id="AntTargetPosition-v1",
-        entry_point="core.envs.ant.ant_target_position_env:AntTargetPositionEnv",
+        entry_point="rl_squared.envs.ant.ant_target_position_env:AntTargetPositionEnv",
     )
 
     register(
         id="AntTargetVelocity-v1",
-        entry_point="core.envs.ant.ant_target_velocity_env:AntTargetVelocityEnv",
+        entry_point="rl_squared.envs.ant.ant_target_velocity_env:AntTargetVelocityEnv",
     )
 
     register(
         id="CheetahTargetVelocity-v1",
-        entry_point="core.envs.cheetah.cheetah_target_velocity_env:CheetahTargetVelocityEnv",
+        entry_point="rl_squared.envs.cheetah.cheetah_target_velocity_env:CheetahTargetVelocityEnv",
     )
