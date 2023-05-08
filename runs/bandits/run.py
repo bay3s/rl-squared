@@ -31,6 +31,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n",
         choices=NUM_EPISODES,
+        type=int,
         default=None,
         help=f"Number of episodes, one of [{', '.join([str(n) for n in NUM_EPISODES])}"
         f"].",
@@ -38,6 +39,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--k",
+        type=int,
         choices=NUM_ACTIONS,
         default=None,
         help=f"Number of arms, one of [{', '.join([str(n) for n in NUM_ACTIONS])}"
