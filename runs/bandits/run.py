@@ -9,10 +9,8 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-NUM_EPISODES = [10, 100, 500]
-
+NUM_EPISODES = [100]
 NUM_ACTIONS = [5, 10, 50]
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

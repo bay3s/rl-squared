@@ -39,15 +39,15 @@ class Trainer:
     def train(
         self,
         checkpoint_interval: int = 1,
-        evaluation_interval: int = 10,
+        evaluation_interval: int = 100,
         enable_wandb: bool = True,
     ) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
         Args:
-            checkpoint_interval (bool): Number of iterations after which to checkpoint.
-            evaluation_interval (bool): Number of iterations after which to evaluate.
+            checkpoint_interval (int): Number of iterations after which to checkpoint.
+            evaluation_interval (int): Number of iterations after which to evaluate.
             enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
         Returns:
