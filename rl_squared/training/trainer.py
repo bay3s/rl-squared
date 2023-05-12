@@ -5,7 +5,7 @@ import wandb
 
 import rl_squared.utils.logging_utils as logging_utils
 from rl_squared.training.experiment_config import ExperimentConfig
-from rl_squared.learners import PPO
+from rl_squared.learners.ppo import PPO
 
 from core.utils.env_utils import make_vec_envs
 from core.utils.training_utils import sample_meta_episodes, save_checkpoint, timestamp
