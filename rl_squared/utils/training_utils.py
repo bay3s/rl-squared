@@ -127,7 +127,7 @@ def save_checkpoint(
     checkpoint_name: str,
     actor: nn.Module,
     critic: nn.Module,
-    optimizer: torch.optim.Optimizer
+    optimizer: torch.optim.Optimizer,
 ):
     """
     Saves a checkpoint of the latest actor, critic, optimizer.
@@ -146,15 +146,18 @@ def save_checkpoint(
     if not os.path.exists(checkpoint_dir):
         pathlib.Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
 
-    checkpoint_path = f'{checkpoint_dir}/checkpoint-{checkpoint_name}.pt'
+    checkpoint_path = f"{checkpoint_dir}/checkpoint-{checkpoint_name}.pt"
 
     # save
-    torch.save({
-        'iteration': iteration,
-        'actor': actor.state_dict(),
-        'critic': critic.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }, checkpoint_path)
+    torch.save(
+        {
+            "iteration": iteration,
+            "actor": actor.state_dict(),
+            "critic": critic.state_dict(),
+            "optimizer": optimizer.state_dict(),
+        },
+        checkpoint_path,
+    )
     pass
 
 
@@ -166,4 +169,3 @@ def timestamp() -> int:
         int
     """
     return int(datetime.timestamp(datetime.now()))
-

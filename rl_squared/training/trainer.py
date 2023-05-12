@@ -15,7 +15,9 @@ from rl_squared.networks.stateful.stateful_actor_critic import StatefulActorCrit
 
 
 class Trainer:
-    def __init__(self, experiment_config: ExperimentConfig, checkpoint_path: str = None):
+    def __init__(
+        self, experiment_config: ExperimentConfig, checkpoint_path: str = None
+    ):
         """
         Initialize an instance of a trainer for PPO.
 
@@ -34,7 +36,12 @@ class Trainer:
         self._checkpoint_path = checkpoint_path
         pass
 
-    def train(self, checkpoint_interval: int = 1, evaluation_interval: int = 10, enable_wandb: bool = True) -> None:
+    def train(
+        self,
+        checkpoint_interval: int = 1,
+        evaluation_interval: int = 10,
+        enable_wandb: bool = True,
+    ) -> None:
         """
         Train an agent based on the configs specified by the training parameters.
 
@@ -98,10 +105,10 @@ class Trainer:
         # load
         if self._checkpoint_path:
             checkpoint = torch.load(self._checkpoint_path)
-            actor_critic.actor.load_state_dict(checkpoint['actor'])
-            actor_critic.critic.load_state_dict(checkpoint['critic'])
-            ppo.optimizer.load_state_dict(checkpoint['optimizer'])
-            current_iteration = checkpoint['epoch']
+            actor_critic.actor.load_state_dict(checkpoint["actor"])
+            actor_critic.critic.load_state_dict(checkpoint["critic"])
+            ppo.optimizer.load_state_dict(checkpoint["optimizer"])
+            current_iteration = checkpoint["epoch"]
             pass
 
         for j in range(current_iteration, self.config.policy_iterations):
@@ -128,18 +135,19 @@ class Trainer:
                 "meta_train/mean_value_loss": value_loss,
                 "meta_train/mean_action_loss": action_loss,
                 "meta_train/mean_dist_entropy": dist_entropy,
-                "meta_train/mean_meta_episode_reward": meta_train_reward_per_step * self.config.meta_episode_length,
+                "meta_train/mean_meta_episode_reward": meta_train_reward_per_step
+                * self.config.meta_episode_length,
             }
 
             # save
             if j % checkpoint_interval == 0:
                 save_checkpoint(
-                    iteration = j,
-                    checkpoint_dir = self.config.checkpoint_dir,
-                    checkpoint_name = str(timestamp()),
-                    actor = actor_critic.actor,
-                    critic = actor_critic.critic,
-                    optimizer = ppo.optimizer
+                    iteration=j,
+                    checkpoint_dir=self.config.checkpoint_dir,
+                    checkpoint_name=str(timestamp()),
+                    actor=actor_critic.actor,
+                    critic=actor_critic.critic,
+                    optimizer=ppo.optimizer,
                 )
                 pass
 
@@ -155,9 +163,12 @@ class Trainer:
                     self.config.discount_gamma,
                 )
 
-                wandb_logs.update({
-                    "meta_eval/mean_meta_episode_reward": mean_reward_per_step * self.config.meta_episode_length
-                })
+                wandb_logs.update(
+                    {
+                        "meta_eval/mean_meta_episode_reward": mean_reward_per_step
+                        * self.config.meta_episode_length
+                    }
+                )
                 pass
 
             if enable_wandb:

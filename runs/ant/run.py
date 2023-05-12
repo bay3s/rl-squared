@@ -67,6 +67,6 @@ if __name__ == "__main__":
         experiment_config = ExperimentConfig.from_json(config_path)
 
         # train
-        trainer = Trainer(experiment_config, checkpoint_path = args.from_checkpoint)
+        trainer = Trainer(experiment_config, checkpoint_path=args.from_checkpoint)
         trainer.train(enable_wandb=not args.disable_wandb)
         pass

@@ -88,7 +88,7 @@ class ExperimentConfig:
         Returns:
             None
         """
-        object.__setattr__(self, '_timestamp', int(datetime.timestamp(datetime.now())))
+        object.__setattr__(self, "_timestamp", int(datetime.timestamp(datetime.now())))
 
     @property
     def directory(self) -> str:
