@@ -7,9 +7,9 @@ import rl_squared.utils.logging_utils as logging_utils
 from rl_squared.training.experiment_config import ExperimentConfig
 from rl_squared.learners.ppo import PPO
 
-from core.utils.env_utils import make_vec_envs
-from core.utils.training_utils import sample_meta_episodes, save_checkpoint, timestamp
-from core.training.meta_batch_sampler import MetaBatchSampler
+from rl_squared.utils.env_utils import make_vec_envs
+from rl_squared.utils.training_utils import sample_meta_episodes, save_checkpoint, timestamp
+from rl_squared.training.meta_batch_sampler import MetaBatchSampler
 
 from rl_squared.networks.stateful.stateful_actor_critic import StatefulActorCritic
 
