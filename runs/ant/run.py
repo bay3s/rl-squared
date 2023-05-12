@@ -11,7 +11,6 @@ register_custom_envs()
 
 SUPPORTED_ENVIRONMENTS = ["ant_target_position", "ant_target_velocity"]
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="RL-Squared",
@@ -32,6 +31,13 @@ if __name__ == "__main__":
         default=None,
         help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
         f"].",
+    )
+
+    parser.add_argument(
+        "--from-checkpoint",
+        type=str,
+        default=None,
+        help="Checkpoint, if any, from which to restart the training run.",
     )
 
     parser.add_argument(
@@ -61,6 +67,6 @@ if __name__ == "__main__":
         experiment_config = ExperimentConfig.from_json(config_path)
 
         # train
-        trainer = Trainer(experiment_config)
+        trainer = Trainer(experiment_config, checkpoint_path = args.from_checkpoint)
         trainer.train(enable_wandb=not args.disable_wandb)
         pass

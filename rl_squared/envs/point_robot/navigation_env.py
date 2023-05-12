@@ -93,17 +93,17 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         """
         action = np.clip(action, -0.1, 0.1)
         assert self.action_space.contains(action)
-        self._start_state = self._start_state + action
+        self._current_state = self._start_state + action
 
-        x = self._start_state[0] - self._goal_position[0]
-        y = self._start_state[1] - self._goal_position[1]
+        x_dist = self._start_state[0] - self._goal_position[0]
+        y_dist = self._start_state[1] - self._goal_position[1]
 
-        reward = -np.sqrt(x**2 + y**2)
+        reward = -np.sqrt(x_dist**2 + y_dist**2)
 
-        done = (np.abs(x) < 0.01) and (np.abs(y) < 0.01)
+        done = (np.abs(x_dist) < 0.01) and (np.abs(y_dist) < 0.01)
         time_exceeded = self.elapsed_steps == self.max_episode_steps
 
-        return self._start_state, reward, (done or time_exceeded), {}
+        return self._current_state, reward, (done or time_exceeded), {}
 
     @property
     def observation_space(self) -> gym.Space:
