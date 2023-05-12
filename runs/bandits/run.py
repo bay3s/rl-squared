@@ -9,6 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
+# @todo uncomment NUM_EPISODES = [10, 100, 500]
 NUM_EPISODES = [100]
 NUM_ACTIONS = [5, 10, 50]
 
