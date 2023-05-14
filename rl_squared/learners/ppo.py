@@ -56,21 +56,16 @@ class PPO:
         self.initial_actor_lr = actor_lr
         self.initial_critic_lr = critic_lr
 
-        self.optimizer = torch.optim.Adam(
-            [
-                {
-                    "name": self.OPT_ACTOR_PARAMS,
-                    "params": self.actor_critic.actor.parameters(),
-                    "lr": self.initial_actor_lr,
-                    "eps": eps,
-                },
-                {
-                    "name": self.OPT_CRITIC_PARAMS,
-                    "params": self.actor_critic.critic.parameters(),
-                    "lr": self.initial_critic_lr,
-                    "eps": eps,
-                },
-            ]
+        self.actor_optimizer = torch.optim.Adam(
+            params=self.actor_critic.actor.parameters(),
+            lr=self.initial_actor_lr,
+            eps=eps,
+        )
+
+        self.critic_optimizer = torch.optim.Adam(
+            params=self.actor_critic.critic.parameters(),
+            lr=self.initial_critic_lr,
+            eps=eps,
         )
         pass
 
@@ -85,10 +80,7 @@ class PPO:
         Returns:
             None
         """
-        for param_group in self.optimizer.param_groups:
-            if param_group["name"] != self.OPT_ACTOR_PARAMS:
-                continue
-
+        for param_group in self.actor_optimizer.param_groups:
             lr = self.initial_actor_lr - (
                 self.initial_actor_lr * (current_epoch / float(total_epochs))
             )
@@ -104,7 +96,7 @@ class PPO:
           minibatch_sampler (RolloutStorage): Rollouts to be used as data points for making updates.
 
         Returns:
-          Tuple[float, float, float]
+          PPOUpdate
         """
         advantages = minibatch_sampler.returns[:-1] - minibatch_sampler.value_preds[:-1]
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-5)
@@ -143,7 +135,8 @@ class PPO:
                 ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
                 policy_loss_1 = ratio * adv_targ
                 policy_loss_2 = (
-                    torch.clamp(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param) * adv_targ
+                    torch.clamp(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param)
+                    * adv_targ
                 )
 
                 policy_loss = -torch.min(policy_loss_1, policy_loss_2).mean()
@@ -162,7 +155,10 @@ class PPO:
 
                 entropy_loss = -torch.mean(entropy)
 
-                self.optimizer.zero_grad()
+                # zero grad
+                self.actor_optimizer.zero_grad()
+                self.critic_optimizer.zero_grad()
+
                 (
                     value_loss * self.value_loss_coef
                     + policy_loss
@@ -175,7 +171,10 @@ class PPO:
                 nn.utils.clip_grad_norm_(
                     self.actor_critic.critic.parameters(), self.max_grad_norm
                 )
-                self.optimizer.step()
+
+                # step
+                self.actor_optimizer.step()
+                self.critic_optimizer.step()
 
                 # logging
                 policy_losses.append(policy_loss.item())
@@ -184,37 +183,45 @@ class PPO:
 
                 with torch.no_grad():
                     # clip fractions
-                    clip_fraction = torch.mean((torch.abs(ratio - 1) > self.clip_param).float()).item()
+                    clip_fraction = torch.mean(
+                        (torch.abs(ratio - 1) > self.clip_param).float()
+                    ).item()
                     clip_fractions.append(clip_fraction)
 
                     # approx kl
                     log_ratio = action_log_probs - old_action_log_probs_batch
-                    approx_kl_div = torch.mean((torch.exp(log_ratio) - 1) - log_ratio).cpu().numpy()
+                    approx_kl_div = (
+                        torch.mean((torch.exp(log_ratio) - 1) - log_ratio).cpu().numpy()
+                    )
                     approx_kl_divs.append(approx_kl_div)
                     pass
 
         return PPOUpdate(
-            policy_loss = np.mean(policy_losses),
-            value_loss = np.mean(value_losses),
-            entropy_loss = np.mean(entropy_losses),
-            approx_kl = np.mean(approx_kl_divs),
-            clip_fraction = np.mean(clip_fractions),
-            explained_variance = self.explained_variance(value_preds_batch.flatten(), return_batch.flatten()),
-            # @todo policy_log_std = self.actor_critic.acto
+            policy_loss=np.mean(policy_losses),
+            value_loss=np.mean(value_losses),
+            entropy_loss=np.mean(entropy_losses),
+            approx_kl=np.mean(approx_kl_divs),
+            clip_fraction=np.mean(clip_fractions),
+            explained_variance=self.explained_variance(
+                value_preds_batch.flatten().numpy(), return_batch.flatten().numpy()
+            ),
         )
 
     @staticmethod
-    def explained_variance(predicted_values: np.ndarray, returns: np.ndarray) -> np.ndarray:
+    def explained_variance(
+        predicted_values: np.ndarray, returns: np.ndarray, eps: float = 1e-12
+    ) -> float:
         """
-        Computes the fraciton of vairance that predicted values explain about the empirical returns.
+        Computes the fraction of variance that predicted values explain about the empirical returns.
 
         Args:
             predicted_values (np.ndarray): Predicted values for states.
             returns (np.ndarary): Returns generated.
+            eps (float): Stub to avoid divisions by 0.
 
         Returns:
             np.ndarary
         """
         returns_variance = np.var(returns)
 
-        return np.nan if returns_variance == 0 else 1 - np.var(returns - predicted_values) / returns_variance
+        return 1 - np.var(returns - predicted_values) / (returns_variance + eps)
