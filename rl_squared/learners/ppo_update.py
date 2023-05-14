@@ -10,4 +10,4 @@ class PPOUpdate:
   approx_kl: float
   clip_fraction: float
   explained_variance: float
-  # log_std: float = None
+  pass
