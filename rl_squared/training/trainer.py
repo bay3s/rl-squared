@@ -129,12 +129,15 @@ class Trainer:
             )
 
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
-            value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
+            ppo_update = ppo.update(minibatch_sampler)
 
             wandb_logs = {
-                "meta_train/mean_value_loss": value_loss,
-                "meta_train/mean_action_loss": action_loss,
-                "meta_train/mean_dist_entropy": dist_entropy,
+                "meta_train/mean_policy_loss": ppo_update.policy_loss,
+                "meta_train/mean_value_loss": ppo_update.value_loss,
+                "meta_train/mean_entropy_loss": ppo_update.entropy_loss,
+                "meta_train/approx_kl": ppo_update.approx_kl,
+                "meta_train/clip_fraction": ppo_update.clip_fraction,
+                "meta_train/explained_variance": ppo_update.explained_variance,
                 "meta_train/mean_meta_episode_reward": meta_train_reward_per_step
                 * self.config.meta_episode_length,
             }

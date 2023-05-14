@@ -29,7 +29,7 @@ if __name__ == "__main__":
         "--env-name",
         choices=SUPPORTED_ENVIRONMENTS,
         default=None,
-        help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
+        help=f"Environment to run the experiment on [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
         f"].",
     )
 

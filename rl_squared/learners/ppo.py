@@ -98,7 +98,7 @@ class PPO:
             param_group["lr"] = lr
             pass
 
-    def update(self, minibatch_sampler: MetaBatchSampler) -> Tuple[float, float, float]:
+    def update(self, minibatch_sampler: MetaBatchSampler) -> PPOUpdate:
         """
         Update the policy and value function.
 
@@ -162,11 +162,13 @@ class PPO:
                 else:
                     value_loss = 0.5 * (return_batch - values).pow(2).mean()
 
+                entropy_loss = -torch.mean(entropy)
+
                 self.optimizer.zero_grad()
                 (
                     value_loss * self.value_loss_coef
                     + policy_loss
-                    - entropy * self.entropy_coef
+                    + entropy_loss * self.entropy_coef
                 ).backward()
 
                 nn.utils.clip_grad_norm_(
@@ -180,7 +182,6 @@ class PPO:
                 # logging
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())
-                entropy_loss = -torch.mean(entropy)
                 entropy_losses.append(entropy_loss.item())
 
                 with torch.no_grad():
