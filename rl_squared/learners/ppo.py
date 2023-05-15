@@ -153,8 +153,6 @@ class PPO:
                 else:
                     value_loss = 0.5 * (return_batch - values).pow(2).mean()
 
-                entropy_loss = -torch.mean(entropy)
-
                 # zero grad
                 self.actor_optimizer.zero_grad()
                 self.critic_optimizer.zero_grad()
@@ -162,7 +160,7 @@ class PPO:
                 (
                     value_loss * self.value_loss_coef
                     + policy_loss
-                    + entropy_loss * self.entropy_coef
+                    + entropy * self.entropy_coef
                 ).backward()
 
                 nn.utils.clip_grad_norm_(
@@ -176,25 +174,29 @@ class PPO:
                 self.actor_optimizer.step()
                 self.critic_optimizer.step()
 
-                # logging
-                policy_losses.append(policy_loss.item())
-                value_losses.append(value_loss.item())
-                entropy_losses.append(entropy_loss.item())
-
                 with torch.no_grad():
                     # clip fractions
                     clip_fraction = torch.mean(
                         (torch.abs(ratio - 1) > self.clip_param).float()
                     ).item()
-                    clip_fractions.append(clip_fraction)
 
                     # approx kl
                     log_ratio = action_log_probs - old_action_log_probs_batch
                     approx_kl_div = (
                         torch.mean((torch.exp(log_ratio) - 1) - log_ratio).cpu().numpy()
                     )
-                    approx_kl_divs.append(approx_kl_div)
+
+                    # entropy loss
+                    entropy_loss = -torch.mean(entropy)
                     pass
+
+                # logging
+                policy_losses.append(policy_loss.item())
+                value_losses.append(value_loss.item())
+                entropy_losses.append(entropy_loss.item())
+                approx_kl_divs.append(approx_kl_div)
+                clip_fractions.append(clip_fraction)
+                continue
 
         return PPOUpdate(
             policy_loss=np.mean(policy_losses),
