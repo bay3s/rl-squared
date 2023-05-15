@@ -168,7 +168,7 @@ class PPO:
                 (
                     value_loss * self.value_loss_coef
                     + policy_loss
-                    + entropy * self.entropy_coef
+                    - entropy * self.entropy_coef
                 ).backward()
 
                 nn.utils.clip_grad_norm_(
