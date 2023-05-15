@@ -155,7 +155,7 @@ class Trainer:
                 pass
 
             # evaluate
-            if j % evaluation_interval == 0:
+            if j % evaluation_interval == 0 and False:
                 _, mean_reward_per_step = sample_meta_episodes(
                     actor_critic,
                     rl_squared_envs,
