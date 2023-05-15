@@ -85,7 +85,6 @@ class Trainer:
             rl_squared_envs.observation_space,
             rl_squared_envs.action_space,
             recurrent_state_size=256,
-            shared_memory = False
         ).to_device(self.device)
 
         ppo = PPO(
@@ -108,8 +107,7 @@ class Trainer:
             checkpoint = torch.load(self._checkpoint_path)
             actor_critic.actor.load_state_dict(checkpoint["actor"])
             actor_critic.critic.load_state_dict(checkpoint["critic"])
-            ppo.actor_optimizer.load_state_dict(checkpoint["actor_optimizer"])
-            ppo.critic_optimizer.load_state_dict(checkpoint["critic_optimizer"])
+            ppo.optimizer.load_state_dict(checkpoint["optimizer"])
             current_iteration = checkpoint["epoch"]
             pass
 
@@ -152,8 +150,7 @@ class Trainer:
                     checkpoint_name=str(timestamp()),
                     actor=actor_critic.actor,
                     critic=actor_critic.critic,
-                    actor_optimizer=ppo.actor_optimizer,
-                    critic_optimizer = ppo.critic_optimizer,
+                    optimizer = ppo.optimizer,
                 )
                 pass
 

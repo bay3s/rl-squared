@@ -22,7 +22,6 @@ class StatefulActor(BaseActor):
         action_space: gym.Space,
         recurrent_state_size: int,
         hidden_sizes: List[int],
-        shared_gru: GRU = None
     ):
         """
         Stateful actor for a discrete action space.
@@ -32,18 +31,13 @@ class StatefulActor(BaseActor):
             action_space (gym.Space): Action space in which the agent is operating.
             recurrent_state_size (int): Size of the recurrent state.
             hidden_sizes (List[int]): Size of the hidden layers for the policy head.
-            shared_gru (GRU): GRU that is shared by the policy and value function.
         """
         super(StatefulActor, self).__init__(observation_space, action_space)
 
         self._recurrent_state_size = recurrent_state_size
 
         # modules
-        if shared_gru is None:
-            self._gru = GRU(observation_space.shape[0], recurrent_state_size)
-        else:
-            self._gru = shared_gru
-
+        self._gru = GRU(observation_space.shape[0], recurrent_state_size)
         self._mlp = init_mlp(recurrent_state_size, hidden_sizes)
         self._policy_head = self._init_dist(hidden_sizes[-1], action_space)
         pass

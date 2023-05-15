@@ -127,8 +127,7 @@ def save_checkpoint(
     checkpoint_name: str,
     actor: nn.Module,
     critic: nn.Module,
-    actor_optimizer: torch.optim.Optimizer,
-    critic_optimizer: torch.optim.Optimizer,
+    optimizer: torch.optim.Optimizer,
 ):
     """
     Saves a checkpoint of the latest actor, critic, optimizer.
@@ -139,8 +138,7 @@ def save_checkpoint(
         checkpoint_name (str): Model name for checkpointing.
         actor (nn.Module): Actor in the actor-critic setup.
         critic (nn.Module): Critic in the actor-critic setup.
-        actor_optimizer (torch.optim.Optimizer): Policy optimizer to be updated from checkpoint.
-        critic_optimizer (torch.optim.Optimizer): Value function optimizer to be updated from checkpoint.
+        optimizer (torch.optim.Optimizer):Optimizer used.
 
     Returns:
         None
@@ -156,8 +154,7 @@ def save_checkpoint(
             "iteration": iteration,
             "actor": actor.state_dict(),
             "critic": critic.state_dict(),
-            "actor_optimizer": actor_optimizer.state_dict(),
-            "critic_optimizer": critic_optimizer.state_dict(),
+            "optimizer": optimizer.state_dict(),
         },
         checkpoint_path,
     )

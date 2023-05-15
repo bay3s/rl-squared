@@ -7,6 +7,7 @@ import torch
 import gym
 
 from rl_squared.networks.base_critic import BaseCritic
+
 from rl_squared.utils.torch_utils import init_mlp, init_module
 from rl_squared.networks.modules.memory.gru import GRU
 
@@ -17,7 +18,6 @@ class StatefulCritic(BaseCritic):
         observation_space: gym.Space,
         recurrent_state_size: int,
         hidden_sizes: List[int],
-        shared_gru: GRU = None,
     ):
         """
         Stateful critic.
@@ -26,7 +26,6 @@ class StatefulCritic(BaseCritic):
           observation_space (int): Observation space for the critic.
           recurrent_state_size (int): Size of the recurrent state.
           hidden_sizes (List[int]): Hidden layer sizes for the MLP.
-          shared_gru (GRU): GRU that is shared by the policy and value function.
         """
         super(StatefulCritic, self).__init__(observation_space)
 
@@ -36,11 +35,7 @@ class StatefulCritic(BaseCritic):
         self._hidden_size = hidden_sizes
         self._recurrent_state_size = recurrent_state_size
 
-        if shared_gru is None:
-            self._gru = GRU(observation_space.shape[0], recurrent_state_size)
-        else:
-            self._gru = shared_gru
-
+        self._gru = GRU(observation_space.shape[0], recurrent_state_size)
         self._mlp = init_mlp(recurrent_state_size, hidden_sizes)
         self._value_head = init_module(
             nn.Linear(hidden_sizes[-1], 1),

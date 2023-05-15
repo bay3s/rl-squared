@@ -4,12 +4,11 @@ import torch
 import gym
 
 from rl_squared.networks.base_actor_critic import BaseActorCritic
-from rl_squared.networks.base_actor import BaseActor
-from rl_squared.networks.base_critic import BaseCritic
-
 from rl_squared.networks.stateful.stateful_actor import StatefulActor
 from rl_squared.networks.stateful.stateful_critic import StatefulCritic
-from rl_squared.networks.modules.memory.gru import GRU
+
+from rl_squared.networks.base_actor import BaseActor
+from rl_squared.networks.base_critic import BaseCritic
 
 
 class StatefulActorCritic(BaseActorCritic):
@@ -18,40 +17,27 @@ class StatefulActorCritic(BaseActorCritic):
         observation_space: gym.Space,
         action_space: gym.Space,
         recurrent_state_size: int,
-        shared_memory: bool = True,
-        actor_hidden_sizes: list = [256],
-        critic_hidden_sizes: list = [256]
     ):
         """
-        Actor-Critic for discrete action spaces.
+        Actor-Critic for a discrete action space.
 
         Args:
-            observation_space (gym.Space): Observation space in which the agent operates.
-            action_space (gym.Space): Action space in which the agent operates.
-            recurrent_state_size (int): Recurrent state size used for the GRU.
-            shared_memory (bool): Whether to use a shared GRU between the policy and value network.
-            actor_hidden_sizes (bool): Sizes for the policy's hidden layers that follow the GRU.
-            critic_hidden_sizes (bool): Sizes for the value function's hidden layers that follow the GRU.
+          observation_space (gym.Space): Observation space in which the agent operates.
+          action_space (gym.Space): Action space in which the agent operates.
         """
         super(StatefulActorCritic, self).__init__(observation_space, action_space)
-
-        shared_gru = None
-        if shared_memory:
-            shared_gru = GRU(observation_space.shape[0], recurrent_state_size)
 
         self._actor = StatefulActor(
             observation_space=observation_space,
             action_space=action_space,
             recurrent_state_size=recurrent_state_size,
-            hidden_sizes=actor_hidden_sizes,
-            shared_gru = shared_gru
+            hidden_sizes=[256],
         )
 
         self._critic = StatefulCritic(
             observation_space=observation_space,
             recurrent_state_size=recurrent_state_size,
-            hidden_sizes=critic_hidden_sizes,
-            shared_gru = shared_gru
+            hidden_sizes=[256],
         )
 
         self._recurrent_state_size = recurrent_state_size
@@ -119,7 +105,6 @@ class StatefulActorCritic(BaseActorCritic):
             observations, recurrent_states_actor, recurrent_state_masks
         )
 
-        # @todo use mean for Gaussian
         actions = (
             action_distribution.mode()
             if deterministic

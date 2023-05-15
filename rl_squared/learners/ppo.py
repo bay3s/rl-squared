@@ -56,17 +56,23 @@ class PPO:
         self.initial_actor_lr = actor_lr
         self.initial_critic_lr = critic_lr
 
-        self.actor_optimizer = torch.optim.Adam(
-            params=self.actor_critic.actor.parameters(),
-            lr=self.initial_actor_lr,
-            eps=eps,
+        self.optimizer = torch.optim.Adam(
+            [
+                {
+                    "name": self.OPT_ACTOR_PARAMS,
+                    "params": self.actor_critic.actor.parameters(),
+                    "lr": self.initial_actor_lr,
+                    "eps": eps,
+                },
+                {
+                    "name": self.OPT_CRITIC_PARAMS,
+                    "params": self.actor_critic.critic.parameters(),
+                    "lr": self.initial_critic_lr,
+                    "eps": eps,
+                },
+            ]
         )
 
-        self.critic_optimizer = torch.optim.Adam(
-            params=self.actor_critic.critic.parameters(),
-            lr=self.initial_critic_lr,
-            eps=eps,
-        )
         pass
 
     def anneal_learning_rates(self, current_epoch: int, total_epochs: int) -> None:
@@ -80,7 +86,10 @@ class PPO:
         Returns:
             None
         """
-        for param_group in self.actor_optimizer.param_groups:
+        for param_group in self.optimizer.param_groups:
+            if param_group["name"] != self.OPT_ACTOR_PARAMS:
+                continue
+
             lr = self.initial_actor_lr - (
                 self.initial_actor_lr * (current_epoch / float(total_epochs))
             )
@@ -154,8 +163,7 @@ class PPO:
                     value_loss = 0.5 * (return_batch - values).pow(2).mean()
 
                 # zero grad
-                self.actor_optimizer.zero_grad()
-                self.critic_optimizer.zero_grad()
+                self.optimizer.zero_grad()
 
                 (
                     value_loss * self.value_loss_coef
@@ -171,8 +179,7 @@ class PPO:
                 )
 
                 # step
-                self.actor_optimizer.step()
-                self.critic_optimizer.step()
+                self.optimizer.step()
 
                 with torch.no_grad():
                     # clip fractions
