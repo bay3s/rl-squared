@@ -130,7 +130,7 @@ class Trainer:
             wandb_logs = {
                 "meta_train/mean_policy_loss": ppo_update.policy_loss,
                 "meta_train/mean_value_loss": ppo_update.value_loss,
-                "meta_train/mean_entropy_loss": ppo_update.entropy_loss,
+                "meta_train/mean_entropy": ppo_update.entropy,
                 "meta_train/approx_kl": ppo_update.approx_kl,
                 "meta_train/clip_fraction": ppo_update.clip_fraction,
                 "meta_train/explained_variance": ppo_update.explained_variance,
