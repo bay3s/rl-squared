@@ -112,7 +112,7 @@ class PPO:
 
         policy_losses = list()
         value_losses = list()
-        entropy_losses = list()
+        entropies = list()
         clip_fractions = list()
         approx_kl_divs = list()
 
@@ -192,15 +192,12 @@ class PPO:
                     approx_kl_div = (
                         torch.mean((torch.exp(log_ratio) - 1) - log_ratio).cpu().numpy()
                     )
-
-                    # entropy loss
-                    entropy_loss = -torch.mean(entropy)
                     pass
 
                 # logging
                 policy_losses.append(policy_loss.item())
                 value_losses.append(value_loss.item())
-                entropy_losses.append(entropy_loss.item())
+                entropies.append(entropy.item())
                 approx_kl_divs.append(approx_kl_div)
                 clip_fractions.append(clip_fraction)
                 continue
@@ -208,7 +205,7 @@ class PPO:
         return PPOUpdate(
             policy_loss=np.mean(policy_losses),
             value_loss=np.mean(value_losses),
-            entropy_loss=np.mean(entropy_losses),
+            entropy=np.mean(entropies),
             approx_kl=np.mean(approx_kl_divs),
             clip_fraction=np.mean(clip_fractions),
             explained_variance=self.explained_variance(
