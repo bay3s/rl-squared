@@ -52,6 +52,14 @@ if __name__ == "__main__":
         help=f"Whether to log the experiment to `wandb`.",
     )
 
+    parser.add_argument(
+        "--prod",
+        type = bool,
+        default = False,
+        action = argparse.BooleanOptionalAction,
+        help = f"Whether this is an experimental run in production.",
+    )
+
     args = parser.parse_args()
 
     if args.n is None and not args.run_all:
@@ -75,5 +83,5 @@ if __name__ == "__main__":
 
         # train
         trainer = Trainer(experiment_config)
-        trainer.train(enable_wandb=not args.disable_wandb)
+        trainer.train(enable_wandb=not args.disable_wandb, is_dev = not args.prod)
         pass

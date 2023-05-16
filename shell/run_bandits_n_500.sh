@@ -9,6 +9,6 @@
 source /home/${USER}/.bashrc
 source activate mujoco_env
 
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=5
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=10
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=50
+srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=5 --prod
+srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=10 --prod
+srun python3 $HOME/rl-squared/runs/bandits/run.py --n=500 --k=50 --prod
