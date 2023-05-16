@@ -10,4 +10,4 @@ source /home/${USER}/.bashrc
 source activate mujoco_env
 
 # slurm run
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=100 --k=10
+srun python3 $HOME/rl-squared/runs/bandits/run.py --n=10 --k=10
