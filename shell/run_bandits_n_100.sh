@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=20
 #SBATCH --partition=thin
-#SBATCH --time=2:00:00
+#SBATCH --time=10:00:00
 
 source /home/${USER}/.bashrc
 source activate mujoco_env
