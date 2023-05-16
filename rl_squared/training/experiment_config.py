@@ -36,7 +36,6 @@ class ExperimentConfig:
       log_dir (str): Directory to log to.
       checkpoint_interval (int): Number of updates between each checkpoint.
       checkpoint_dir (str): Directory to save checkpoint models to.
-      eval_interval (int): Number of updates between each evaluation.
     """
 
     # high-level
@@ -59,7 +58,6 @@ class ExperimentConfig:
     # sampling
     policy_iterations: int
     meta_episodes_per_epoch: int
-    meta_episodes_per_eval: int
     meta_episode_length: int
     num_processes: int
     discount_gamma: float
@@ -78,7 +76,6 @@ class ExperimentConfig:
     # logs
     log_interval: int
     checkpoint_interval: int
-    eval_interval: int
     pass
 
     def __post_init__(self):

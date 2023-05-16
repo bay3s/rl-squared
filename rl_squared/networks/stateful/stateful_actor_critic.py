@@ -105,7 +105,6 @@ class StatefulActorCritic(BaseActorCritic):
             observations, recurrent_states_actor, recurrent_state_masks
         )
 
-        # @todo use mean for Gaussian
         actions = (
             action_distribution.mode()
             if deterministic

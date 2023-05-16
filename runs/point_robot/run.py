@@ -9,7 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-SUPPORTED_ENVIRONMENTS = ["point_robot_navigation"]
+ENV_NAME = "point_robot_navigation"
 
 
 if __name__ == "__main__":
@@ -27,14 +27,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--env-name",
-        choices=SUPPORTED_ENVIRONMENTS,
-        default=None,
-        help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
-        f"].",
-    )
-
-    parser.add_argument(
         "--disable-wandb",
         type=bool,
         default=False,
@@ -44,23 +36,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.n is None and not args.run_all:
-        raise ValueError(
-            f"Unable to infer experiment environment from the inputs, either provide `--env-name` or "
-            f"set `--run-all` to `True`"
-        )
+    # config
+    config_path = f"{os.path.dirname(__file__)}/configs/{ENV_NAME}.json"
+    experiment_config = ExperimentConfig.from_json(config_path)
 
-    if not args.run_all:
-        env_names = [args.env_name]
-    else:
-        env_names = SUPPORTED_ENVIRONMENTS
-
-    for env_name in env_names:
-        # config
-        config_path = f"{os.path.dirname(__file__)}/configs/{env_name}.json"
-        experiment_config = ExperimentConfig.from_json(config_path)
-
-        # train
-        trainer = Trainer(experiment_config)
-        trainer.train(enable_wandb=not args.disable_wandb)
-        pass
+    # train
+    trainer = Trainer(experiment_config)
+    trainer.train(enable_wandb=not args.disable_wandb)
+    pass

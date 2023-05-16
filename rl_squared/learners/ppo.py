@@ -1,10 +1,10 @@
-from typing import Tuple
-
+import numpy as np
 import torch
 import torch.nn as nn
 
 from rl_squared.networks.stateful.stateful_actor_critic import StatefulActorCritic
 from rl_squared.training.meta_batch_sampler import MetaBatchSampler
+from rl_squared.learners.ppo_update import PPOUpdate
 
 
 class PPO:
@@ -72,6 +72,7 @@ class PPO:
                 },
             ]
         )
+
         pass
 
     def anneal_learning_rates(self, current_epoch: int, total_epochs: int) -> None:
@@ -96,7 +97,7 @@ class PPO:
             param_group["lr"] = lr
             pass
 
-    def update(self, minibatch_sampler: MetaBatchSampler) -> Tuple[float, float, float]:
+    def update(self, minibatch_sampler: MetaBatchSampler) -> PPOUpdate:
         """
         Update the policy and value function.
 
@@ -104,14 +105,16 @@ class PPO:
           minibatch_sampler (RolloutStorage): Rollouts to be used as data points for making updates.
 
         Returns:
-          Tuple[float, float, float]
+          PPOUpdate
         """
         advantages = minibatch_sampler.returns[:-1] - minibatch_sampler.value_preds[:-1]
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-5)
 
-        value_loss_epoch = 0
-        action_loss_epoch = 0
-        dist_entropy_epoch = 0
+        policy_losses = list()
+        value_losses = list()
+        entropies = list()
+        clip_fractions = list()
+        approx_kl_divs = list()
 
         for e in range(self.opt_epochs):
             minibatches = minibatch_sampler.sample(advantages, self.num_minibatches)
@@ -133,36 +136,39 @@ class PPO:
                 (
                     values,
                     action_log_probs,
-                    dist_entropy,
+                    entropy,
                 ) = self.actor_critic.evaluate_actions(
                     obs_batch, actions_batch, actor_states_batch, critic_states_batch
                 )
 
                 ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
-                surr1 = ratio * adv_targ
-                surr2 = (
+                policy_loss_1 = ratio * adv_targ
+                policy_loss_2 = (
                     torch.clamp(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param)
                     * adv_targ
                 )
-                action_loss = -torch.min(surr1, surr2).mean()
+
+                policy_loss = -torch.min(policy_loss_1, policy_loss_2).mean()
 
                 if self.use_clipped_value_loss:
                     value_pred_clipped = value_preds_batch + (
                         values - value_preds_batch
                     ).clamp(-self.clip_param, self.clip_param)
-                    value_losses = (values - return_batch).pow(2)
-                    value_losses_clipped = (value_pred_clipped - return_batch).pow(2)
+                    value_loss_mse = (values - return_batch).pow(2)
+                    value_loss_clipped = (value_pred_clipped - return_batch).pow(2)
                     value_loss = (
-                        0.5 * torch.max(value_losses, value_losses_clipped).mean()
+                        0.5 * torch.max(value_loss_mse, value_loss_clipped).mean()
                     )
                 else:
                     value_loss = 0.5 * (return_batch - values).pow(2).mean()
 
+                # zero grad
                 self.optimizer.zero_grad()
+
                 (
                     value_loss * self.value_loss_coef
-                    + action_loss
-                    - dist_entropy * self.entropy_coef
+                    + policy_loss
+                    - entropy * self.entropy_coef
                 ).backward()
 
                 nn.utils.clip_grad_norm_(
@@ -171,16 +177,57 @@ class PPO:
                 nn.utils.clip_grad_norm_(
                     self.actor_critic.critic.parameters(), self.max_grad_norm
                 )
+
+                # step
                 self.optimizer.step()
 
-                value_loss_epoch += value_loss.item()
-                action_loss_epoch += action_loss.item()
-                dist_entropy_epoch += dist_entropy.item()
+                with torch.no_grad():
+                    # clip fractions
+                    clip_fraction = torch.mean(
+                        (torch.abs(ratio - 1) > self.clip_param).float()
+                    ).item()
 
-        num_updates = self.opt_epochs * self.num_minibatches
+                    # approx kl
+                    log_ratio = action_log_probs - old_action_log_probs_batch
+                    approx_kl_div = (
+                        torch.mean((torch.exp(log_ratio) - 1) - log_ratio).cpu().numpy()
+                    )
+                    pass
 
-        value_loss_epoch /= num_updates
-        action_loss_epoch /= num_updates
-        dist_entropy_epoch /= num_updates
+                # logging
+                policy_losses.append(policy_loss.item())
+                value_losses.append(value_loss.item())
+                entropies.append(entropy.item())
+                approx_kl_divs.append(approx_kl_div)
+                clip_fractions.append(clip_fraction)
+                continue
 
-        return value_loss_epoch, action_loss_epoch, dist_entropy_epoch
+        return PPOUpdate(
+            policy_loss=np.mean(policy_losses),
+            value_loss=np.mean(value_losses),
+            entropy=np.mean(entropies),
+            approx_kl=np.mean(approx_kl_divs),
+            clip_fraction=np.mean(clip_fractions),
+            explained_variance=self.explained_variance(
+                value_preds_batch.flatten().numpy(), return_batch.flatten().numpy()
+            ),
+        )
+
+    @staticmethod
+    def explained_variance(
+        predicted_values: np.ndarray, returns: np.ndarray, eps: float = 1e-12
+    ) -> float:
+        """
+        Computes the fraction of variance that predicted values explain about the empirical returns.
+
+        Args:
+            predicted_values (np.ndarray): Predicted values for states.
+            returns (np.ndarary): Returns generated.
+            eps (float): Stub to avoid divisions by 0.
+
+        Returns:
+            np.ndarary
+        """
+        returns_variance = np.var(returns)
+
+        return 1 - np.var(returns - predicted_values) / (returns_variance + eps)

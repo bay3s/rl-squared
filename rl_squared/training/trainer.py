@@ -30,7 +30,6 @@ class Trainer:
         # private
         self._device = None
         self._log_dir = None
-        self._eval_log_dir = None
 
         # checkpoint
         self._checkpoint_path = checkpoint_path
@@ -39,7 +38,6 @@ class Trainer:
     def train(
         self,
         checkpoint_interval: int = 1,
-        evaluation_interval: int = 100,
         enable_wandb: bool = True,
     ) -> None:
         """
@@ -47,7 +45,6 @@ class Trainer:
 
         Args:
             checkpoint_interval (int): Number of iterations after which to checkpoint.
-            evaluation_interval (int): Number of iterations after which to evaluate.
             enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
         Returns:
@@ -66,7 +63,6 @@ class Trainer:
 
         # clean
         logging_utils.cleanup_log_dir(self.log_dir)
-        logging_utils.cleanup_log_dir(self.eval_log_dir)
 
         torch.set_num_threads(1)
 
@@ -129,45 +125,30 @@ class Trainer:
             )
 
             minibatch_sampler = MetaBatchSampler(meta_episode_batches)
-            value_loss, action_loss, dist_entropy = ppo.update(minibatch_sampler)
+            ppo_update = ppo.update(minibatch_sampler)
 
             wandb_logs = {
-                "meta_train/mean_value_loss": value_loss,
-                "meta_train/mean_action_loss": action_loss,
-                "meta_train/mean_dist_entropy": dist_entropy,
+                "meta_train/mean_policy_loss": ppo_update.policy_loss,
+                "meta_train/mean_value_loss": ppo_update.value_loss,
+                "meta_train/mean_entropy": ppo_update.entropy,
+                "meta_train/approx_kl": ppo_update.approx_kl,
+                "meta_train/clip_fraction": ppo_update.clip_fraction,
+                "meta_train/explained_variance": ppo_update.explained_variance,
                 "meta_train/mean_meta_episode_reward": meta_train_reward_per_step
                 * self.config.meta_episode_length,
             }
 
             # save
-            if j % checkpoint_interval == 0:
+            is_last_iteration = j == (self.config.policy_iterations - 1)
+
+            if j % checkpoint_interval == 0 or is_last_iteration:
                 save_checkpoint(
                     iteration=j,
                     checkpoint_dir=self.config.checkpoint_dir,
                     checkpoint_name=str(timestamp()),
                     actor=actor_critic.actor,
                     critic=actor_critic.critic,
-                    optimizer=ppo.optimizer,
-                )
-                pass
-
-            # evaluate
-            if j % evaluation_interval == 0:
-                _, mean_reward_per_step = sample_meta_episodes(
-                    actor_critic,
-                    rl_squared_envs,
-                    self.config.meta_episode_length,
-                    self.config.meta_episodes_per_eval,
-                    self.config.use_gae,
-                    self.config.gae_lambda,
-                    self.config.discount_gamma,
-                )
-
-                wandb_logs.update(
-                    {
-                        "meta_eval/mean_meta_episode_reward": mean_reward_per_step
-                        * self.config.meta_episode_length
-                    }
+                    optimizer = ppo.optimizer,
                 )
                 pass
 
@@ -177,9 +158,6 @@ class Trainer:
         # end
         if enable_wandb:
             wandb.finish()
-
-        # save
-
         pass
 
     @property
@@ -194,19 +172,6 @@ class Trainer:
             self._log_dir = os.path.expanduser(self.config.log_dir)
 
         return self._log_dir
-
-    @property
-    def eval_log_dir(self):
-        """
-        Returns the path for evaluation logs.
-
-        Returns:
-            str
-        """
-        if not self._eval_log_dir:
-            self._eval_log_dir = self.log_dir + "_eval"
-
-        return self._eval_log_dir
 
     def save_params(self) -> None:
         """

@@ -9,7 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-SUPPORTED_ENVIRONMENTS = ["cheetah_target_velocity"]
+ENV_NAME = "cheetah_target_velocity"
 
 
 if __name__ == "__main__":
@@ -24,14 +24,6 @@ if __name__ == "__main__":
         default=False,
         action=argparse.BooleanOptionalAction,
         help="Whether to run all environments, if this is set then the environment parameter is ignored.",
-    )
-
-    parser.add_argument(
-        "--env-name",
-        choices=SUPPORTED_ENVIRONMENTS,
-        default=None,
-        help=f"Number of arms, one of [{', '.join([str(n) for n in SUPPORTED_ENVIRONMENTS])}"
-        f"].",
     )
 
     parser.add_argument(
@@ -50,17 +42,11 @@ if __name__ == "__main__":
             f"set `--run-all` to `True`"
         )
 
-    if not args.run_all:
-        env_names = [args.env_name]
-    else:
-        env_names = SUPPORTED_ENVIRONMENTS
+    # config
+    config_path = f"{os.path.dirname(__file__)}/configs/{ENV_NAME}.json"
+    experiment_config = ExperimentConfig.from_json(config_path)
 
-    for env_name in env_names:
-        # config
-        config_path = f"{os.path.dirname(__file__)}/configs/{env_name}.json"
-        experiment_config = ExperimentConfig.from_json(config_path)
-
-        # train
-        trainer = Trainer(experiment_config)
-        trainer.train(enable_wandb=not args.disable_wandb)
-        pass
+    # train
+    trainer = Trainer(experiment_config)
+    trainer.train(enable_wandb=not args.disable_wandb)
+    pass
