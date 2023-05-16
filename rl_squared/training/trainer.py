@@ -37,6 +37,7 @@ class Trainer:
 
     def train(
         self,
+        is_dev: bool,
         checkpoint_interval: int = 1,
         enable_wandb: bool = True,
     ) -> None:
@@ -44,6 +45,7 @@ class Trainer:
         Train an agent based on the configs specified by the training parameters.
 
         Args:
+            is_dev (bool): Whether to log the run statistics as a `dev` run.
             checkpoint_interval (int): Number of iterations after which to checkpoint.
             enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
@@ -55,7 +57,9 @@ class Trainer:
 
         if enable_wandb:
             wandb.login()
-            wandb.init(project="rl-squared", config=self.config.dict)
+            project_suffix = '-dev' if is_dev else ''
+            wandb.init(project=f"rl-squared{project_suffix}", config=self.config.dict)
+            pass
 
         # seed
         torch.manual_seed(self.config.random_seed)

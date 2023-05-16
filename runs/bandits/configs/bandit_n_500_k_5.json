@@ -12,7 +12,7 @@
   "random_seed": 6785,
   "cuda_deterministic": false,
   "use_cuda": true,
-  "policy_iterations": 50,
+  "policy_iterations": 100,
   "meta_episode_length": 500,
   "meta_episodes_per_epoch": 500,
   "num_processes": 20,
