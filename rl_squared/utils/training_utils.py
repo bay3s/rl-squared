@@ -138,7 +138,7 @@ def save_checkpoint(
         checkpoint_name (str): Model name for checkpointing.
         actor (nn.Module): Actor in the actor-critic setup.
         critic (nn.Module): Critic in the actor-critic setup.
-        optimizer (torch.optim.Optimizer):Optimizer used.
+        optimizer (torch.optim.Optimizer): Optimizer used.
 
     Returns:
         None
