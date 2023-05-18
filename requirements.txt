@@ -9,3 +9,4 @@ mujoco_py == 2.1.2.14
 pyglet==1.5.27
 wandb
 six~=1.16.0
+gitpython
