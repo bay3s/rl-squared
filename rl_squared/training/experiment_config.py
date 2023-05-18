@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields, asdict
+from dataclasses import dataclass, asdict
 import os
 import json
 from datetime import datetime
@@ -36,7 +36,7 @@ class ExperimentConfig:
       log_interval (int): Interval between logging.
       log_dir (str): Directory to log to.
       checkpoint_interval (int): Number of updates between each checkpoint.
-      checkpoint_dir (str): Directory to save checkpoint models to.
+      checkpoint_all (bool): Whether to checkpoint all models or just the last one.
     """
 
     # high-level
@@ -74,9 +74,9 @@ class ExperimentConfig:
     use_gae: bool
     gae_lambda: bool
 
-    # logs
-    log_interval: int
-    checkpoint_interval: int
+    # checkpointing
+    checkpoint_interval: int = 1
+    checkpoint_all: bool = False
     pass
 
     def __post_init__(self):
@@ -96,7 +96,7 @@ class ExperimentConfig:
         Returns:
             str
         """
-        repo = git.Repo("./", search_parent_directories = True)
+        repo = git.Repo("./", search_parent_directories=True)
 
         return repo.git.rev_parse("--show-toplevel")
 
@@ -138,10 +138,9 @@ class ExperimentConfig:
         Returns:
           ExperimentConfig
         """
-        keys = [f.name for f in fields(cls)]
         file = json.load(open(json_file_path))
 
-        return cls(**{key: file[key] for key in keys})
+        return cls(**{key: file[key] for key in file.keys()})
 
     @property
     def json(self) -> str:

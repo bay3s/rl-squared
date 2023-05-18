@@ -48,9 +48,17 @@ if __name__ == "__main__":
         help=f"Whether to log the experiment to `wandb`.",
     )
 
+    parser.add_argument(
+        "--prod",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help=f"Whether this a production run of the experiment.",
+    )
+
     args = parser.parse_args()
 
-    if args.n is None and not args.run_all:
+    if args.env_name is None and not args.run_all:
         raise ValueError(
             f"Unable to infer experiment environment from the inputs, either provide `--env-name` or "
             f"set `--run-all` to `True`"
@@ -67,6 +75,6 @@ if __name__ == "__main__":
         experiment_config = ExperimentConfig.from_json(config_path)
 
         # train
-        trainer = Trainer(experiment_config, checkpoint_path=args.from_checkpoint)
-        trainer.train(enable_wandb=not args.disable_wandb)
+        # trainer = Trainer(experiment_config, restart_checkpoint=args.from_checkpoint)
+        # trainer.train(enable_wandb=not args.disable_wandb, is_dev=not args.prod)
         pass

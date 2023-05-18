@@ -8,7 +8,11 @@ from rl_squared.training.experiment_config import ExperimentConfig
 from rl_squared.learners.ppo import PPO
 
 from rl_squared.utils.env_utils import make_vec_envs
-from rl_squared.utils.training_utils import sample_meta_episodes, save_checkpoint, timestamp
+from rl_squared.utils.training_utils import (
+    sample_meta_episodes,
+    save_checkpoint,
+    timestamp,
+)
 from rl_squared.training.meta_batch_sampler import MetaBatchSampler
 
 from rl_squared.networks.stateful.stateful_actor_critic import StatefulActorCritic
@@ -16,14 +20,14 @@ from rl_squared.networks.stateful.stateful_actor_critic import StatefulActorCrit
 
 class Trainer:
     def __init__(
-        self, experiment_config: ExperimentConfig, checkpoint_path: str = None
+        self, experiment_config: ExperimentConfig, restart_checkpoint: str = None
     ):
         """
         Initialize an instance of a trainer for PPO.
 
         Args:
             experiment_config (ExperimentConfig): Params to be used for the trainer.
-            checkpoint_path (str): Checkpoint path from where to restart the experiment.
+            restart_checkpoint (str): Checkpoint path from where to restart the experiment.
         """
         self.config = experiment_config
 
@@ -31,14 +35,13 @@ class Trainer:
         self._device = None
         self._log_dir = None
 
-        # checkpoint
-        self._checkpoint_path = checkpoint_path
+        # restart
+        self._restart_checkpoint = restart_checkpoint
         pass
 
     def train(
         self,
         is_dev: bool,
-        checkpoint_interval: int = 1,
         enable_wandb: bool = True,
     ) -> None:
         """
@@ -46,7 +49,6 @@ class Trainer:
 
         Args:
             is_dev (bool): Whether to log the run statistics as a `dev` run.
-            checkpoint_interval (int): Number of iterations after which to checkpoint.
             enable_wandb (bool): Whether to log to Wandb, `True` by default.
 
         Returns:
@@ -57,7 +59,7 @@ class Trainer:
 
         if enable_wandb:
             wandb.login()
-            project_suffix = '-dev' if is_dev else ''
+            project_suffix = "-dev" if is_dev else ""
             wandb.init(project=f"rl-squared{project_suffix}", config=self.config.dict)
             pass
 
@@ -103,8 +105,8 @@ class Trainer:
         current_iteration = 0
 
         # load
-        if self._checkpoint_path:
-            checkpoint = torch.load(self._checkpoint_path)
+        if self._restart_checkpoint:
+            checkpoint = torch.load(self._restart_checkpoint)
             actor_critic.actor.load_state_dict(checkpoint["actor"])
             actor_critic.critic.load_state_dict(checkpoint["critic"])
             ppo.optimizer.load_state_dict(checkpoint["optimizer"])
@@ -144,15 +146,16 @@ class Trainer:
 
             # save
             is_last_iteration = j == (self.config.policy_iterations - 1)
+            checkpoint_name = str(timestamp()) if self.config.checkpoint_all else "last"
 
-            if j % checkpoint_interval == 0 or is_last_iteration:
+            if j % self.config.checkpoint_interval == 0 or is_last_iteration:
                 save_checkpoint(
                     iteration=j,
                     checkpoint_dir=self.config.checkpoint_dir,
-                    checkpoint_name=str(timestamp()),
+                    checkpoint_name=checkpoint_name,
                     actor=actor_critic.actor,
                     critic=actor_critic.critic,
-                    optimizer = ppo.optimizer,
+                    optimizer=ppo.optimizer,
                 )
                 pass
 
