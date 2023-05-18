@@ -3,22 +3,37 @@
 **Reference**
 - RL-Squared (Paper) https://arxiv.org/abs/1611.02779
 
-**Formulation**
-- RL-Squared assumes knowledge of a set of MDPs and a distribution over them from which the MDPs can be sampled.
-- A trial is a series of episodes of interaction with a fixed MDP, each trial may consist of multiple episodes.
-- For each trial, a separate MDP is drawn from the distribution and for each episode within the trial a fresh starting state is drawn from the initial state distribution specific to the MDP.
-- When an action is produced by the agent, the environment computes a reward, steps forward, computes the next state, and if the episode has terminated it sets the termination flag to 1.
-- The next state, reward, and termination flag are concatenated to form the input to the recurrent policy which conditioned on the hidden state generates the next hidden state and action.
-- The objective under this formulation is to maximize the total discounted reward accumulated during a single trial rather than a single episode (equivalently minimize the cumulative pseudo-regret).
-- The underlying MDP changes across trials so as long as different strategies are required for different MDPS the agent must act differently according to its belief over which MDP it is currently in.
-- *Note that this applies to MDPs as well as POMDPs.*
+**Practical Matters**
 
-**Implementation Details**
-- To alleviate the vanishing and exploding gradient problem GRUs are used in the Actor-Critic implementation since they have good empirical performance.
-- GRUs are not shared between the policy and value function, although there is empircal evidence to suggest that this form of weight sharing leads to more stable learning.
+*Formulation*
+- A trial is a series of episodes of interaction with a fixed task (MDP), each trial may consist of multiple episodes.
+- For each new trial, a separate task is drawn from the distribution and for each episode within the trial a fresh starting state is drawn.
+- When an action is produced by the agent, the environment computes a reward, steps forward, computes the next state, and if the episode has terminated it sets the termination flag to 1.
+- The next state, reward, and termination flag are concatenated to form the input to the recurrent policy in the next step.
+- The recurrent policy conditioned on the hidden state generates the next hidden state and action.
+- The objective is to maximize the total discounted reward accumulated during a single trial (consisting of multiple episodes) rather than a single episode.
+- As long as different strategies are required for different tasks the agent must act differently according to its belief regarding the current task assigned.
+
+*Implementation*
+- The implementation in this repository uses an Actor-Critic with a memory-augmented policy and value function. 
+- GRUs are used in order to alleviate vanishing and exploding gradients, and due to their good empirical performance.
+- The policy and value function do not rely on a shared GRU, although there is empircal evidence to suggest that this form of weight sharing leads to more stable learning.
 - For the policy, the output of the GRU is fed to a fully connected layer followed by a softmax function which forms the distribution over actions for the policy.
 - For the value function, the output of the GRU is fed to an MLP consisting of fully connected layers which directly outputs a value estimate.
 - The repository contains a minor divergence from the original paper which is that PPO is used as the learning algorithm rather than TRPO as in the original paper.
+
+**Experimental Results**
+
+*Multi-Armed Bandits*
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-10.png" width="300" />
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-100.png" width="300" /> 
+</p>
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-500.png" width="300" />
+</p>
 
 **Theory**
 
