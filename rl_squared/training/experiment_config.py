@@ -2,6 +2,7 @@ from dataclasses import dataclass, fields, asdict
 import os
 import json
 from datetime import datetime
+import git
 
 
 @dataclass(frozen=True)
@@ -88,6 +89,18 @@ class ExperimentConfig:
         object.__setattr__(self, "_timestamp", int(datetime.timestamp(datetime.now())))
 
     @property
+    def repository_path(self) -> str:
+        """
+        Returns the base path for the git repo.
+
+        Returns:
+            str
+        """
+        repo = git.Repo("./", search_parent_directories = True)
+
+        return repo.git.rev_parse("--show-toplevel")
+
+    @property
     def directory(self) -> str:
         """
         Return the directory to store logs.
@@ -95,7 +108,7 @@ class ExperimentConfig:
         Returns:
           str
         """
-        return f"./results/{self.env_name.lower()}/run-{self._timestamp}/"
+        return f"{self.repository_path}/results/{self.env_name.lower()}/run-{self._timestamp}/"
 
     @property
     def log_dir(self) -> str:
