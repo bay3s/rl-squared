@@ -107,10 +107,10 @@ class Trainer:
         # load
         if self._restart_checkpoint:
             checkpoint = torch.load(self._restart_checkpoint)
+            current_iteration = checkpoint["iteration"]
             actor_critic.actor.load_state_dict(checkpoint["actor"])
             actor_critic.critic.load_state_dict(checkpoint["critic"])
             ppo.optimizer.load_state_dict(checkpoint["optimizer"])
-            current_iteration = checkpoint["epoch"]
             pass
 
         for j in range(current_iteration, self.config.policy_iterations):
@@ -151,7 +151,7 @@ class Trainer:
             if j % self.config.checkpoint_interval == 0 or is_last_iteration:
                 save_checkpoint(
                     iteration=j,
-                    checkpoint_dir=self.config.checkpoint_dir,
+                    checkpoint_dir=self.config.checkpoint_directory,
                     checkpoint_name=checkpoint_name,
                     actor=actor_critic.actor,
                     critic=actor_critic.critic,

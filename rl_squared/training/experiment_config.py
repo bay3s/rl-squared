@@ -121,14 +121,14 @@ class ExperimentConfig:
         return f"{self.directory}/logs/"
 
     @property
-    def checkpoint_dir(self) -> str:
+    def checkpoint_directory(self) -> str:
         """
         Returns the directory to store checkpoints.
 
         Returns:
           str
         """
-        return f"{self.directory}/checkpoints/"
+        return f"{self.directory}checkpoints/"
 
     @classmethod
     def from_json(cls, json_file_path: str) -> "ExperimentConfig":
