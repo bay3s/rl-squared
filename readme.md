@@ -27,12 +27,9 @@
 *Multi-Armed Bandits*
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-10.png" width="500" />
-  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-100.png" width="500" /> 
-</p>
-
-<p float="left">
-  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-500.png" width="500" />
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-10.png" width="600" />
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-100.png" width="600" /> 
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-500.png" width="600" />
 </p>
 
 **Theory**
