@@ -1,7 +1,8 @@
-from dataclasses import dataclass, fields, asdict
+from dataclasses import dataclass, asdict
 import os
 import json
 from datetime import datetime
+import git
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class ExperimentConfig:
       log_interval (int): Interval between logging.
       log_dir (str): Directory to log to.
       checkpoint_interval (int): Number of updates between each checkpoint.
-      checkpoint_dir (str): Directory to save checkpoint models to.
+      checkpoint_all (bool): Whether to checkpoint all models or just the last one.
     """
 
     # high-level
@@ -73,9 +74,9 @@ class ExperimentConfig:
     use_gae: bool
     gae_lambda: bool
 
-    # logs
-    log_interval: int
-    checkpoint_interval: int
+    # checkpointing
+    checkpoint_interval: int = 1
+    checkpoint_all: bool = False
     pass
 
     def __post_init__(self):
@@ -88,6 +89,18 @@ class ExperimentConfig:
         object.__setattr__(self, "_timestamp", int(datetime.timestamp(datetime.now())))
 
     @property
+    def repository_path(self) -> str:
+        """
+        Returns the base path for the git repo.
+
+        Returns:
+            str
+        """
+        repo = git.Repo("./", search_parent_directories=True)
+
+        return repo.git.rev_parse("--show-toplevel")
+
+    @property
     def directory(self) -> str:
         """
         Return the directory to store logs.
@@ -95,7 +108,7 @@ class ExperimentConfig:
         Returns:
           str
         """
-        return f"./results/{self.env_name.lower()}/run-{self._timestamp}/"
+        return f"{self.repository_path}/results/{self.env_name.lower()}/run-{self._timestamp}/"
 
     @property
     def log_dir(self) -> str:
@@ -108,14 +121,14 @@ class ExperimentConfig:
         return f"{self.directory}/logs/"
 
     @property
-    def checkpoint_dir(self) -> str:
+    def checkpoint_directory(self) -> str:
         """
         Returns the directory to store checkpoints.
 
         Returns:
           str
         """
-        return f"{self.directory}/checkpoints/"
+        return f"{self.directory}checkpoints/"
 
     @classmethod
     def from_json(cls, json_file_path: str) -> "ExperimentConfig":
@@ -125,10 +138,9 @@ class ExperimentConfig:
         Returns:
           ExperimentConfig
         """
-        keys = [f.name for f in fields(cls)]
         file = json.load(open(json_file_path))
 
-        return cls(**{key: file[key] for key in keys})
+        return cls(**{key: file[key] for key in file.keys()})
 
     @property
     def json(self) -> str:
