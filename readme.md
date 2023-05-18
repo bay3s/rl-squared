@@ -22,9 +22,18 @@
 - For the value function, the output of the GRU is fed to an MLP consisting of fully connected layers which directly outputs a value estimate.
 - The repository contains a minor divergence from the original paper which is that PPO is used as the learning algorithm rather than TRPO as in the original paper.
 
-**Results**
+**Experimental Results**
 
+*Multi-Armed Bandits*
 
+<p float="left">
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-10.png" width="300" />
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-100.png" width="300" /> 
+</p>
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/bay3s/rl-squared/main/assets/plots/bernoulli-bandit-n-500.png" width="300" />
+</p>
 
 **Theory**
 
