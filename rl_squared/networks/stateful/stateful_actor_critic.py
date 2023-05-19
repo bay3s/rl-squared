@@ -41,6 +41,7 @@ class StatefulActorCritic(BaseActorCritic):
         )
 
         self._recurrent_state_size = recurrent_state_size
+        self._device = None
         pass
 
     @property
@@ -70,6 +71,7 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
           StatefulActorCritic
         """
+        self._device = device
         self._actor.to(device)
         self._critic.to(device)
 
@@ -98,11 +100,11 @@ class StatefulActorCritic(BaseActorCritic):
           Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
         value_estimate, recurrent_states_critic = self.critic(
-            observations, recurrent_states_critic, recurrent_state_masks
+            observations, recurrent_states_critic, recurrent_state_masks, self._device
         )
 
         action_distribution, recurrent_states_actor = self.actor(
-            observations, recurrent_states_actor, recurrent_state_masks
+            observations, recurrent_states_actor, recurrent_state_masks, self._device
         )
 
         actions = (
@@ -136,7 +138,7 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
           torch.Tensor
         """
-        return self.critic(observations, recurrent_states_critic, recurrent_state_masks)
+        return self.critic(observations, recurrent_states_critic, recurrent_state_masks, self._device)
 
     def evaluate_actions(
         self,
@@ -159,8 +161,12 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
         """
-        value, _ = self.critic(inputs, recurrent_states_critic, recurrent_state_masks)
-        dist, _ = self.actor(inputs, recurrent_states_actor, recurrent_state_masks)
+        value, _ = self.critic(
+            inputs, recurrent_states_critic, recurrent_state_masks, self._device
+        )
+        dist, _ = self.actor(
+            inputs, recurrent_states_actor, recurrent_state_masks, self._device
+        )
 
         log_probs = dist.log_probs(actions)
         dist_entropy = dist.entropy().mean()

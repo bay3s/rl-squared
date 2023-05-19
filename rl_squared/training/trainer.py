@@ -128,9 +128,10 @@ class Trainer:
                 self.config.use_gae,
                 self.config.gae_lambda,
                 self.config.discount_gamma,
+                self.device
             )
 
-            minibatch_sampler = MetaBatchSampler(meta_episode_batches)
+            minibatch_sampler = MetaBatchSampler(meta_episode_batches, self.device)
             ppo_update = ppo.update(minibatch_sampler)
 
             wandb_logs = {
