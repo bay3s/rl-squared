@@ -103,7 +103,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         )
         self._elapsed_steps = 0
 
-    def reset(self) -> np.ndarray:
+    def reset(self, seed = None) -> np.ndarray:
         """
         Reset the environment to the start state.
 
@@ -112,7 +112,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         """
         self._elapsed_steps = 0
 
-        return BaseAntEnv.reset(self)
+        return BaseAntEnv.reset(self, seed)
 
     def elapsed_steps(self) -> int:
         """

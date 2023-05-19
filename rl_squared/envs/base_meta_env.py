@@ -136,7 +136,7 @@ class BaseMetaEnv(gym.Env, ABC):
         """
         raise NotImplementedError
 
-    def reset(self) -> np.ndarray:
+    def reset(self, seed = None) -> np.ndarray:
         """
         Resets the environment and returns the corresponding observation.
 
