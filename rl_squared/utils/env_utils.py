@@ -1,13 +1,12 @@
 import os
-from typing import Union, Callable
+from typing import Callable
 
 import torch
 import gym
 
+from gym.envs.registration import register
 from stable_baselines3.common.monitor import Monitor
 
-from gym.envs.registration import register
-from rl_squared.envs.normalized_vec_env import NormalizedVecEnv as NormalizedVecEnv
 from rl_squared.envs.multiprocessing_vec_env import MultiprocessingVecEnv
 from rl_squared.envs.pytorch_vec_env_wrapper import PyTorchVecEnvWrapper
 from rl_squared.envs.rl_squared_env import RLSquaredEnv
@@ -29,25 +28,6 @@ def get_render_func(venv: gym.Env):
         return get_render_func(venv.venv)
     elif hasattr(venv, "env"):
         return get_render_func(venv.env)
-
-    return None
-
-
-def get_vec_normalize(venv: gym.Env) -> Union[NormalizedVecEnv, None]:
-    """
-    Given an environment, wraps it in a normalized environment wrapper.
-
-    Args:
-        venv (gym.Env): Gym environment to normalize.
-
-    Returns:
-        gym.Env
-    """
-    if isinstance(venv, NormalizedVecEnv):
-        return venv
-
-    elif hasattr(venv, "venv"):
-        return get_vec_normalize(venv.venv)
 
     return None
 
@@ -79,6 +59,9 @@ def make_env_thunk(
         env = gym.make(env_name, **env_configs)
         env.seed(seed + rank)
 
+        if len(env.observation_space.shape) != 1:
+            raise NotImplementedError
+
         env = RLSquaredEnv(env)
 
         env = Monitor(
@@ -104,6 +87,8 @@ def make_vec_envs(
     log_dir: str,
     device: torch.device,
     allow_early_resets: bool,
+    normalize_observations: bool = True,
+    normalize_rewards: bool = True,
 ) -> PyTorchVecEnvWrapper:
     """
     Returns PyTorch compatible vectorized environments.
@@ -117,6 +102,8 @@ def make_vec_envs(
         log_dir (str): Directory for logging.
         device (torch.device): Device to use with PyTorch tensors.
         allow_early_resets (bool): Allows resetting the environment before it is done.
+        normalize_observations (bool): Whether to normalize observations.
+        normalize_rewards (bool): Whether to normalize rewards.
 
     Returns:
         PyTorchVecEnvWrapper
@@ -127,13 +114,6 @@ def make_vec_envs(
     ]
 
     envs = MultiprocessingVecEnv(envs)
-
-    if len(envs.observation_space.shape) == 1:
-        # @todo normalize when necessary
-        pass
-    else:
-        raise NotImplementedError
-
     envs = PyTorchVecEnvWrapper(envs, device)
 
     return envs
