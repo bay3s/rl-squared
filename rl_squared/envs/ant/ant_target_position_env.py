@@ -9,7 +9,7 @@ from rl_squared.envs.ant.base_ant_env import BaseAntEnv
 class AntTargetPositionEnv(BaseAntEnv, EzPickle):
     def __init__(
         self,
-        max_episode_steps: int,
+        max_episode_steps: int = 100,
         min_position: float = 0.0,
         max_position: float = 3.0,
         seed: int = None,
