@@ -130,7 +130,7 @@ class Trainer:
                 self.config.discount_gamma,
             )
 
-            minibatch_sampler = MetaBatchSampler(meta_episode_batches)
+            minibatch_sampler = MetaBatchSampler(meta_episode_batches, self.device)
             ppo_update = ppo.update(minibatch_sampler)
 
             wandb_logs = {
