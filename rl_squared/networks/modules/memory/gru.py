@@ -34,7 +34,7 @@ class GRU(nn.Module):
             x (torch.Tensor): Input to the GRU.
             recurrent_states (torch.Tensor): Recurrent state from the previous forward pass.
             recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
-            device (torch.devicce): Device on which to transfer tensors.
+            device (torch.device): Device on which to transfer tensors.
 
         Returns:
             Tuple
