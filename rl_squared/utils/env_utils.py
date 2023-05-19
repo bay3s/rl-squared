@@ -87,8 +87,6 @@ def make_vec_envs(
     log_dir: str,
     device: torch.device,
     allow_early_resets: bool,
-    normalize_observations: bool = True,
-    normalize_rewards: bool = True,
 ) -> PyTorchVecEnvWrapper:
     """
     Returns PyTorch compatible vectorized environments.
@@ -102,8 +100,6 @@ def make_vec_envs(
         log_dir (str): Directory for logging.
         device (torch.device): Device to use with PyTorch tensors.
         allow_early_resets (bool): Allows resetting the environment before it is done.
-        normalize_observations (bool): Whether to normalize observations.
-        normalize_rewards (bool): Whether to normalize rewards.
 
     Returns:
         PyTorchVecEnvWrapper

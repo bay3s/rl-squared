@@ -15,7 +15,7 @@
   "meta_episode_length": 200,
   "meta_episodes_per_epoch": 200,
   "policy_iterations": 100,
-  "num_processes": 20,
+  "num_processes": 1,
   "discount_gamma": 0.99,
   "ppo_opt_epochs": 10,
   "ppo_num_minibatches": 50,
