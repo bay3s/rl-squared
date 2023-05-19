@@ -231,7 +231,7 @@ class MultiprocessingVecEnv(VecEnv):
 
         return [remote.recv() for remote in self.remotes]
 
-    def reset(self) -> VecEnvObs:
+    def reset(self, seed = None) -> VecEnvObs:
         """
         Reset the environment.
 
