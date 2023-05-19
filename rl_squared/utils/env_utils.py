@@ -104,9 +104,6 @@ def make_vec_envs(
     Returns:
         PyTorchVecEnvWrapper
     """
-    print(env_kwargs)
-    make_env_thunk(env_name, env_kwargs, seed, 1, log_dir, allow_early_resets)()
-
     envs = [
         make_env_thunk(env_name, env_kwargs, seed, i, log_dir, allow_early_resets)
         for i in range(num_processes)

@@ -1,5 +1,6 @@
-import os
+import mujoco_py
 
+import os
 import argparse
 
 from rl_squared.training.trainer import ExperimentConfig
