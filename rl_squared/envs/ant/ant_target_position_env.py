@@ -112,7 +112,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         """
         self._elapsed_steps = 0
 
-        return BaseAntEnv.reset(self, seed)
+        return BaseAntEnv.reset(self)
 
     def elapsed_steps(self) -> int:
         """
