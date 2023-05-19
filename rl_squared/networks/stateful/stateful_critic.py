@@ -59,7 +59,8 @@ class StatefulCritic(BaseCritic):
         self,
         x: torch.Tensor,
         recurrent_states: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None,
+        recurrent_state_masks: torch.Tensor,
+        device: torch.device
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Conduct the forward pass through the network.
@@ -72,7 +73,7 @@ class StatefulCritic(BaseCritic):
         Returns:
           Tuple[torch.Tensor, torch.Tensor]
         """
-        x, recurrent_states = self._gru(x, recurrent_states, recurrent_state_masks)
+        x, recurrent_states = self._gru(x, recurrent_states, recurrent_state_masks, device)
         x = self._mlp(x)
         x = self._value_head(x)
 

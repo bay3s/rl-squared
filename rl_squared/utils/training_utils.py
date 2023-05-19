@@ -105,8 +105,8 @@ def sample_meta_episodes(
             pass
 
         next_value_pred, _ = actor_critic.get_value(
-            meta_episodes.obs[-1],
-            meta_episodes.recurrent_states_critic[-1],
+            meta_episodes.obs[-1].to(device),
+            meta_episodes.recurrent_states_critic[-1].to(device),
         )
 
         next_value_pred.detach()

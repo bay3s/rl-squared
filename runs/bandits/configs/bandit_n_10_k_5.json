@@ -14,7 +14,7 @@
   "use_cuda": true,
   "policy_iterations": 100,
   "meta_episode_length": 10,
-  "meta_episodes_per_epoch": 25000,
+  "meta_episodes_per_epoch": 200,
   "num_processes": 20,
   "discount_gamma": 0.99,
   "ppo_opt_epochs": 10,
