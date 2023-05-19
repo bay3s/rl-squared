@@ -5,14 +5,16 @@ from rl_squared.training.meta_episode_batch import MetaEpisodeBatch
 
 
 class MetaBatchSampler:
-    def __init__(self, batches: List[MetaEpisodeBatch]):
+    def __init__(self, batches: List[MetaEpisodeBatch], device: torch.device):
         """
         A list of sampled episode batches.
 
         Args:
-          batches (List[MetaEpisodeBatch): A list of sampled `MetaEpisodeBatch`-es
+            batches (List[MetaEpisodeBatch): A list of sampled `MetaEpisodeBatch`-es
+            device (torch.device): Device on which transfer the tensors.
         """
         self.meta_episode_batches = batches
+        self.device = device
 
         self.obs = self._concat_attr("obs")
         self.rewards = self._concat_attr("rewards")
@@ -42,7 +44,7 @@ class MetaBatchSampler:
             for meta_episode_batch in self.meta_episode_batches
         ]
 
-        return torch.cat(tensors=tensors, dim=1)
+        return torch.cat(tensors=tensors, dim=1).to(self.device)
 
     def sample(self, advantages: torch.Tensor, num_minibatches: int):
         """

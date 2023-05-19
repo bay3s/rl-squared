@@ -21,6 +21,7 @@ def sample_meta_episodes(
     use_gae: bool,
     gae_lambda: float,
     discount_gamma: float,
+    device: torch.device
 ) -> Tuple[List[MetaEpisodeBatch], List]:
     """
     Sample meta-episodes in parallel.
@@ -35,6 +36,7 @@ def sample_meta_episodes(
         use_gae (bool): Whether to use GAE to compute advantages.
         gae_lambda (float): GAE lambda parameter.
         discount_gamma (float): Discount rate.
+        device (torch.device): Device on which to transfer the tensors.
 
     Returns:
         Tuple[List[MetaEpisodeBatch], float]
@@ -70,9 +72,9 @@ def sample_meta_episodes(
                 recurrent_states_actor,
                 recurrent_states_critic,
             ) = actor_critic.act(
-                meta_episodes.obs[step],
-                meta_episodes.recurrent_states_actor[step],
-                meta_episodes.recurrent_states_critic[step],
+                meta_episodes.obs[step].to(device),
+                meta_episodes.recurrent_states_actor[step].to(device),
+                meta_episodes.recurrent_states_critic[step].to(device),
             )
 
             obs, rewards, dones, infos = rl_squared_envs.step(actions)
@@ -103,8 +105,8 @@ def sample_meta_episodes(
             pass
 
         next_value_pred, _ = actor_critic.get_value(
-            meta_episodes.obs[-1],
-            meta_episodes.recurrent_states_critic[-1],
+            meta_episodes.obs[-1].to(device),
+            meta_episodes.recurrent_states_critic[-1].to(device),
         )
 
         next_value_pred.detach()

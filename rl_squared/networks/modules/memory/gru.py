@@ -24,7 +24,8 @@ class GRU(nn.Module):
         self,
         x,
         recurrent_states: torch.Tensor,
-        recurrent_state_masks: torch.Tensor = None,
+        recurrent_state_masks: torch.Tensor,
+        device: torch.device
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.
@@ -33,13 +34,14 @@ class GRU(nn.Module):
             x (torch.Tensor): Input to the GRU.
             recurrent_states (torch.Tensor): Recurrent state from the previous forward pass.
             recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent states.
+            device (torch.device): Device on which to transfer tensors.
 
         Returns:
             Tuple
         """
         if x.size(0) == recurrent_states.size(0):
             if recurrent_state_masks is None:
-                recurrent_state_masks = torch.ones(recurrent_states.shape)
+                recurrent_state_masks = torch.ones(recurrent_states.shape).to(device)
 
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
