@@ -69,6 +69,7 @@ class StatefulCritic(BaseCritic):
           x (torch.Tensor): Input for the forward pass.
           recurrent_states (torch.Tensor): Recurrent states for the actor.
           recurrent_state_masks (torch.Tensor): Masks to be applied to the recurrent state.
+          device (torch.devicce): Device on which to transfer tensors.
 
         Returns:
           Tuple[torch.Tensor, torch.Tensor]
