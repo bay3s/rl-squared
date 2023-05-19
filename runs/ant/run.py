@@ -1,6 +1,3 @@
-
-import mujoco_py
-
 import os
 import argparse
 
