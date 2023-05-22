@@ -62,22 +62,21 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
             Tuple
         """
         self._elapsed_steps += 1
+
         self.do_simulation(action, self.frame_skip)
-        xyposafter = self.get_body_com("torso")[:2]
+        xposafter = np.array(self.get_body_com("torso"))
 
-        goal_reward = -np.sum(np.abs(xyposafter - self._target_position)) + 4.0
-        survive_reward = 0.05
+        goal_reward = -np.sum(np.abs(xposafter[:2] - self._target_position))
 
-        ctrl_cost = 0.5 * 1e-2 * np.sum(np.square(action / self.action_scaling))
-        contact_cost = (
-            0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
-        )
-
-        observation = self._get_obs()
+        ctrl_cost = .1 * np.square(action).sum()
+        contact_cost = 0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
+        survive_reward = 0.0
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
-        state = self.state_vector()
 
-        done = not (np.isfinite(state).all() and 0.2 <= state[2] <= 1.0)
+        state = self.state_vector()
+        terminated = False
+        truncated = self.elapsed_steps == self.max_episode_steps
+        observation = self._get_obs()
 
         infos = dict(
             reward_goal=goal_reward,
@@ -87,9 +86,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
             task=self._target_position,
         )
 
-        time_exceeded = self.elapsed_steps == self.max_episode_steps
-
-        return observation, reward, (done or time_exceeded), infos
+        return observation, reward, terminated, truncated, infos
 
     def sample_task(self) -> None:
         """

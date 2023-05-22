@@ -17,25 +17,6 @@ class BaseCheetahEnv(HalfCheetahEnv_, BaseMetaEnv, ABC):
         HalfCheetahEnv_.__init__(self)
         pass
 
-    def _get_obs(self) -> np.ndarray:
-        """
-        Format and return the current observation.
-
-        Returns:
-            np.ndarray
-        """
-        return (
-            np.concatenate(
-                [
-                    self.sim.data.qpos.flat[1:],
-                    self.sim.data.qvel.flat,
-                    self.get_body_com("torso").flat,
-                ]
-            )
-            .astype(np.float32)
-            .flatten()
-        )
-
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
         Returns the observation space and the action space.

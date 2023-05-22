@@ -11,7 +11,7 @@ from rl_squared.envs.cheetah.base_cheetah_env import BaseCheetahEnv
 class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
     def __init__(
         self,
-        max_episode_steps: int,
+        max_episode_steps: int = 100,
         min_velocity: float = 0.0,
         max_velocity: float = 3.0,
         seed: int = None,
@@ -89,7 +89,8 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         observation = self._get_obs()
         reward = forward_reward - ctrl_cost
 
-        time_exceeded = self.elapsed_steps == self.max_episode_steps
+        terminated = False
+        truncated = self.elapsed_steps == self.max_episode_steps
 
         infos = dict(
             reward_forward=forward_reward,
@@ -97,7 +98,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
             task=self._target_velocity,
         )
 
-        return observation, reward, time_exceeded, infos
+        return observation, reward, terminated, truncated, infos
 
     def sample_task(self):
         """

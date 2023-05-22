@@ -36,27 +36,6 @@ class BaseAntEnv(AntEnv_, BaseMetaEnv, ABC):
 
         return self._action_scaling
 
-    def _get_obs(self) -> np.ndarray:
-        """
-        Format and return the current observation.
-
-        Returns:
-            np.ndarray
-        """
-        return (
-            np.concatenate(
-                [
-                    self.sim.data.qpos.flat,
-                    self.sim.data.qvel.flat,
-                    np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-                    self.sim.data.get_body_xmat("torso").flat,
-                    self.get_body_com("torso").flat,
-                ]
-            )
-            .astype(np.float32)
-            .flatten()
-        )
-
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
         Returns the observation space and the action space.

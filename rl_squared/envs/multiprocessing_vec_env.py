@@ -96,7 +96,10 @@ def _worker(
                 remote.send(env.seed(data))
             elif cmd == "reset":
                 observation = env.reset()
-                remote.send(observation)
+                if type(observation) is tuple:
+                    remote.send(observation[0])
+                else:
+                    remote.send(observation)
             elif cmd == "render":
                 remote.send(env.render(data))
             elif cmd == "close":

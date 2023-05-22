@@ -65,7 +65,7 @@ class RLSquaredEnv:
         Returns:
           np.ndarray
         """
-        obs = self._wrapped_env.reset()
+        obs, _ = self._wrapped_env.reset()
 
         if self._prev_action is not None:
             next_obs = self._next_observation(
@@ -86,7 +86,8 @@ class RLSquaredEnv:
         Returns:
           Tuple
         """
-        obs, rew, done, info = self._wrapped_env.step(action)
+        obs, rew, terminated, truncated, info = self._wrapped_env.step(action)
+        done = truncated or terminated
 
         self._prev_action = action
         self._prev_reward = rew

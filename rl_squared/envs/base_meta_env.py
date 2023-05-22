@@ -136,16 +136,14 @@ class BaseMetaEnv(gym.Env, ABC):
         """
         raise NotImplementedError
 
-    def reset(self, seed = None) -> np.ndarray:
-        """
-        Resets the environment and returns the corresponding observation.
-
-        This is different from `sample_task`, unlike the former this will not change the payout probabilities.
-
-        Returns:
-          np.ndarray
-        """
-        raise NotImplementedError
+    # def reset(self, seed = None) -> np.ndarray:
+    #     """
+    #     Resets the environment and returns the corresponding observation.
+    #
+    #     Returns:
+    #       np.ndarray
+    #     """
+    #     raise NotImplementedError
 
     def render(self, mode: str = "human") -> None:
         """
