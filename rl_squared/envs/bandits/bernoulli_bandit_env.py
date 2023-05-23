@@ -125,7 +125,11 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps += 1
         reward = self.np_random.binomial(n=1, p=self._payout_odds[action], size=1)[0]
 
-        return self._state, reward, True, {}
+        # 1-step
+        terminated = True
+        truncated = True
+
+        return self._state, reward, terminated, truncated, {}
 
     @property
     def elapsed_steps(self) -> int:

@@ -100,10 +100,10 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
         reward = -np.sqrt(x_dist**2 + y_dist**2)
 
-        done = (np.abs(x_dist) < 0.01) and (np.abs(y_dist) < 0.01)
-        time_exceeded = self.elapsed_steps == self.max_episode_steps
+        terminated = (np.abs(x_dist) < 0.01) and (np.abs(y_dist) < 0.01)
+        truncated = self.elapsed_steps == self.max_episode_steps
 
-        return self._current_state, reward, (done or time_exceeded), {}
+        return self._current_state, reward, terminated, truncated, {}
 
     @property
     def observation_space(self) -> gym.Space:

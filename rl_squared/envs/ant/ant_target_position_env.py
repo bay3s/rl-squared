@@ -10,7 +10,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
     def __init__(
         self,
         max_episode_steps: int = 100,
-        min_position: float = 0.0,
+        min_position: float = -3.0,
         max_position: float = 3.0,
         seed: int = None,
     ):
@@ -64,19 +64,18 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         self._elapsed_steps += 1
 
         self.do_simulation(action, self.frame_skip)
-        xposafter = np.array(self.get_body_com("torso"))
+        current_position = np.array(self.get_body_com("torso"))[:2]
 
-        goal_reward = -np.sum(np.abs(xposafter[:2] - self._target_position))
-
+        goal_reward = -np.sum(np.abs(current_position - self._target_position))
         ctrl_cost = .1 * np.square(action).sum()
         contact_cost = 0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
         survive_reward = 0.0
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
 
-        state = self.state_vector()
+        observation = self._get_obs()
+
         terminated = False
         truncated = self.elapsed_steps == self.max_episode_steps
-        observation = self._get_obs()
 
         infos = dict(
             reward_goal=goal_reward,
