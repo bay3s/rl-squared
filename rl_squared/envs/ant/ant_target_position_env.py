@@ -82,16 +82,19 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         self._episode_reward += reward
 
         observation = self._get_obs()
+
+        terminated = False
         truncated = self.elapsed_steps == self.max_episode_steps
-        terminated = truncated
-        done = truncated or terminated
+        done = terminated or truncated
 
         info = {}
-        if done and self._auto_reset:
+        if done:
             info["episode"] = {}
-            info["r"] = self._episode_reward
-            observation, _ = self.reset()
-            pass
+            info["episode"]["r"] = self._episode_reward
+
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
 
         return observation, reward, terminated, truncated, info
 
@@ -128,6 +131,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
 
         return BaseAntEnv.reset(self, seed=seed, options=options)
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Return the elapsed steps.
@@ -137,6 +141,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         """
         return self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Return the maximum episode steps.

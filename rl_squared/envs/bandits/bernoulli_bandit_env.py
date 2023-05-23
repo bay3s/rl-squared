@@ -152,10 +152,13 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         done = terminated or truncated
 
         info = {}
-        if done and self._auto_reset:
+        if done:
             info["episode"] = {}
             info["episode"]["r"] = self._episode_reward
-            observation, _ = self.reset()
+
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
 
         return self._state, reward, terminated, truncated, info
 

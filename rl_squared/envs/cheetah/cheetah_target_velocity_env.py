@@ -98,10 +98,13 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         done = truncated or terminated
 
         info = {}
-        if done and self._auto_reset:
+        if done:
             info["episode"] = {}
             info["episode"]["r"] = self._episode_reward
-            observation, _ = self.reset()
+
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
 
         return observation, reward, terminated, truncated, info
 

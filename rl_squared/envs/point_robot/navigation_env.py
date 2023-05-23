@@ -125,10 +125,13 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         done = truncated or terminated
 
         info = {}
-        if done and self._auto_reset:
+        if done:
             info["episode"] = {}
-            info["r"] = self._episode_reward
-            observation, _ = self.reset()
+            info["episode"]["r"] = self._episode_reward
+
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
 
         return self._current_state, reward, terminated, truncated, info
 
