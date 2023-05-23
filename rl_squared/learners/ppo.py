@@ -209,7 +209,7 @@ class PPO:
             approx_kl=np.mean(approx_kl_divs),
             clip_fraction=np.mean(clip_fractions),
             explained_variance=self.explained_variance(
-                value_preds_batch.flatten().numpy(), return_batch.flatten().numpy()
+                value_preds_batch.flatten().cpu().numpy(), return_batch.flatten().cpu().numpy()
             ),
         )
 
