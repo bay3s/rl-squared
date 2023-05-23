@@ -9,7 +9,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-NUM_INTERACTION_EPISODES = [10, 25, 50, 75, 100]
+NUM_INTERACTION_EPISODES = [10, 25, 50, 100]
 
 
 if __name__ == "__main__":
