@@ -14,6 +14,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         num_states: int,
         num_actions: int,
         episode_length: int,
+        auto_reset: bool = True,
         seed: Optional[int] = None,
     ):
         """
@@ -23,6 +24,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
           num_states (int): Number of states.
           num_actions (int): Number of actions.
           episode_length (int): Maximum steps per episode.
+          auto_reset (bool): Whether to auto-reset at end of episode.
           seed (int): Random seed.
         """
         EzPickle.__init__(self)
@@ -30,7 +32,10 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
         self.viewer = None
         self._episode_length = episode_length
+        self._auto_reset = auto_reset
+
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._num_states = num_states
         self._num_actions = num_actions
@@ -60,6 +65,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         """
         self._current_state = self._start_state
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._transitions = self.np_random.dirichlet(
             alpha=np.ones(self._num_states), size=(self._num_states, self._num_actions)
@@ -69,7 +75,9 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
             loc=1.0, scale=1.0, size=(self._num_states, self._num_actions)
         )
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
@@ -85,6 +93,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
         self._current_state = self._start_state
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         observation = np.zeros(self._num_states)
         observation[self._start_state] = 1.0
@@ -142,14 +151,13 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
     def step(self, action: int) -> Tuple:
         """
-        Take a step in the environment and return the corresponding observation, action, reward,
-        additional info, etc.
+        Take a step in the environment and return the corresponding observation, action, reward, additional info, etc.
 
         Args:
-          action (int): Action to be taken in the environment.
+            action (int): Action to be taken in the environment.
 
         Returns:
-          Tuple
+            Tuple
         """
         self._elapsed_steps += 1
 
@@ -157,6 +165,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
             loc=self._rewards_mean[self._current_state, action], scale=1.0
         )
 
+        self._episode_reward += reward
         self._current_state = self.np_random.choice(
             a=self._num_states, p=self._transitions[self._current_state, action]
         )
@@ -166,8 +175,15 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
         terminated = False
         truncated = self.elapsed_steps == self.max_episode_steps
+        done = terminated or truncated
 
-        return observation, reward, terminated, truncated, {}
+        info = {}
+        if done and self._auto_reset:
+            info["episode"] = {}
+            info["episode"]["r"] = self._episode_reward
+            observation, _ = self.reset()
+
+        return observation, reward, terminated, truncated, info
 
     @property
     def elapsed_steps(self) -> int:

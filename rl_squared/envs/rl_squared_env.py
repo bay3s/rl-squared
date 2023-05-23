@@ -16,7 +16,7 @@ class RLSquaredEnv:
         Abstract class that outlines functions required by an environment for meta-learning via RL-Squared.
 
         Args:
-          env (gym.Env): Environment for general meta-learning around which to add an RL-Squared wrapper.
+            env (gym.Env): Environment for general meta-learning around which to add an RL-Squared wrapper.
         """
         self._wrapped_env = env
 
@@ -24,6 +24,7 @@ class RLSquaredEnv:
         self._observation_space = self._make_observation_space()
 
         # pass these onwards
+        self._episode_rewards = 0.0
         self._prev_action = None
         self._prev_reward = None
         self._prev_done = None

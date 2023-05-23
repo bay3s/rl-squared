@@ -3,7 +3,7 @@
   "env_name": "AntTargetPosition-v1",
   "random_seed": 8567,
   "env_configs": {
-    "max_episode_steps": 100
+    "episode_length": 100
   },
   "actor_lr": 0.0003,
   "critic_lr": 0.0001,
@@ -13,12 +13,12 @@
   "cuda_deterministic": false,
   "use_cuda": true,
   "meta_episode_length": 200,
-  "meta_episodes_per_epoch": 200,
+  "meta_episodes_per_epoch": 20,
   "policy_iterations": 250,
-  "num_processes": 20,
+  "num_processes": 1,
   "discount_gamma": 0.99,
   "ppo_opt_epochs": 10,
-  "ppo_num_minibatches": 50,
+  "ppo_num_minibatches": 1,
   "ppo_clip_param": 0.05,
   "ppo_entropy_coef": 0.01,
   "ppo_value_loss_coef": 0.5,

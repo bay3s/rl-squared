@@ -136,7 +136,9 @@ class BaseMetaEnv(gym.Env, ABC):
         """
         raise NotImplementedError
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 

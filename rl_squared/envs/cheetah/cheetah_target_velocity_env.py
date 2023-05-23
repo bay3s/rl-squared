@@ -14,6 +14,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         episode_length: int = 100,
         min_velocity: float = 0.0,
         max_velocity: float = 3.0,
+        auto_reset: bool = True,
         seed: int = None,
     ):
         """
@@ -39,6 +40,8 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         """
         self._episode_length = episode_length
         self._elapsed_steps = 0
+        self._auto_reset = auto_reset
+        self._episode_reward = 0.0
 
         self._min_velocity = min_velocity
         self._max_velocity = max_velocity
@@ -88,17 +91,19 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
 
         observation = self._get_obs()
         reward = forward_reward - ctrl_cost
+        self._episode_reward += reward
 
         terminated = False
         truncated = self.elapsed_steps == self.max_episode_steps
+        done = truncated or terminated
 
-        infos = dict(
-            reward_forward=forward_reward,
-            reward_ctrl=-ctrl_cost,
-            task=self._target_velocity,
-        )
+        info = {}
+        if done and self._auto_reset:
+            info["episode"] = {}
+            info["episode"]["r"] = self._episode_reward
+            observation, _ = self.reset()
 
-        return observation, reward, terminated, truncated, infos
+        return observation, reward, terminated, truncated, info
 
     def sample_task(self):
         """
@@ -127,6 +132,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
             np.ndarray
         """
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         return BaseCheetahEnv.reset(self, seed=seed, options=options)
 

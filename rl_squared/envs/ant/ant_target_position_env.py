@@ -9,9 +9,10 @@ from rl_squared.envs.ant.base_ant_env import BaseAntEnv
 class AntTargetPositionEnv(BaseAntEnv, EzPickle):
     def __init__(
         self,
-        episode_length: int = 100,
+        episode_length: int,
         min_position: float = -3.0,
         max_position: float = 3.0,
+        auto_reset: bool = True,
         seed: int = None,
     ):
         """
@@ -31,10 +32,13 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
             episode_length (int): Maximum number of steps before the episode is terminated.
             min_position (float): Lowerbound for target position (for x & y axis).
             max_position (float): Upperbound for target position (for x & y axis).
+            auto_reset (bool): Whether to auto-reset.
             seed (int): Random seed.
         """
         self._episode_length = episode_length
         self._elapsed_steps = 0
+        self._auto_reset = True
+        self._episode_reward = 0.0
 
         self._min_position = min_position
         self._max_position = max_position
@@ -74,21 +78,21 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         )
         survive_reward = 0.0
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
+        self._episode_reward += reward
 
         observation = self._get_obs()
-
-        terminated = False
         truncated = self.elapsed_steps == self.max_episode_steps
+        terminated = truncated
+        done = truncated or terminated
 
-        infos = dict(
-            reward_goal=goal_reward,
-            reward_ctrl=-ctrl_cost,
-            reward_contact=-contact_cost,
-            reward_survive=survive_reward,
-            task=self._target_position,
-        )
+        info = {}
+        if done and self._auto_reset:
+            info["episode"] = {}
+            info["r"] = self._episode_reward
+            observation, _ = self.reset()
+            pass
 
-        return observation, reward, terminated, truncated, infos
+        return observation, reward, terminated, truncated, info
 
     def sample_task(self) -> None:
         """
@@ -100,7 +104,10 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         self._target_position = self.np_random.uniform(
             self._min_position, self._max_position, size=2
         )
+
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
+        pass
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None
@@ -116,6 +123,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
             np.ndarray
         """
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         return BaseAntEnv.reset(self, seed=seed, options=options)
 

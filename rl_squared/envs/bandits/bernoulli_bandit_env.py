@@ -9,20 +9,28 @@ from rl_squared.envs.base_meta_env import BaseMetaEnv
 
 
 class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
-    def __init__(self, num_actions: int, seed: Optional[int] = None):
+    def __init__(
+        self,
+        num_actions: int,
+        auto_reset: Optional[bool] = True,
+        seed: Optional[int] = None,
+    ):
         """
         Initialize a multi-armed bandit.
 
         Args:
             num_actions (int): Number of actions.
+            auto_reset (bool): Whether to `auto_reset` and the end of episode.
             seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
+        self._auto_reset = auto_reset
         self._episode_length = 1
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._num_actions = num_actions
         self._state = np.array([0.0], dtype=np.float32)
@@ -48,9 +56,12 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
             low=0.0, high=1.0, size=self._num_actions
         )
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
         pass
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
@@ -67,6 +78,7 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
             self._np_random, seed = seeding.np_random(seed)
 
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         return self._state, {}
 
@@ -132,12 +144,20 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         """
         self._elapsed_steps += 1
         reward = self.np_random.binomial(n=1, p=self._payout_odds[action], size=1)[0]
+        self._episode_reward += reward
 
         # 1-step
         terminated = True
         truncated = True
+        done = terminated or truncated
 
-        return self._state, reward, terminated, truncated, {}
+        info = {}
+        if done and self._auto_reset:
+            info["episode"] = {}
+            info["episode"]["r"] = self._episode_reward
+            observation, _ = self.reset()
+
+        return self._state, reward, terminated, truncated, info
 
     @property
     def elapsed_steps(self) -> int:

@@ -14,6 +14,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         episode_length: int,
         low: float = -0.5,
         high: float = 0.5,
+        auto_reset: bool = True,
         seed: Optional[int] = None,
     ):
         """
@@ -33,6 +34,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
             episode_length (int): Episode length for the navigation environment.
             low (float): Lower bound for the x & y positions.
             high (float): Upper bound for the x & y positions.
+            auto_reset (bool): Whether to auto-reset after step limit.
             seed (int): Random seed.
         """
         EzPickle.__init__(self)
@@ -40,7 +42,10 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
         self.viewer = None
         self._episode_length = episode_length
+        self._auto_reset = auto_reset
+
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._num_dimensions = 2
         self._start_state = np.zeros(self._num_dimensions, dtype=np.float32)
@@ -69,11 +74,13 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         """
         self._current_state = self._start_state
         self._elapsed_steps = 0
-
+        self._episode_reward = 0.0
         self._goal_position = self.np_random.uniform(self._low, self._high, size=2)
         pass
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
@@ -89,6 +96,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
         self._current_state = self._start_state
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         return self._current_state, {}
 
@@ -113,8 +121,15 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
         terminated = (np.abs(x_dist) < 0.01) and (np.abs(y_dist) < 0.01)
         truncated = self.elapsed_steps == self.max_episode_steps
+        done = truncated or terminated
 
-        return self._current_state, reward, terminated, truncated, {}
+        info = {}
+        if done and self._auto_reset:
+            info["episode"] = {}
+            info["r"] = self._episode_reward
+            observation, _ = self.reset()
+
+        return self._current_state, reward, terminated, truncated, info
 
     @property
     def observation_space(self) -> gym.Space:
