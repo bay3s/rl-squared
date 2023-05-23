@@ -118,6 +118,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         y_dist = self._start_state[1] - self._goal_position[1]
 
         reward = -np.sqrt(x_dist**2 + y_dist**2)
+        self._episode_reward += reward
 
         terminated = (np.abs(x_dist) < 0.01) and (np.abs(y_dist) < 0.01)
         truncated = self.elapsed_steps == self.max_episode_steps
