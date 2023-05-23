@@ -41,8 +41,9 @@ class GRU(nn.Module):
         """
         if x.size(0) == recurrent_states.size(0):
             if recurrent_state_masks is None:
-                recurrent_state_masks = torch.ones(recurrent_states.shape).to(device)
+                recurrent_state_masks = torch.ones(recurrent_states.shape)
 
+            recurrent_state_masks.to(device)
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
             )
@@ -79,7 +80,8 @@ class GRU(nn.Module):
         # add t=0 and t=T to the list
         has_zeros = [0] + has_zeros + [T]
 
-        recurrent_states = recurrent_states.unsqueeze(0)
+        recurrent_state_masks.to(device)
+        recurrent_states = recurrent_states.unsqueeze(0).to(device)
         outputs = []
 
         for i in range(len(has_zeros) - 1):
