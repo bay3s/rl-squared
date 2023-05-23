@@ -10,4 +10,4 @@
 source /home/${USER}/.bashrc
 source activate rl
 
-srun python3 $HOME/rl-squared/runs/ant/run.py --n=10 --prod
+srun python3 $HOME/rl-squared/runs/tabular_mdps/run.py --n=10 --prod
