@@ -97,7 +97,7 @@ class BaseAntEnv(AntEnv_, BaseMujocoMetaEnv, ABC):
         self.viewer.cam.distance = self.model.stat.extent * 0.35
         self.viewer._hide_overlay = True
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: str = "none"):
         """
         Render the enevironment.
 
