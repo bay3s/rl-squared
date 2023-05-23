@@ -2,7 +2,7 @@
   "algo": "PPO",
   "env_name": "PointRobotNavigation-v1",
   "env_configs": {
-    "max_episode_steps": 100
+    "episode_length": 100
   },
   "actor_lr": 0.0003,
   "critic_lr": 0.0001,

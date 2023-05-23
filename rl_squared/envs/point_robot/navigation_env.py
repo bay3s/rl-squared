@@ -11,7 +11,7 @@ from rl_squared.envs.base_meta_env import BaseMetaEnv
 class NavigationEnv(EzPickle, BaseMetaEnv):
     def __init__(
         self,
-        episode_length: int = 100,
+        episode_length: int,
         low: float = -0.5,
         high: float = 0.5,
         seed: Optional[int] = None,
@@ -43,7 +43,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps = 0
 
         self._num_dimensions = 2
-        self._start_state = np.zeros(self._num_dimensions)
+        self._start_state = np.zeros(self._num_dimensions, dtype=np.float32)
 
         self._low = low
         self._high = high
@@ -97,7 +97,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Take a step in the environment and return the corresponding observation, action, reward, plus additional info.
 
         Args:
-            action (np.ndarray): ACtion to be taken in the environment.
+            action (np.ndarray): Action to be taken in the environment.
 
         Returns:
             Tuple
@@ -122,7 +122,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns the observation space of the environment.
 
         Returns:
-          gym.Space
+            gym.Space
         """
         return self._observation_space
 
@@ -132,7 +132,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Set the observation space for the environment.
 
         Returns:
-          gym.Space
+            gym.Space
         """
         self._observation_space = value
 
@@ -142,7 +142,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns the action space
 
         Returns:
-          gym.Space
+            gym.Space
         """
         return self._action_space
 
@@ -170,7 +170,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns the elapsed number of episode steps in the environment.
 
         Returns:
-          int
+            int
         """
         raise self._elapsed_steps
 
@@ -188,10 +188,10 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Render the environment given the render mode.
 
         Args:
-          mode (str): Mode in which to render the environment.
+            mode (str): Mode in which to render the environment.
 
         Returns:
-          None
+            None
         """
         pass
 
@@ -200,6 +200,6 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Close the environment.
 
         Returns:
-          None
+            None
         """
         pass

@@ -4,7 +4,7 @@
   "env_configs": {
     "num_states": 10,
     "num_actions": 5,
-    "max_episode_steps": 10
+    "episode_length":75
   },
   "actor_lr": 0.0004,
   "critic_lr": 0.0004,

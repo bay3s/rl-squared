@@ -12,7 +12,7 @@ class BaseMujocoMetaEnv(gym.Env, ABC):
     Outline expected functionality for Mujoco environments being used in meta-learning experiments.
     """
 
-    def __init__(self, seed: int = None):
+    def __init__(self, seed: Optional[int] = None):
         """
         Initialize a base meta-learning environment.
 
