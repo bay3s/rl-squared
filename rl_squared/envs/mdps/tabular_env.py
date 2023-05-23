@@ -169,7 +169,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
         try:
             self._current_state = self.np_random.choice(
-                a=self._num_states, p=self._transitions[self._current_state, action]
+                a=self._num_states, p=self._transitions[self._current_state, action].flatten()
             )
         except ValueError:
             print(self._transitions[self._current_state, action].ndim)
