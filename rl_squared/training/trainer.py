@@ -77,10 +77,7 @@ class Trainer:
             self.config.env_configs,
             self.config.random_seed,
             self.config.num_processes,
-            self.config.discount_gamma,
-            self.config.log_dir,
             self.device,
-            allow_early_resets=True,
         )
 
         actor_critic = StatefulActorCritic(
@@ -128,7 +125,7 @@ class Trainer:
                 self.config.use_gae,
                 self.config.gae_lambda,
                 self.config.discount_gamma,
-                self.device
+                self.device,
             )
 
             minibatch_sampler = MetaBatchSampler(meta_episode_batches, self.device)

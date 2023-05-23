@@ -1,21 +1,20 @@
 from typing import Tuple, Any
 from abc import ABC
 
-import numpy as np
 import gym
 
 from gym.envs.mujoco import AntEnv as AntEnv_
-from rl_squared.envs.base_meta_env import BaseMetaEnv
+from rl_squared.envs.base_mujoco_meta_env import BaseMujocoMetaEnv
 
 
-class BaseAntEnv(AntEnv_, BaseMetaEnv, ABC):
+class BaseAntEnv(AntEnv_, BaseMujocoMetaEnv, ABC):
     def __init__(self):
         """
         Initialize the Mujoco Ant environment for meta-learning.
         """
         self._action_scaling = None
 
-        BaseMetaEnv.__init__(self)
+        BaseMujocoMetaEnv.__init__(self)
         AntEnv_.__init__(self)
         pass
 

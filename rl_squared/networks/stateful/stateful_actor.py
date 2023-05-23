@@ -91,7 +91,9 @@ class StatefulActor(BaseActor):
         Returns:
           Tuple[Categorical, torch.Tensor]
         """
-        x, recurrent_states = self._gru(x, recurrent_states, recurrent_state_masks, device)
+        x, recurrent_states = self._gru(
+            x, recurrent_states, recurrent_state_masks, device
+        )
         x = self._mlp(x)
         x = self._policy_head(x)
 

@@ -29,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n",
         choices=NUM_INTERACTION_EPISODES,
+        type=int,
         default=None,
         help=f"Number of episodes of interaction per MDP, one of [{', '.join([str(n) for n in NUM_INTERACTION_EPISODES])}"
         f"].",
@@ -40,6 +41,14 @@ if __name__ == "__main__":
         default=False,
         action=argparse.BooleanOptionalAction,
         help=f"Whether to log the experiment to `wandb`.",
+    )
+
+    parser.add_argument(
+        "--prod",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        help=f"Whether this is an experimental run in production.",
     )
 
     args = parser.parse_args()
@@ -63,5 +72,5 @@ if __name__ == "__main__":
 
         # train
         trainer = Trainer(experiment_config)
-        trainer.train(enable_wandb=not args.disable_wandb)
+        trainer.train(enable_wandb=not args.disable_wandb, is_dev=not args.prod)
         pass

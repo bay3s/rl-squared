@@ -1,31 +1,31 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 import numpy as np
 
 import gym
-from gym.utils import EzPickle
+from gym.utils import EzPickle, seeding
 import gym.spaces as spaces
 
 from rl_squared.envs.base_meta_env import BaseMetaEnv
 
 
 class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
-    def __init__(self, num_actions: int, seed: int = None):
+    def __init__(self, num_actions: int, seed: Optional[int] = None):
         """
         Initialize a multi-armed bandit.
 
         Args:
-            num_actions (int): Number of actions that the bandit is able to take.
+            num_actions (int): Number of actions.
             seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
-        self._max_episode_steps = 1
+        self._episode_length = 1
         self._elapsed_steps = 0
 
         self._num_actions = num_actions
-        self._state = np.array([0.0])
+        self._state = np.array([0.0], dtype=np.float32)
         self._payout_odds = None
 
         # spaces
@@ -42,7 +42,7 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         Sample a new bandit task.
 
         Returns:
-          None
+            None
         """
         self._payout_odds = self.np_random.uniform(
             low=0.0, high=1.0, size=self._num_actions
@@ -50,17 +50,25 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         self._elapsed_steps = 0
         pass
 
-    def reset(self) -> np.ndarray:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
         This is different from `sample_task`, unlike the former this will not change the payout probabilities.
 
+        Args:
+            seed (int): Random seed.
+            options (dict): Additional options.
+
         Returns:
-          np.ndarray
+          Tuple
         """
+        if seed is not None:
+            self._np_random, seed = seeding.np_random(seed)
+
         self._elapsed_steps = 0
-        return self._state
+
+        return self._state, {}
 
     @property
     def observation_space(self) -> gym.Space:
@@ -149,7 +157,7 @@ class BernoulliBanditEnv(EzPickle, BaseMetaEnv):
         Returns:
           int
         """
-        return self._max_episode_steps
+        return self._episode_length
 
     def render(self, mode: str = "human") -> None:
         """

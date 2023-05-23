@@ -1,8 +1,8 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 import numpy as np
 
 import gym
-from gym.utils import EzPickle
+from gym.utils import EzPickle, seeding
 import gym.spaces as spaces
 
 from rl_squared.envs.base_meta_env import BaseMetaEnv
@@ -13,8 +13,8 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self,
         num_states: int,
         num_actions: int,
-        max_episode_steps: int,
-        seed: int = None,
+        episode_length: int,
+        seed: Optional[int] = None,
     ):
         """
         Initialize a tabular MDP.
@@ -22,14 +22,14 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Args:
           num_states (int): Number of states.
           num_actions (int): Number of actions.
-          max_episode_steps (int): Maximum steps per episode.
+          episode_length (int): Maximum steps per episode.
           seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
-        self._max_episode_steps = max_episode_steps
+        self._episode_length = episode_length
         self._elapsed_steps = 0
 
         self._num_states = num_states
@@ -69,22 +69,27 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
             loc=1.0, scale=1.0, size=(self._num_states, self._num_actions)
         )
 
-    def reset(self) -> np.ndarray:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
-        This is different from `sample_task`, unlike the former this will not change the payout probabilities.
+        Args:
+            seed (int): Random seed.
+            options (dict): Additional options.
 
         Returns:
-          np.ndarray
+            Tuple
         """
+        if seed is not None:
+            self._np_random, seed = seeding.np_random(seed)
+
         self._current_state = self._start_state
         self._elapsed_steps = 0
 
         observation = np.zeros(self._num_states)
         observation[self._start_state] = 1.0
 
-        return observation
+        return observation, {}
 
     @property
     def observation_space(self) -> gym.Space:
@@ -182,7 +187,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
           int
         """
-        return self._max_episode_steps
+        return self._episode_length
 
     def render(self, mode: str = "human") -> None:
         """

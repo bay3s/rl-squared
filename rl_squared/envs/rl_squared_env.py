@@ -4,17 +4,19 @@ import numpy as np
 import gym
 from copy import deepcopy
 
-from rl_squared.envs.base_meta_env import BaseMetaEnv
 from gym.envs.registration import EnvSpec
+
+from rl_squared.envs.base_mujoco_meta_env import BaseMujocoMetaEnv
+from rl_squared.envs.base_meta_env import BaseMetaEnv
 
 
 class RLSquaredEnv:
-    def __init__(self, env: BaseMetaEnv):
+    def __init__(self, env: Union[BaseMetaEnv, BaseMujocoMetaEnv]):
         """
         Abstract class that outlines functions required by an environment for meta-learning via RL-Squared.
 
         Args:
-          env (BaseMetaEnv): Environment for general meta-learning around which to add an RL-Squared wrapper.
+          env (gym.Env): Environment for general meta-learning around which to add an RL-Squared wrapper.
         """
         self._wrapped_env = env
 

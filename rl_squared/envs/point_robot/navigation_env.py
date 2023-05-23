@@ -1,21 +1,20 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 import numpy as np
 
 import gym
-from gym.utils import EzPickle
+from gym import spaces
+from gym.utils import EzPickle, seeding
 
 from rl_squared.envs.base_meta_env import BaseMetaEnv
-
-from gym import spaces
 
 
 class NavigationEnv(EzPickle, BaseMetaEnv):
     def __init__(
         self,
-        max_episode_steps: int = 100,
+        episode_length: int = 100,
         low: float = -0.5,
         high: float = 0.5,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         """
         2D navigation problems, as described in [1].
@@ -29,12 +28,18 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
 
         [1] Chelsea Finn, Pieter Abbeel, Sergey Levine, "Model-Agnostic Meta-Learning for Fast Adaptation of Deep
         Networks", 2017 (https://arxiv.org/abs/1703.03400)
+
+        Args:
+            episode_length (int): Episode length for the navigation environment.
+            low (float): Lower bound for the x & y positions.
+            high (float): Upper bound for the x & y positions.
+            seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
-        self._max_episode_steps = max_episode_steps
+        self._episode_length = episode_length
         self._elapsed_steps = 0
 
         self._num_dimensions = 2
@@ -55,7 +60,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self.sample_task()
         pass
 
-    def sample_task(self):
+    def sample_task(self) -> None:
         """
         Sample a new goal position for the navigation task
 
@@ -68,22 +73,28 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         self._goal_position = self.np_random.uniform(self._low, self._high, size=2)
         pass
 
-    def reset(self) -> np.ndarray:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple:
         """
-        Resets the environment and returns the current observation.
+        Resets the environment and returns the corresponding observation.
+
+        Args:
+            seed (int): Random seed.
+            options (dict): Additional options.
 
         Returns:
-            np.ndarray
+            Tuple
         """
+        if seed is not None:
+            self._np_random, seed = seeding.np_random(seed)
+
         self._current_state = self._start_state
         self._elapsed_steps = 0
 
-        return self._current_state
+        return self._current_state, {}
 
     def step(self, action: np.ndarray) -> Tuple:
         """
-        Take a step in the environment and return the corresponding observation, action, reward, plus additional
-        info.
+        Take a step in the environment and return the corresponding observation, action, reward, plus additional info.
 
         Args:
             action (np.ndarray): ACtion to be taken in the environment.
@@ -170,7 +181,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns:
           int
         """
-        return self._max_episode_steps
+        return self._episode_length
 
     def render(self, mode: str = "human") -> None:
         """

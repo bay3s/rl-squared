@@ -25,7 +25,7 @@ class GRU(nn.Module):
         x,
         recurrent_states: torch.Tensor,
         recurrent_state_masks: torch.Tensor,
-        device: torch.device
+        device: torch.device,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.

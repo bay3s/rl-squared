@@ -19,7 +19,7 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
         self.device = device
         pass
 
-    def reset(self, seed = None) -> torch.Tensor:
+    def reset(self, seed=None) -> torch.Tensor:
         """
         Reset the environment and retur the observation.
 
