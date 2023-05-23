@@ -37,7 +37,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         """
         self._episode_length = episode_length
         self._elapsed_steps = 0
-        self._auto_reset = True
+        self._auto_reset = auto_reset
         self._episode_reward = 0.0
 
         self._min_position = min_position
