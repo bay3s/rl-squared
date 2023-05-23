@@ -43,7 +43,10 @@ class GRU(nn.Module):
             if recurrent_state_masks is None:
                 recurrent_state_masks = torch.ones(recurrent_states.shape)
 
-            recurrent_state_masks.to(device)
+            x = x.to(device)
+            recurrent_states = recurrent_states.to(device)
+            recurrent_state_masks = recurrent_state_masks.to(device)
+
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
             )
@@ -81,8 +84,12 @@ class GRU(nn.Module):
         has_zeros = [0] + has_zeros + [T]
 
         recurrent_state_masks.to(device)
-        recurrent_states = recurrent_states.unsqueeze(0).to(device)
+        recurrent_states = recurrent_states.unsqueeze(0)
         outputs = []
+
+        x = x.to(device)
+        recurrent_states = recurrent_states.to(device)
+        recurrent_state_masks = recurrent_state_masks.to(device)
 
         for i in range(len(has_zeros) - 1):
             # We can now process steps that don't have any zeros in done_masks together!

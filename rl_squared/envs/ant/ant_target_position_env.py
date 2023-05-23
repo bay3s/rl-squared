@@ -76,6 +76,7 @@ class AntTargetPositionEnv(BaseAntEnv, EzPickle):
         contact_cost = (
             0.5 * 1e-3 * np.sum(np.square(np.clip(self.sim.data.cfrc_ext, -1, 1)))
         )
+
         survive_reward = 0.0
         reward = goal_reward - ctrl_cost - contact_cost + survive_reward
         self._episode_reward += reward
