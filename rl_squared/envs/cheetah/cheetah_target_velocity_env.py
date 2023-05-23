@@ -78,11 +78,11 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         """
         self._elapsed_steps += 1
 
-        xposbefore = self.sim.data.qpos[0]
+        position_before = self.sim.data.qpos[0]
         self.do_simulation(action, self.frame_skip)
-        xposafter = self.sim.data.qpos[0]
+        position_after = self.sim.data.qpos[0]
 
-        forward_vel = (xposafter - xposbefore) / self.dt
+        forward_vel = (position_after - position_before) / self.dt
         forward_reward = -1.0 * abs(forward_vel - self._target_velocity.item())
         ctrl_cost = 0.5 * 1e-1 * np.sum(np.square(action))
 
