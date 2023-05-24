@@ -194,7 +194,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns:
             int
         """
-        raise self._elapsed_steps
+        return self._elapsed_steps
 
     @property
     def max_episode_steps(self) -> int:
