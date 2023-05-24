@@ -44,16 +44,10 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
         actions = actions.cpu()
 
         if isinstance(actions, torch.LongTensor):
-            print('is_instance(LongTensor)')
-            print('actions')
             # squeeze dimensions for discrete actions
             actions = actions.squeeze(1)
 
-        print('before')
-        print(actions)
         actions = actions.cpu().numpy()
-        print('after')
-        print(actions)
         self.venv.step_async(actions)
         pass
 
