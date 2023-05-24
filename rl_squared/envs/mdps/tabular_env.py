@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Optional
+from typing import Tuple, Any, Optional, Union
 import numpy as np
 
 import gym
@@ -149,7 +149,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         """
         return self.observation_space, self.action_space
 
-    def step(self, action: int) -> Tuple:
+    def step(self, action: Union[int, np.ndarray]) -> Tuple:
         """
         Take a step in the environment and return the corresponding observation, action, reward, additional info, etc.
 
@@ -159,6 +159,9 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
             Tuple
         """
+        if type(action) is not int:
+            raise ValueError(f'Invalid value for `action` in `step`. {type(action)}')
+
         self._elapsed_steps += 1
 
         reward = self.np_random.normal(
