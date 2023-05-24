@@ -1,40 +1,20 @@
 from typing import Tuple, Any
 from abc import ABC
 
-import numpy as np
 import gym
 
 from gym.envs.mujoco import HalfCheetahEnv as HalfCheetahEnv_
-from rl_squared.envs.base_meta_env import BaseMetaEnv
+from rl_squared.envs.base_mujoco_meta_env import BaseMujocoMetaEnv
 
 
-class BaseCheetahEnv(HalfCheetahEnv_, BaseMetaEnv, ABC):
+class BaseCheetahEnv(HalfCheetahEnv_, BaseMujocoMetaEnv, ABC):
     def __init__(self):
         """
         Initialize the Mujoco Ant environment for meta-learning.
         """
-        BaseMetaEnv.__init__(self)
+        BaseMujocoMetaEnv.__init__(self)
         HalfCheetahEnv_.__init__(self)
         pass
-
-    def _get_obs(self) -> np.ndarray:
-        """
-        Format and return the current observation.
-
-        Returns:
-            np.ndarray
-        """
-        return (
-            np.concatenate(
-                [
-                    self.sim.data.qpos.flat[1:],
-                    self.sim.data.qvel.flat,
-                    self.get_body_com("torso").flat,
-                ]
-            )
-            .astype(np.float32)
-            .flatten()
-        )
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
@@ -98,7 +78,7 @@ class BaseCheetahEnv(HalfCheetahEnv_, BaseMetaEnv, ABC):
         self.viewer.cam.distance = self.model.stat.extent * 0.35
         self.viewer._hide_overlay = True
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: str = "none"):
         """
         Render the enevironment.
 

@@ -19,7 +19,7 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
         self.device = device
         pass
 
-    def reset(self) -> torch.Tensor:
+    def reset(self, seed=None) -> torch.Tensor:
         """
         Reset the environment and retur the observation.
 
@@ -41,6 +41,8 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
         Returns:
             None
         """
+        actions = actions.cpu()
+
         if isinstance(actions, torch.LongTensor):
             # squeeze dimensions for discrete actions
             actions = actions.squeeze(1)

@@ -7,9 +7,9 @@ import gym
 from gym.utils import seeding
 
 
-class BaseMetaEnv(gym.Env, ABC):
+class BaseMujocoMetaEnv(gym.Env, ABC):
     """
-    Outline expected functionality for environments being used in meta-learning experiments.
+    Outline expected functionality for Mujoco environments being used in meta-learning experiments.
     """
 
     def __init__(self, seed: Optional[int] = None):
@@ -133,21 +133,6 @@ class BaseMetaEnv(gym.Env, ABC):
 
         Returns:
           int
-        """
-        raise NotImplementedError
-
-    def reset(
-        self, *, seed: Optional[int] = None, options: Optional[dict] = None
-    ) -> Tuple:
-        """
-        Resets the environment and returns the corresponding observation.
-
-        Args:
-            seed (int): Random seed.
-            options (dict): Additional options.
-
-        Returns:
-            Tuple
         """
         raise NotImplementedError
 

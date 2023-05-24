@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 
@@ -11,9 +11,10 @@ from rl_squared.envs.cheetah.base_cheetah_env import BaseCheetahEnv
 class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
     def __init__(
         self,
-        max_episode_steps: int,
+        episode_length: int = 100,
         min_velocity: float = 0.0,
         max_velocity: float = 3.0,
+        auto_reset: bool = True,
         seed: int = None,
     ):
         """
@@ -32,13 +33,15 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
             (https://homes.cs.washington.edu/~todorov/papers/TodorovIROS12.pdf)
 
         Args:
-            max_episode_steps (int): Maximum number of steps per episode.
+            episode_length (int): Maximum number of steps per episode.
             min_velocity (float): Minimum target velocity.
             max_velocity (float): Maximum target velocity.
             seed (int): Random seed.
         """
-        self._max_episode_steps = max_episode_steps
+        self._episode_length = episode_length
         self._elapsed_steps = 0
+        self._auto_reset = auto_reset
+        self._episode_reward = 0.0
 
         self._min_velocity = min_velocity
         self._max_velocity = max_velocity
@@ -61,7 +64,7 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         Returns the action space
 
         Returns:
-          Tuple[gym.Space, gym.Space]
+            Tuple[gym.Space, gym.Space]
         """
         return self.observation_space, self.action_space
 
@@ -71,40 +74,46 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         additional info, etc.
 
         Args:
-          action (np.ndarray): Action to be taken in the environment.
+            action (np.ndarray): Action to be taken in the environment.
 
         Returns:
-          Tuple
+            Tuple
         """
         self._elapsed_steps += 1
 
-        xposbefore = self.sim.data.qpos[0]
+        position_before = self.sim.data.qpos[0]
         self.do_simulation(action, self.frame_skip)
-        xposafter = self.sim.data.qpos[0]
+        position_after = self.sim.data.qpos[0]
 
-        forward_vel = (xposafter - xposbefore) / self.dt
+        forward_vel = (position_after - position_before) / self.dt
         forward_reward = -1.0 * abs(forward_vel - self._target_velocity.item())
         ctrl_cost = 0.5 * 1e-1 * np.sum(np.square(action))
 
         observation = self._get_obs()
         reward = forward_reward - ctrl_cost
+        self._episode_reward += reward
 
-        time_exceeded = self.elapsed_steps == self.max_episode_steps
+        terminated = False
+        truncated = self.elapsed_steps == self.max_episode_steps
+        done = truncated or terminated
 
-        infos = dict(
-            reward_forward=forward_reward,
-            reward_ctrl=-ctrl_cost,
-            task=self._target_velocity,
-        )
+        info = {}
+        if done:
+            info["episode"] = {}
+            info["episode"]["r"] = self._episode_reward
 
-        return observation, reward, time_exceeded, infos
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
+
+        return observation, reward, terminated, truncated, info
 
     def sample_task(self):
         """
         Sample a new target velocity.
 
         Returns:
-          None
+            None
         """
         self._target_velocity = self.np_random.uniform(
             self._min_velocity, self._max_velocity, size=1
@@ -112,16 +121,23 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         self._elapsed_steps = 0
         pass
 
-    def reset(self) -> np.ndarray:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> np.ndarray:
         """
         Reset the environment to the start state.
+
+        Args:
+            seed (int): Random seed.
+            options (dict): Additional options.
 
         Returns:
             np.ndarray
         """
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
-        return BaseCheetahEnv.reset(self)
+        return BaseCheetahEnv.reset(self, seed=seed, options=options)
 
     @property
     def elapsed_steps(self) -> int:
@@ -141,4 +157,4 @@ class CheetahTargetVelocityEnv(BaseCheetahEnv, EzPickle):
         Returns:
             int
         """
-        return self._max_episode_steps
+        return self._episode_length

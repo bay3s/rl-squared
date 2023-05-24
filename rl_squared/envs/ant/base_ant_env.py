@@ -1,21 +1,20 @@
 from typing import Tuple, Any
 from abc import ABC
 
-import numpy as np
 import gym
 
 from gym.envs.mujoco import AntEnv as AntEnv_
-from rl_squared.envs.base_meta_env import BaseMetaEnv
+from rl_squared.envs.base_mujoco_meta_env import BaseMujocoMetaEnv
 
 
-class BaseAntEnv(AntEnv_, BaseMetaEnv, ABC):
+class BaseAntEnv(AntEnv_, BaseMujocoMetaEnv, ABC):
     def __init__(self):
         """
         Initialize the Mujoco Ant environment for meta-learning.
         """
         self._action_scaling = None
 
-        BaseMetaEnv.__init__(self)
+        BaseMujocoMetaEnv.__init__(self)
         AntEnv_.__init__(self)
         pass
 
@@ -35,27 +34,6 @@ class BaseAntEnv(AntEnv_, BaseMetaEnv, ABC):
             self._action_scaling = 0.5 * (ub - lb)
 
         return self._action_scaling
-
-    def _get_obs(self) -> np.ndarray:
-        """
-        Format and return the current observation.
-
-        Returns:
-            np.ndarray
-        """
-        return (
-            np.concatenate(
-                [
-                    self.sim.data.qpos.flat,
-                    self.sim.data.qvel.flat,
-                    np.clip(self.sim.data.cfrc_ext, -1, 1).flat,
-                    self.sim.data.get_body_xmat("torso").flat,
-                    self.get_body_com("torso").flat,
-                ]
-            )
-            .astype(np.float32)
-            .flatten()
-        )
 
     def get_spaces(self) -> Tuple[gym.Space, gym.Space]:
         """
@@ -119,7 +97,7 @@ class BaseAntEnv(AntEnv_, BaseMetaEnv, ABC):
         self.viewer.cam.distance = self.model.stat.extent * 0.35
         self.viewer._hide_overlay = True
 
-    def render(self, mode: str = "human"):
+    def render(self, mode: str = "none"):
         """
         Render the enevironment.
 

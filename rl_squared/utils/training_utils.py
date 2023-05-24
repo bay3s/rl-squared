@@ -21,7 +21,7 @@ def sample_meta_episodes(
     use_gae: bool,
     gae_lambda: float,
     discount_gamma: float,
-    device: torch.device
+    device: torch.device,
 ) -> Tuple[List[MetaEpisodeBatch], List]:
     """
     Sample meta-episodes in parallel.

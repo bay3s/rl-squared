@@ -138,7 +138,9 @@ class StatefulActorCritic(BaseActorCritic):
         Returns:
           torch.Tensor
         """
-        return self.critic(observations, recurrent_states_critic, recurrent_state_masks, self._device)
+        return self.critic(
+            observations, recurrent_states_critic, recurrent_state_masks, self._device
+        )
 
     def evaluate_actions(
         self,

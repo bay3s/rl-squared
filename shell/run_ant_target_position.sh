@@ -5,10 +5,9 @@
 #SBATCH --cpus-per-task=20
 #SBATCH --partition=gpu
 #SBATCH --gpus=1
-#SBATCH --time=24:00:00
+#SBATCH --time=10:00:00
 
 source /home/${USER}/.bashrc
 source activate rl
 
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=10 --k=5 --prod
-srun python3 $HOME/rl-squared/runs/bandits/run.py --n=10 --k=10 --prod
+srun python3 $HOME/rl-squared/runs/ant/run.py --env-name=ant_target_position --prod

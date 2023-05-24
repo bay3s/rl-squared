@@ -22,10 +22,10 @@ class GRU(nn.Module):
 
     def forward(
         self,
-        x,
+        x: torch.Tensor,
         recurrent_states: torch.Tensor,
         recurrent_state_masks: torch.Tensor,
-        device: torch.device
+        device: torch.device,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Forward pass for the GRU unit.
@@ -41,7 +41,11 @@ class GRU(nn.Module):
         """
         if x.size(0) == recurrent_states.size(0):
             if recurrent_state_masks is None:
-                recurrent_state_masks = torch.ones(recurrent_states.shape).to(device)
+                recurrent_state_masks = torch.ones(recurrent_states.shape)
+
+            x = x.to(device)
+            recurrent_states = recurrent_states.to(device)
+            recurrent_state_masks = recurrent_state_masks.to(device)
 
             x, recurrent_states = self._gru(
                 x.unsqueeze(0), (recurrent_states * recurrent_state_masks).unsqueeze(0)
@@ -79,8 +83,13 @@ class GRU(nn.Module):
         # add t=0 and t=T to the list
         has_zeros = [0] + has_zeros + [T]
 
+        recurrent_state_masks.to(device)
         recurrent_states = recurrent_states.unsqueeze(0)
         outputs = []
+
+        x = x.to(device)
+        recurrent_states = recurrent_states.to(device)
+        recurrent_state_masks = recurrent_state_masks.to(device)
 
         for i in range(len(has_zeros) - 1):
             # We can now process steps that don't have any zeros in done_masks together!

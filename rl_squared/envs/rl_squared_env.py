@@ -4,17 +4,19 @@ import numpy as np
 import gym
 from copy import deepcopy
 
-from rl_squared.envs.base_meta_env import BaseMetaEnv
 from gym.envs.registration import EnvSpec
+
+from rl_squared.envs.base_mujoco_meta_env import BaseMujocoMetaEnv
+from rl_squared.envs.base_meta_env import BaseMetaEnv
 
 
 class RLSquaredEnv:
-    def __init__(self, env: BaseMetaEnv):
+    def __init__(self, env: Union[BaseMetaEnv, BaseMujocoMetaEnv]):
         """
         Abstract class that outlines functions required by an environment for meta-learning via RL-Squared.
 
         Args:
-          env (BaseMetaEnv): Environment for general meta-learning around which to add an RL-Squared wrapper.
+            env (gym.Env): Environment for general meta-learning around which to add an RL-Squared wrapper.
         """
         self._wrapped_env = env
 
@@ -22,6 +24,7 @@ class RLSquaredEnv:
         self._observation_space = self._make_observation_space()
 
         # pass these onwards
+        self._episode_rewards = 0.0
         self._prev_action = None
         self._prev_reward = None
         self._prev_done = None
@@ -65,7 +68,7 @@ class RLSquaredEnv:
         Returns:
           np.ndarray
         """
-        obs = self._wrapped_env.reset()
+        obs, _ = self._wrapped_env.reset()
 
         if self._prev_action is not None:
             next_obs = self._next_observation(
@@ -86,7 +89,8 @@ class RLSquaredEnv:
         Returns:
           Tuple
         """
-        obs, rew, done, info = self._wrapped_env.step(action)
+        obs, rew, terminated, truncated, info = self._wrapped_env.step(action)
+        done = truncated or terminated
 
         self._prev_action = action
         self._prev_reward = rew

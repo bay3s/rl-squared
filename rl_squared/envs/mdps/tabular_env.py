@@ -1,8 +1,8 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional, Union
 import numpy as np
 
 import gym
-from gym.utils import EzPickle
+from gym.utils import EzPickle, seeding
 import gym.spaces as spaces
 
 from rl_squared.envs.base_meta_env import BaseMetaEnv
@@ -13,8 +13,9 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self,
         num_states: int,
         num_actions: int,
-        max_episode_steps: int,
-        seed: int = None,
+        episode_length: int,
+        auto_reset: bool = True,
+        seed: Optional[int] = None,
     ):
         """
         Initialize a tabular MDP.
@@ -22,15 +23,19 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Args:
           num_states (int): Number of states.
           num_actions (int): Number of actions.
-          max_episode_steps (int): Maximum steps per episode.
+          episode_length (int): Maximum steps per episode.
+          auto_reset (bool): Whether to auto-reset at end of episode.
           seed (int): Random seed.
         """
         EzPickle.__init__(self)
         BaseMetaEnv.__init__(self, seed)
 
         self.viewer = None
-        self._max_episode_steps = max_episode_steps
+        self._episode_length = episode_length
+        self._auto_reset = auto_reset
+
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._num_states = num_states
         self._num_actions = num_actions
@@ -60,6 +65,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         """
         self._current_state = self._start_state
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         self._transitions = self.np_random.dirichlet(
             alpha=np.ones(self._num_states), size=(self._num_states, self._num_actions)
@@ -69,22 +75,30 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
             loc=1.0, scale=1.0, size=(self._num_states, self._num_actions)
         )
 
-    def reset(self) -> np.ndarray:
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple:
         """
         Resets the environment and returns the corresponding observation.
 
-        This is different from `sample_task`, unlike the former this will not change the payout probabilities.
+        Args:
+            seed (int): Random seed.
+            options (dict): Additional options.
 
         Returns:
-          np.ndarray
+            Tuple
         """
+        if seed is not None:
+            self._np_random, seed = seeding.np_random(seed)
+
         self._current_state = self._start_state
         self._elapsed_steps = 0
+        self._episode_reward = 0.0
 
         observation = np.zeros(self._num_states)
         observation[self._start_state] = 1.0
 
-        return observation
+        return observation, {}
 
     @property
     def observation_space(self) -> gym.Space:
@@ -137,20 +151,21 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
 
     def step(self, action: int) -> Tuple:
         """
-        Take a step in the environment and return the corresponding observation, action, reward,
-        additional info, etc.
+        Take a step in the environment and return the corresponding observation, action, reward, additional info, etc.
 
         Args:
-          action (int): Action to be taken in the environment.
+            action (int): Action to be taken in the environment.
 
         Returns:
-          Tuple
+            Tuple
         """
         self._elapsed_steps += 1
 
         reward = self.np_random.normal(
             loc=self._rewards_mean[self._current_state, action], scale=1.0
         )
+
+        self._episode_reward += reward
 
         self._current_state = self.np_random.choice(
             a=self._num_states, p=self._transitions[self._current_state, action]
@@ -159,9 +174,20 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         observation = np.zeros(self._num_states)
         observation[self._current_state] = 1.0
 
-        done = self.elapsed_steps == self.max_episode_steps
+        terminated = False
+        truncated = self.elapsed_steps == self.max_episode_steps
+        done = terminated or truncated
 
-        return observation, reward, done, {}
+        info = {}
+        if done:
+            info["episode"] = {}
+            info["episode"]["r"] = self._episode_reward
+
+            if self._auto_reset:
+                observation, _ = self.reset()
+                pass
+
+        return observation, reward, terminated, truncated, info
 
     @property
     def elapsed_steps(self) -> int:
@@ -181,7 +207,7 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
           int
         """
-        return self._max_episode_steps
+        return self._episode_length
 
     def render(self, mode: str = "human") -> None:
         """

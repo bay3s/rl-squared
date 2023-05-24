@@ -1,5 +1,4 @@
 import os
-
 import argparse
 
 from rl_squared.training.trainer import ExperimentConfig
@@ -9,7 +8,7 @@ from rl_squared.utils.env_utils import register_custom_envs
 register_custom_envs()
 
 
-SUPPORTED_ENVIRONMENTS = ["ant_target_position", "ant_target_velocity"]
+SUPPORTED_ENVIRONMENTS = ["ant_target_position"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
