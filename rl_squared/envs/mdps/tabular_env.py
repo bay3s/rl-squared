@@ -168,10 +168,10 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         self._episode_reward += reward
 
         try:
+            print(f'NumPy Version: {np.__version__}')
             self._current_state = self.np_random.choice(
                 a=self._num_states, p=self._transitions[self._current_state, action]
             )
-            print(f'NumPy Version: {np.__version__}')
         except ValueError:
             print(self._transitions[self._current_state, action].ndim)
             pass
