@@ -112,10 +112,10 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         """
         action = np.clip(action, -0.1, 0.1)
         assert self.action_space.contains(action)
-        self._current_state = self._start_state + action
+        self._current_state = self._current_state + action
 
-        x_dist = self._start_state[0] - self._goal_position[0]
-        y_dist = self._start_state[1] - self._goal_position[1]
+        x_dist = self._current_state[0] - self._goal_position[0]
+        y_dist = self._current_state[1] - self._goal_position[1]
 
         reward = -np.sqrt(x_dist**2 + y_dist**2)
         self._episode_reward += reward
