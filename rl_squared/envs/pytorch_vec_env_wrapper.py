@@ -41,6 +41,8 @@ class PyTorchVecEnvWrapper(VecEnvWrapper):
         Returns:
             None
         """
+        actions = actions.cpu()
+
         if isinstance(actions, torch.LongTensor):
             print('is_instance(LongTensor)')
             print('actions')
