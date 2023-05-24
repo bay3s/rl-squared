@@ -159,7 +159,6 @@ class TabularMDPEnv(EzPickle, BaseMetaEnv):
         Returns:
             Tuple
         """
-        print(action)
         self._elapsed_steps += 1
 
         reward = self.np_random.normal(
