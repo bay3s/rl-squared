@@ -22,7 +22,7 @@ class GRU(nn.Module):
 
     def forward(
         self,
-        x,
+        x: torch.Tensor,
         recurrent_states: torch.Tensor,
         recurrent_state_masks: torch.Tensor,
         device: torch.device,
