@@ -12,8 +12,8 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
     def __init__(
         self,
         episode_length: int,
-        low: float = -1.0,
-        high: float = 1.0,
+        low: float = -0.5,
+        high: float = 0.5,
         auto_reset: bool = True,
         seed: Optional[int] = None,
     ):
@@ -92,7 +92,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
             Tuple
         """
         if seed is not None:
-            self._np_random, seed = seeding.np_random(seed)
+            self.np_random, seed = seeding.np_random(seed)
 
         self._current_state = self._start_state
         self._elapsed_steps = 0
@@ -110,7 +110,9 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         Returns:
             Tuple
         """
+        self._elapsed_steps += 1
         action = np.clip(action, -0.1, 0.1)
+
         assert self.action_space.contains(action)
         self._current_state = self._current_state + action
 
@@ -184,6 +186,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         """
         return self._observation_space, self._action_space
 
+    @property
     def elapsed_steps(self) -> int:
         """
         Returns the elapsed number of episode steps in the environment.
@@ -193,6 +196,7 @@ class NavigationEnv(EzPickle, BaseMetaEnv):
         """
         raise self._elapsed_steps
 
+    @property
     def max_episode_steps(self) -> int:
         """
         Returns the maximum number of episode steps in the environment.
